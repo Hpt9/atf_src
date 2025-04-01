@@ -34,14 +34,14 @@ const HomePage = () => {
       title: "İcazə ərizəsinin əldə edilməsi",
     },
     {
-      id: 3,
+      id: 4,
       icon: (
         <FaRegFileAlt className="w-[24px] h-[24px] group-hover:text-[#2E92A0] transition-all duration-200" />
       ),
       title: "İcazə ərizəsinin əldə edilməsi",
     },
     {
-      id: 3,
+      id: 5,
       icon: (
         <FaRegFileAlt className="w-[24px] h-[24px] group-hover:text-[#2E92A0] transition-all duration-200" />
       ),
@@ -80,7 +80,7 @@ const HomePage = () => {
         <div className="services_container grid grid-cols-3 gap-6">
           {services.map((service) => (
             <div
-              key={service.id}
+              key={service.id+"s"}
               className="service_card group  rounded-[16px] p-6 cursor-pointer  transition-all duration-300 bg-[#FAFAFA]"
             >
               <div className="flex justify-between items-start mb-6">

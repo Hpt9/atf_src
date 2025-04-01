@@ -7,24 +7,25 @@ import { useSearchBar } from "../../context/SearchBarContext";
 const HsCodesPage = () => {
   const { setSearchBar } = useSearchBar();
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
   const itemsPerPage = 10;
 
   const hs_codes = [
     {
       id: 1,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
+      name: "Canlı ferid; Heyvan mənşəli məhsullar",
     },
     {
       id: 2,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
+      name: "Canlı feride; Heyvan mənşəli məhsullar",
     },
     {
       id: 3,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
+      name: "Canlı leyla; Heyvan mənşəli məhsullar",
     },
     {
       id: 4,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
+      name: "Canlı pakize; Heyvan mənşəli məhsullar",
     },
     {
       id: 5,
@@ -108,13 +109,46 @@ const HsCodesPage = () => {
     },
   ];
 
-  // Calculate total pages
-  const totalPages = Math.ceil(hs_codes.length / itemsPerPage);
+  // Filter hs_codes based on search query
+  const filteredHsCodes = hs_codes.filter(code => 
+    code.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Calculate total pages based on filtered items
+  const totalPages = Math.ceil(filteredHsCodes.length / itemsPerPage);
   
-  // Get current items - ensure we're getting exactly the right slice
+  // Get current items from filtered list
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = hs_codes.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredHsCodes.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Reset to first page when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  // Set the search bar when component mounts
+  useEffect(() => {
+    setSearchBar(
+      <div className="relative w-[300px]">
+        <input
+          type="text"
+          placeholder="HS Kodunu yoxlayın"
+          className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="#A0A0A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    );
+    
+    // Clean up when component unmounts
+    return () => setSearchBar(null);
+  }, [setSearchBar, searchQuery]);
 
   // Change page - reset the view when changing pages
   const paginate = (pageNumber) => {
@@ -153,27 +187,6 @@ const HsCodesPage = () => {
     return pageNumbers;
   };
 
-  // Set the search bar when component mounts
-  useEffect(() => {
-    setSearchBar(
-      <div className="relative w-[300px]">
-        <input
-          type="text"
-          placeholder="HS Kodunu yoxlayın"
-          className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
-        />
-        <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="#A0A0A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      </div>
-    );
-    
-    // Clean up when component unmounts
-    return () => setSearchBar(null);
-  }, [setSearchBar]);
-
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[1920px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
@@ -190,64 +203,72 @@ const HsCodesPage = () => {
             <p className="font-medium text-[#3F3F3F] text-[14px]">Əməliyyatlar</p>
           </div>
           <div className="hs_table_body w-full">
-            {currentItems.map((hs_code) => (
-              <div key={hs_code.id} className="hs_row p-[16px] flex justify-between items-center border-t border-[#E7E7E7] hover:bg-[#F5F5F5]">
-                <div className="flex items-center mobile:gap-x-[16px] lg:gap-x-[100px]">
-                  <p className="text-[#3F3F3F] text-[14px] w-[20px]">{hs_code.id}</p>
-                  <p className="text-[#3F3F3F]  text-[14px]">{hs_code.name}</p>
+            {currentItems.length > 0 ? (
+              currentItems.map((hs_code) => (
+                <div key={hs_code.id} className="hs_row p-[16px] flex justify-between items-center border-t border-[#E7E7E7] hover:bg-[#F5F5F5]">
+                  <div className="flex items-center mobile:gap-x-[16px] lg:gap-x-[100px]">
+                    <p className="text-[#3F3F3F] text-[14px] w-[20px]">{hs_code.id}</p>
+                    <p className="text-[#3F3F3F]  text-[14px]">{hs_code.name}</p>
+                  </div>
+                  <div className="flex items-center gap-x-[8px]">
+                    <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]">
+                      <LuInfo className="w-[20px] h-[20px] text-[#2E92A0]" />
+                    </button>
+                    <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]">
+                      <FaRegFilePdf className="w-[20px] h-[20px] text-[#2E92A0]" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center gap-x-[8px]">
-                  <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]">
-                    <LuInfo className="w-[20px] h-[20px] text-[#2E92A0]" />
-                  </button>
-                  <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]">
-                    <FaRegFilePdf className="w-[20px] h-[20px] text-[#2E92A0]" />
-                  </button>
-                </div>
+              ))
+            ) : (
+              <div className="p-[16px] text-center text-[#3F3F3F]">
+                Axtarışa uyğun nəticə tapılmadı
               </div>
-            ))}
+            )}
           </div>
           
           {/* Pagination */}
-          <div className="pagination flex items-center justify-between p-4 border-t border-[#E7E7E7]">
-            {/* <div>
-              <span className="text-sm text-[#3F3F3F]">Geriyə</span>
-            </div> */}
-            <div className="w-full justify-center flex items-center gap-2">
-              <button 
-                onClick={prevPage} 
-                disabled={currentPage === 1}
-                className={`px-[16px] py-[3px] border border-[#E7E7E7] bg-[#FAFAFA] flex items-center justify-center rounded ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
-              >
-                Geri
-              </button>
-              
-              {getPageNumbers().map(number => (
-                <button
-                  key={number}
-                  onClick={() => paginate(number)}
-                  className={`w-8 h-8 flex items-center justify-center rounded border border-[#E7E7E7] ${
-                    currentPage === number 
-                      ? 'bg-[#2E92A0] text-white border-none' 
-                      : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'
-                  }`}
+          {filteredHsCodes.length > 0 && (
+            <div className="pagination flex items-center justify-between p-4 border-t border-[#E7E7E7]">
+              {/* <div>
+                <span className="text-sm text-[#3F3F3F]">Geriyə</span>
+              </div> */}
+              <div className="w-full justify-center flex items-center gap-2">
+                <button 
+                  onClick={prevPage} 
+                  disabled={currentPage === 1}
+                  className={`px-[16px] py-[3px] border border-[#E7E7E7] bg-[#FAFAFA] flex items-center justify-center rounded ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
                 >
-                  {number}
+                  Geri
                 </button>
-              ))}
-              
-              <button 
-                onClick={nextPage} 
-                disabled={currentPage === totalPages}
-                className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
-              >
-                Irəli
-              </button>
+                
+                {getPageNumbers().map(number => (
+                  <button
+                    key={number}
+                    onClick={() => paginate(number)}
+                    className={`w-8 h-8 flex items-center justify-center rounded border border-[#E7E7E7] ${
+                      currentPage === number 
+                        ? 'bg-[#2E92A0] text-white border-none' 
+                        : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'
+                    }`}
+                  >
+                    {number}
+                  </button>
+                ))}
+                
+                <button 
+                  onClick={nextPage} 
+                  disabled={currentPage === totalPages}
+                  className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
+                >
+                  Irəli
+                </button>
+              </div>
+              {/* <div>
+                <span className="text-sm text-[#3F3F3F]">İrəli</span>
+              </div> */}
             </div>
-            {/* <div>
-              <span className="text-sm text-[#3F3F3F]">İrəli</span>
-            </div> */}
-          </div>
+          )}
         </div>
       </div>
     </div>

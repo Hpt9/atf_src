@@ -9,6 +9,7 @@ const IcazelerPage = () => {
   const { setSearchBar } = useSearchBar();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCard, setSelectedCard] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const itemsPerPage = 12;
 
   // Sample data for permits
@@ -19,13 +20,24 @@ const IcazelerPage = () => {
     logo: "/src/assets/images/aqta-logo.png", // Replace with actual logo path
   }));
 
-  // Calculate total pages
-  const totalPages = Math.ceil(permits.length / itemsPerPage);
+  // Filter permits based on search query
+  const filteredPermits = permits.filter(permit => 
+    permit.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    permit.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Calculate total pages based on filtered items
+  const totalPages = Math.ceil(filteredPermits.length / itemsPerPage);
   
-  // Get current items
+  // Get current items from filtered list
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = permits.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredPermits.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Reset to first page when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   // Change page
   const paginate = (pageNumber) => {
@@ -72,6 +84,8 @@ const IcazelerPage = () => {
           type="text"
           placeholder="İcazələri axtar"
           className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
         <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -83,7 +97,7 @@ const IcazelerPage = () => {
     
     // Clean up when component unmounts
     return () => setSearchBar(null);
-  }, [setSearchBar]);
+  }, [setSearchBar, searchQuery]);
 
   // Animation variants
   const containerVariants = {
@@ -158,73 +172,80 @@ const IcazelerPage = () => {
               exit="exit"
             >
               {/* Cards Grid */}
-              <motion.div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {currentItems.map((permit) => (
-                  <motion.div 
-                    key={permit.id}
-                    variants={cardVariants}
-                    className="border border-[#E7E7E7] rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-                    onClick={() => setSelectedCard(permit)}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <div className="relative">
-                      <div className="h-[180px] bg-[#FAFAFA] flex items-center justify-center px-[32px] py-[16px] border-b border-[#E7E7E7]">
-                        <div className="flex flex-col items-center">
-                          <div className="w-24 h-24 mb-2">
-                            {/* Replace with actual logo */}
-                            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                              <path d="M30,20 L70,20 L85,50 L70,80 L30,80 L15,50 L30,20 Z" fill="#f0f0f0" stroke="#d2a679" strokeWidth="2" />
-                              <text x="50" y="55" fontSize="24" textAnchor="middle" fill="#333">AQTA</text>
-                            </svg>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {currentItems.length > 0 ? (
+                  currentItems.map((permit) => (
+                    <motion.div
+                      key={permit.id}
+                      variants={cardVariants}
+                      whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
+                      onClick={() => setSelectedCard(permit)}
+                      className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden cursor-pointer"
+                    >
+                      <div className="relative">
+                        <div className="h-[180px] bg-[#FAFAFA] flex items-center justify-center px-[32px] py-[16px] border-b border-[#E7E7E7]">
+                          <div className="flex flex-col items-center">
+                            <div className="w-24 h-24 mb-2">
+                              {/* Replace with actual logo */}
+                              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                                <path d="M30,20 L70,20 L85,50 L70,80 L30,80 L15,50 L30,20 Z" fill="#f0f0f0" stroke="#d2a679" strokeWidth="2" />
+                                <text x="50" y="55" fontSize="24" textAnchor="middle" fill="#333">AQTA</text>
+                              </svg>
+                            </div>
                           </div>
                         </div>
+                        <div className="p-4 bg-white">
+                          <h3 className="text-left font-medium text-[#3F3F3F]">{permit.name}</h3>
+                          <p className="text-left text-sm text-gray-600">{permit.fullName}</p>
+                        </div>
                       </div>
-                      <div className="p-4 bg-white">
-                        <h3 className="text-left font-medium text-[#3F3F3F]">{permit.name}</h3>
-                        <p className="text-left text-sm text-gray-600">{permit.fullName}</p>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              {/* Pagination */}
-              <motion.div 
-                className="pagination flex items-center justify-center mt-8 gap-2"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, transition: { delay: 0.3 } }}
-              >
-                <button 
-                  onClick={prevPage} 
-                  disabled={currentPage === 1}
-                  className={`px-[16px] py-[3px] border border-[#E7E7E7] bg-[#FAFAFA] flex items-center justify-center rounded ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="col-span-4 p-[16px] text-center text-[#3F3F3F]">
+                    Axtarışa uyğun nəticə tapılmadı
+                  </div>
+                )}
+              </div>
+              
+              {/* Pagination - only show if we have items */}
+              {filteredPermits.length > 0 && (
+                <motion.div 
+                  className="pagination flex items-center justify-center mt-8 gap-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1, transition: { delay: 0.3 } }}
                 >
-                  Geri
-                </button>
-                
-                {getPageNumbers().map(number => (
-                  <button
-                    key={number}
-                    onClick={() => paginate(number)}
-                    className={`w-8 h-8 flex items-center justify-center rounded border border-[#E7E7E7] ${
-                      currentPage === number 
-                        ? 'bg-[#2E92A0] text-white border-none' 
-                        : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'
-                    }`}
+                  <button 
+                    onClick={prevPage} 
+                    disabled={currentPage === 1}
+                    className={`px-[16px] py-[3px] border border-[#E7E7E7] bg-[#FAFAFA] flex items-center justify-center rounded ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
                   >
-                    {number}
+                    Geri
                   </button>
-                ))}
-                
-                <button 
-                  onClick={nextPage} 
-                  disabled={currentPage === totalPages}
-                  className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
-                >
-                  İrəli
-                </button>
-              </motion.div>
+                  
+                  {getPageNumbers().map(number => (
+                    <button
+                      key={number}
+                      onClick={() => paginate(number)}
+                      className={`w-8 h-8 flex items-center justify-center rounded border border-[#E7E7E7] ${
+                        currentPage === number 
+                          ? 'bg-[#2E92A0] text-white border-none' 
+                          : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'
+                      }`}
+                    >
+                      {number}
+                    </button>
+                  ))}
+                  
+                  <button 
+                    onClick={nextPage} 
+                    disabled={currentPage === totalPages}
+                    className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
+                  >
+                    İrəli
+                  </button>
+                </motion.div>
+              )}
             </motion.div>
           ) : (
             /* Permit Detail View */
