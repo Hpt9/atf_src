@@ -1,42 +1,42 @@
 import React from "react";
-import { Link } from 'react-router-dom'
-export default function Navbar() {
-return (
-    <header className=" text-white px-[108px] py-[20px] border-t border-[#FAFAFA] bg-white">
-      <nav className="container">
-        <ul className="flex gap-x-[56px]">
-          <li>
-            <Link to="/" className="text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150">
+import { Link, useLocation } from 'react-router-dom'
+import { useSearchBar } from '../context/SearchBarContext'
+
+const Navbar = () => {
+  const location = useLocation();
+  const { searchBar } = useSearchBar();
+  
+  return (
+    <header className=" text-white md:px-[32px] lg:px-[50px] xl:px-[108px] py-[20px] border-t border-[#FAFAFA] bg-white h-[83px] flex items-center">
+      <nav className=" w-full">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-8">
+            <Link to="/" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/' ? 'font-medium' : ''}`}>
               Ana Səhifə
             </Link>
-          </li>
-          <li>
-            <Link to="/hs-codes" className="text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150">
+            <Link to="/hs-codes" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/hs-codes' ? 'font-medium' : ''}`}>
               Hs kodları
             </Link>
-          </li>
-          <li>
-            <Link to="/icazeler" className="text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150">
+            <Link to="/icazeler" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/icazeler' ? 'font-medium' : ''}`}>
               İcazələr
             </Link>
-          </li>
-          <li>
-            <Link to="/muracietler" className="text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150">
+            <Link to="/muracietler" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/muracietler' ? 'font-medium' : ''}`}>
               Müraciətlər
             </Link>
-          </li>
-          <li>
-            <Link to="/faq" className="text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150">
+            <Link to="/faq" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/faq' ? 'font-medium' : ''}`}>
               FAQ
             </Link>
-          </li>
-          <li>
-            <Link to="/elaqe" className="text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150">
+            <Link to="/elaqe" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/elaqe' ? 'font-medium' : ''}`}>
               Əlaqə
             </Link>
-          </li>
-        </ul>
+          </div>
+          
+          {/* Dynamic Search Bar */}
+          {searchBar}
+        </div>
       </nav>
     </header>
   );
-}
+};
+
+export default Navbar;

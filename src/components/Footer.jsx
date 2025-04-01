@@ -9,7 +9,8 @@ import { FaTwitter } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="bg-[#FAFAFA] text-white py-[16px] px-[108px]">
+    <div className="w-full flex justify-center">
+      <footer className="bg-[#FAFAFA] text-white py-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] w-full max-w-[1920px]">
       <div className="flex justify-between items-center">
         <p className="text-center text-[rgba(63,63,63,1)]">Bütün hüquqlar qorunur - 2025</p>
         <div className="flex items-center lg:gap-x-[32px] xl:gap-x-[64px]">
@@ -37,6 +38,7 @@ const Footer = () => {
         </div>
       </div>
     </footer>
+    </div>
   );
 };
 

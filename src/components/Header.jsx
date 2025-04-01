@@ -3,8 +3,9 @@ import ATF_LOGO from "../assets/icons/atf_logo.svg"
 
 const Header = () => {
   return (
-    <div className="w-full flex flex-col sticky top-0 z-50">
-      <div className="login w-full h-[118px] bg-white flex justify-between items-center px-[108px] py-[20px]">
+    <div className="w-full flex justify-center">
+      <div className="w-full max-w-[1920px] flex flex-col sticky top-0 z-50">
+      <div className="login w-full h-[118px] bg-white flex justify-between items-center md:px-[32px] lg:px-[50px] xl:px-[108px] py-[20px]">
         <img src={ATF_LOGO} alt="ATF LOGO" className="w-[94px] h-[78px]"/>
         <div className="flex gap-4">
           <select className="bg-transparent border-none outline-none cursor-pointer">
@@ -21,6 +22,7 @@ const Header = () => {
         </div>
       </div>
       <Navbar />
+    </div>
     </div>
   );
 };

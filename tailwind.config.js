@@ -6,6 +6,7 @@ export default {
   ],
   theme: {
     screens: {
+      'mobile':'300px',
       'xs': '475px',
       'sm': '640px',
       'md': '768px',
@@ -14,7 +15,9 @@ export default {
       '2xl': '1536px'
     },
     extend: {
-      // Other customizations can go here
+      textColor: {
+        'search-text': '#3F3F3F',
+      }
     },
   },
   plugins: [],
