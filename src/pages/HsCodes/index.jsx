@@ -11,6 +11,7 @@ const HsCodesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedGroups, setExpandedGroups] = useState({});
   const itemsPerPage = 10;
+  const contentRef = useRef(null);
 
   // Updated hierarchical data structure for HS codes
   const hs_codes_data = [
@@ -98,7 +99,7 @@ const HsCodesPage = () => {
     return !!expandedGroups[groupId];
   };
 
-  // Flatten the hierarchical data for pagination and filtering
+  // Flatten the hierarchical data for filtering
   const flattenData = (data, level = 0, parentExpanded = true) => {
     let result = [];
     
@@ -203,13 +204,6 @@ const HsCodesPage = () => {
         staggerChildren: 0.05,
         delayChildren: 0.1
       }
-    },
-    exit: { 
-      opacity: 0,
-      transition: { 
-        staggerChildren: 0.05,
-        staggerDirection: -1
-      }
     }
   };
 
@@ -223,82 +217,7 @@ const HsCodesPage = () => {
         stiffness: 300, 
         damping: 24 
       }
-    },
-    exit: { 
-      opacity: 0,
-      y: -20,
-      transition: { duration: 0.2 }
     }
-  };
-
-  // Height animation approach
-  const [contentHeight, setContentHeight] = useState("auto");
-  const prevPageRef = useRef(currentPage);
-  const newContentRef = useRef(null);
-  const prevContentRef = useRef(null);
-  
-  // Update height immediately when page changes or groups expand/collapse
-  useEffect(() => {
-    if (prevPageRef.current !== currentPage) {
-      // Store the previous content height
-      if (newContentRef.current) {
-        prevContentRef.current = newContentRef.current.offsetHeight;
-      }
-      
-      // Use the previous height as a starting point
-      if (prevContentRef.current) {
-        setContentHeight(prevContentRef.current);
-      } else {
-        // Only use this fallback for the first render
-        setContentHeight("auto");
-      }
-      
-      prevPageRef.current = currentPage;
-      
-      // Schedule a measurement after render
-      requestAnimationFrame(() => {
-        if (newContentRef.current) {
-          setContentHeight(newContentRef.current.offsetHeight);
-        }
-      });
-    }
-  }, [currentPage, expandedGroups]);
-
-  // Change page - reset the view when changing pages
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-  
-  // Go to next page
-  const nextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(prevPage => prevPage + 1);
-    }
-  };
-  
-  // Go to previous page
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(prevPage => prevPage - 1);
-    }
-  };
-
-  // Generate page numbers - limit to 5 visible pages
-  const getPageNumbers = () => {
-    const pageNumbers = [];
-    let startPage = Math.max(1, currentPage - 2);
-    let endPage = Math.min(totalPages, startPage + 4);
-    
-    // Adjust start page if we're near the end
-    if (endPage - startPage < 4) {
-      startPage = Math.max(1, endPage - 4);
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
-    }
-    
-    return pageNumbers;
   };
 
   // Set the search bar when component mounts
@@ -336,141 +255,84 @@ const HsCodesPage = () => {
             <p className="font-medium text-[#3F3F3F] text-[14px]">Əməliyyatlar</p>
           </div>
           
-          {/* Animated container with dynamic height */}
-          <motion.div
-            style={{ height: contentHeight }}
-            animate={{ height: contentHeight }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="overflow-hidden"
+          {/* Scrollable content container */}
+          <div 
+            ref={contentRef}
+            className="max-h-[600px] overflow-y-auto"
           >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentPage + Object.keys(expandedGroups).length}
-                ref={newContentRef}
-                variants={tableVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                onAnimationStart={() => {
-                  // Fine-tune height as soon as animation starts
-                  if (newContentRef.current) {
-                    setContentHeight(newContentRef.current.offsetHeight);
-                  }
-                }}
-              >
-                {currentItems.length > 0 ? (
-                  currentItems.map((item) => (
-                    <motion.div 
-                      key={item.id} 
-                      className={`p-[16px] flex justify-between items-center border-t border-[#E7E7E7] hover:bg-[#F5F5F5] ${
-                        item.level === 0 ? 'bg-[#F9F9F9]' : 
-                        item.level === 1 ? 'bg-[#FCFCFC]' : 
-                        'bg-white'
-                      }`}
-                      variants={rowVariants}
-                    >
-                      <div className="flex items-center w-full">
-                        {/* Indentation based on level */}
-                        <div style={{ width: `${item.level * 24}px` }} className="flex-shrink-0"></div>
-                        
-                        {/* Toggle button or spacer */}
-                        {item.isGroup ? (
-                          <button 
-                            onClick={() => toggleGroup(item.id)}
-                            className="mr-2 text-[#3F3F3F] focus:outline-none flex-shrink-0"
-                          >
-                            {isExpanded(item.id) ? 
-                              <IoIosArrowDown className="text-[#2E92A0]" /> : 
-                              <IoIosArrowRight className="text-[#2E92A0]" />
-                            }
-                          </button>
-                        ) : (
-                          <div className="mr-2 w-4 flex-shrink-0"></div> // Spacer for alignment
-                        )}
-                        
-                        {/* Content with different styling based on level */}
-                        <div className="flex items-center w-full">
-                          <p className={`text-[#3F3F3F] text-[14px] w-[60px] ${
-                            item.level === 0 ? 'font-bold' : 
-                            item.level === 1 ? 'font-medium' : 
-                            'font-normal'
-                          }`}>
-                            {item.id}
-                          </p>
-                          <p className={`text-[#3F3F3F] text-[14px] ${
-                            item.level === 0 ? 'font-bold uppercase' : 
-                            item.level === 1 ? 'font-medium' : 
-                            'font-normal'
-                          }`}>
-                            {item.name}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-x-[8px] flex-shrink-0">
-                        <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]">
-                          <LuInfo className="w-[20px] h-[20px] text-[#2E92A0]" />
-                        </button>
-                        <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]">
-                          <FaRegFilePdf className="w-[20px] h-[20px] text-[#2E92A0]" />
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))
-                ) : (
+            <motion.div
+              variants={tableVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {filteredHsCodes.length > 0 ? (
+                filteredHsCodes.map((item) => (
                   <motion.div 
-                    className="p-[16px] text-center text-[#3F3F3F]"
+                    key={item.id} 
+                    className={`p-[16px] flex justify-between items-center border-t border-[#E7E7E7] hover:bg-[#F5F5F5] ${
+                      item.level === 0 ? 'bg-[#F9F9F9]' : 
+                      item.level === 1 ? 'bg-[#FCFCFC]' : 
+                      'bg-white'
+                    } ${item.isGroup ? 'cursor-pointer' : ''}`}
+                    onClick={item.isGroup ? () => toggleGroup(item.id) : undefined}
                     variants={rowVariants}
                   >
-                    Axtarışa uyğun nəticə tapılmadı
+                    <div className="flex items-center w-full">
+                      {/* Indentation based on level */}
+                      <div style={{ width: `${item.level * 24}px` }} className="flex-shrink-0"></div>
+                      
+                      {/* Toggle indicator (not a button anymore) */}
+                      {item.isGroup ? (
+                        <div className="mr-2 text-[#3F3F3F] flex-shrink-0">
+                          {isExpanded(item.id) ? 
+                            <IoIosArrowDown className="text-[#2E92A0]" /> : 
+                            <IoIosArrowRight className="text-[#2E92A0]" />
+                          }
+                        </div>
+                      ) : (
+                        <div className="mr-2 w-4 flex-shrink-0"></div> // Spacer for alignment
+                      )}
+                      
+                      {/* Content with different styling based on level */}
+                      <div className="flex items-center w-full">
+                        <p className={`text-[#3F3F3F] text-[14px] w-[60px] ${
+                          item.level === 0 ? 'font-bold' : 
+                          item.level === 1 ? 'font-medium' : 
+                          'font-normal'
+                        }`}>
+                          {item.id}
+                        </p>
+                        <p className={`text-[#3F3F3F] text-[14px] ${
+                          item.level === 0 ? 'font-bold uppercase' : 
+                          item.level === 1 ? 'font-medium' : 
+                          'font-normal'
+                        }`}>
+                          {item.name}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Add stopPropagation to prevent row click when clicking buttons */}
+                    <div className="flex items-center gap-x-[8px] flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]">
+                        <LuInfo className="w-[20px] h-[20px] text-[#2E92A0]" />
+                      </button>
+                      <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]">
+                        <FaRegFilePdf className="w-[20px] h-[20px] text-[#2E92A0]" />
+                      </button>
+                    </div>
                   </motion.div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </motion.div>
-          
-          {/* Pagination */}
-          {filteredHsCodes.length > 0 && (
-            <div className="pagination flex items-center justify-between p-4 border-t border-[#E7E7E7]">
-              <div className="w-full justify-center flex items-center gap-2">
-                <motion.button 
-                  onClick={prevPage} 
-                  disabled={currentPage === 1}
-                  className={`px-[16px] py-[3px] border border-[#E7E7E7] bg-[#FAFAFA] flex items-center justify-center rounded ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
-                  whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
-                  whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
+                ))
+              ) : (
+                <motion.div 
+                  className="p-[16px] text-center text-[#3F3F3F]"
+                  variants={rowVariants}
                 >
-                  Geri
-                </motion.button>
-                
-                {getPageNumbers().map(number => (
-                  <motion.button
-                    key={number}
-                    onClick={() => paginate(number)}
-                    className={`w-8 h-8 flex items-center justify-center rounded border border-[#E7E7E7] ${
-                      currentPage === number 
-                        ? 'bg-[#2E92A0] text-white border-none' 
-                        : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'
-                    }`}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    {number}
-                  </motion.button>
-                ))}
-                
-                <motion.button 
-                  onClick={nextPage} 
-                  disabled={currentPage === totalPages}
-                  className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
-                  whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
-                  whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
-                >
-                  İrəli
-                </motion.button>
-              </div>
-            </div>
-          )}
+                  Axtarışa uyğun nəticə tapılmadı
+                </motion.div>
+              )}
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>
