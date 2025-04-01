@@ -1,20 +1,39 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchBar } from "../../context/SearchBarContext";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
+import { HiOutlineSwitchVertical } from "react-icons/hi";
+import { motion, AnimatePresence } from "framer-motion";
 
 const MuracietlerPage = () => {
   const { setSearchBar } = useSearchBar();
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState("date");
+  const [sortDirection, setSortDirection] = useState("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  
   const [applications, setApplications] = useState([
     { id: 1, code: "TM188273", date: "12/12/2030", description: "TEST CARGO" },
-    { id: 2, code: "TM188274", date: "15/12/2030", description: "TEST CARGO" },
-    { id: 3, code: "TM188275", date: "18/12/2030", description: "TEST CARGO" },
-    { id: 4, code: "TM188276", date: "20/12/2030", description: "TEST CARGO" },
-    { id: 5, code: "TM188277", date: "22/12/2030", description: "TEST CARGO" },
-    { id: 6, code: "TM188278", date: "25/12/2030", description: "TEST CARGO" },
-    { id: 7, code: "TM188279", date: "28/12/2030", description: "TEST CARGO" },
-    { id: 8, code: "TM188280", date: "30/12/2030", description: "TEST CARGO" },
-    { id: 9, code: "TM188281", date: "02/01/2031", description: "TEST CARGO" },
-    { id: 10, code: "TM188282", date: "05/01/2031", description: "TEST CARGO" },
+    { id: 2, code: "TM188273", date: "12/12/2030", description: "TEST CARGO" },
+    { id: 3, code: "TM188273", date: "12/12/2030", description: "TEST CARGO" },
+    { id: 4, code: "TM188273", date: "12/12/2030", description: "TEST CARGO" },
+    { id: 5, code: "TM188273", date: "12/12/2030", description: "TEST CARGO" },
+    { id: 6, code: "TM188273", date: "12/12/2030", description: "TEST CARGO" },
+    { id: 7, code: "TM188273", date: "12/12/2030", description: "TEST CARGO" },
+    { id: 8, code: "TM188273", date: "12/12/2030", description: "TEST CARGO" },
+    { id: 9, code: "TM188273", date: "12/12/2030", description: "TEST CARGO" },
+    { id: 10, code: "TM188273", date: "12/12/2030", description: "TEST CARGO" },
+    { id: 11, code: "TM188274", date: "15/12/2030", description: "TEST CARGO" },
+    { id: 12, code: "TM188275", date: "18/12/2030", description: "TEST CARGO" },
+    { id: 13, code: "TM188275", date: "18/12/2030", description: "TEST CARGO" },
+    { id: 14, code: "TM188275", date: "18/12/2030", description: "TEST CARGO" },
+    { id: 15, code: "TM188275", date: "18/12/2030", description: "TEST CARGO" },
+    { id: 16, code: "TM188275", date: "18/12/2030", description: "TEST CARGO" },
+    { id: 17, code: "TM188275", date: "18/12/2030", description: "TEST CARGO" },
+    { id: 18, code: "TM188275", date: "18/12/2030", description: "TEST CARGO" },
+    { id: 19, code: "TM188275", date: "18/12/2030", description: "TEST CARGO" },
+    { id: 20, code: "TM188275", date: "18/12/2030", description: "TEST CARGO" },
+    { id: 21, code: "TM188275", date: "18/12/2030", description: "TEST CARGO" },
   ]);
 
   // Filter applications based on search query
@@ -23,6 +42,66 @@ const MuracietlerPage = () => {
     app.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Sort applications
+  const sortedApplications = [...filteredApplications].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+    
+    if (sortDirection === "asc") {
+      return aValue > bValue ? 1 : -1;
+    } else {
+      return aValue < bValue ? 1 : -1;
+    }
+  });
+
+  // Pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = sortedApplications.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(sortedApplications.length / itemsPerPage);
+
+  // Handle sort
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  // Generate page numbers
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    
+    // Adjust start page if we're near the end
+    if (endPage - startPage < 4) {
+      startPage = Math.max(1, endPage - 4);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+    
+    return pageNumbers;
+  };
+
+  // Go to next page
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prevPage => prevPage + 1);
+    }
+  };
+  
+  // Go to previous page
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prevPage => prevPage - 1);
+    }
+  };
+
   // Set the search bar when component mounts
   useEffect(() => {
     setSearchBar(
@@ -30,7 +109,7 @@ const MuracietlerPage = () => {
         <div className="relative w-[300px]">
           <input
             type="text"
-            placeholder="Müraciət kodunu axtar"
+            placeholder="Axtar"
             className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -41,12 +120,16 @@ const MuracietlerPage = () => {
             </svg>
           </button>
         </div>
-        <button className="ml-4 px-4 py-2 bg-[#2E92A0] text-white rounded-lg flex items-center">
+        <motion.button 
+          className="ml-4 px-4 py-2 bg-[#2E92A0] text-white rounded-lg flex items-center"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
           <span className="mr-2">Müraciət et</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 4V20M20 12H4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-        </button>
+        </motion.button>
       </div>
     );
     
@@ -54,39 +137,210 @@ const MuracietlerPage = () => {
     return () => setSearchBar(null);
   }, [setSearchBar, searchQuery]);
 
+  // Animation variants for table rows
+  const tableVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        staggerChildren: 0.05,
+        delayChildren: 0.1
+      }
+    },
+    exit: { 
+      opacity: 0,
+      transition: { 
+        staggerChildren: 0.05,
+        staggerDirection: -1
+      }
+    }
+  };
+
+  const rowVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        type: "spring", 
+        stiffness: 300, 
+        damping: 24 
+      }
+    },
+    exit: { 
+      opacity: 0,
+      y: -20,
+      transition: { duration: 0.2 }
+    }
+  };
+
+  // Improved height animation approach
+  const [contentHeight, setContentHeight] = useState("auto");
+  const prevPageRef = useRef(currentPage);
+  const newContentRef = useRef(null);
+  const prevContentRef = useRef(null);
+  
+  // Update height immediately when page changes
+  useEffect(() => {
+    if (prevPageRef.current !== currentPage) {
+      // Store the previous content height
+      if (newContentRef.current) {
+        prevContentRef.current = newContentRef.current.offsetHeight;
+      }
+      
+      // Instead of using a fixed estimated height, use the previous height as a starting point
+      if (prevContentRef.current) {
+        setContentHeight(prevContentRef.current);
+      } else {
+        // Only use this fallback for the first render
+        setContentHeight("auto");
+      }
+      
+      prevPageRef.current = currentPage;
+      
+      // Schedule a measurement after render
+      requestAnimationFrame(() => {
+        if (newContentRef.current) {
+          setContentHeight(newContentRef.current.offsetHeight);
+        }
+      });
+    }
+  }, [currentPage]);
+
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[1920px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
-        <div className="bg-white border border-[#E7E7E7] rounded-[8px]">
-          <div className="p-[16px] flex justify-between items-center border-b border-[#E7E7E7]">
-            <div className="flex items-center gap-x-[100px]">
-              <p className="font-medium text-[#3F3F3F] text-[14px]">Kod</p>
-              <p className="font-medium text-[#3F3F3F] text-[14px]">Tarix</p>
-              <p className="font-medium text-[#3F3F3F] text-[14px]">Qurum</p>
+        <div className="bg-white border border-[#E7E7E7] rounded-[8px] overflow-hidden">
+          {/* Table Header */}
+          <div className="p-[16px] flex justify-between items-center border-b border-[#E7E7E7] bg-white">
+            <div className="flex items-center">
+              <div 
+                className="w-[150px] flex items-center cursor-pointer"
+                onClick={() => handleSort("code")}
+              >
+                <p className="font-medium text-[#3F3F3F] text-[14px]">Kod</p>
+                {sortField === "code" && (
+                  sortDirection === "asc" ? 
+                    <IoIosArrowUp className="ml-1 text-[#3F3F3F]" /> : 
+                    <IoIosArrowDown className="ml-1 text-[#3F3F3F]" />
+                )}
+              </div>
+              <div 
+                className="w-[150px] flex items-center gap-x-[8px] cursor-pointer"
+                onClick={() => handleSort("date")}
+              >
+                <p className="font-medium text-[#3F3F3F] text-[14px]">Tarix</p>
+                <HiOutlineSwitchVertical />
+
+              </div>
+              <div 
+                className="w-[150px] flex items-center "
+                
+              >
+                <p className="font-medium text-[#3F3F3F] text-[14px]">Qurum</p>
+                
+              </div>
             </div>
-            <p className="font-medium text-[#3F3F3F] text-[14px]">Yüklə</p>
+            <p className="font-medium text-[#3F3F3F] text-[14px] w-[80px] text-center">Yüklə</p>
           </div>
           
-          {filteredApplications.length > 0 ? (
-            filteredApplications.map((app) => (
-              <div key={app.id} className="p-[16px] flex justify-between items-center border-t border-[#E7E7E7] hover:bg-[#F5F5F5]">
-                <div className="flex items-center gap-x-[100px]">
-                  <p className="text-[#3F3F3F] text-[14px]">{app.code}</p>
-                  <p className="text-[#3F3F3F] text-[14px]">{app.date}</p>
-                  <p className="text-[#3F3F3F] text-[14px]">{app.description}</p>
-                </div>
-                <button className="text-[#2E92A0]">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
+          {/* Improved animated container */}
+          <motion.div
+            style={{ height: contentHeight }}
+            animate={{ height: contentHeight }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentPage}
+                ref={newContentRef}
+                variants={tableVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                onAnimationStart={() => {
+                  // Fine-tune height as soon as animation starts
+                  if (newContentRef.current) {
+                    setContentHeight(newContentRef.current.offsetHeight);
+                  }
+                }}
+              >
+                {currentItems.length > 0 ? (
+                  currentItems.map((app) => (
+                    <motion.div 
+                      key={app.id} 
+                      className="p-[16px] flex justify-between items-center border-t border-[#E7E7E7] hover:bg-[#F5F5F5]"
+                      variants={rowVariants}
+                    >
+                      <div className="flex items-center">
+                        <p className="text-[#3F3F3F] text-[14px] w-[150px]">{app.code}</p>
+                        <p className="text-[#3F3F3F] text-[14px] w-[150px]">{app.date}</p>
+                        <p className="text-[#3F3F3F] text-[14px] w-[150px]">{app.description}</p>
+                      </div>
+                      <div className="w-[80px] flex justify-center">
+                        <button className="text-[#2E92A0] hover:text-[#1E7A8A] transition-colors">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <motion.div 
+                    className="p-[16px] text-center text-[#3F3F3F]"
+                    variants={rowVariants}
+                  >
+                    Axtarışa uyğun nəticə tapılmadı
+                  </motion.div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
+          
+          {/* Pagination */}
+          {filteredApplications.length > 0 && (
+            <div className="pagination flex items-center justify-between p-4 border-t border-[#E7E7E7] bg-white">
+              <div className="w-full justify-center flex items-center gap-2">
+                <motion.button 
+                  onClick={prevPage} 
+                  disabled={currentPage === 1}
+                  className={`px-[16px] py-[3px] border border-[#E7E7E7] bg-[#FAFAFA] flex items-center justify-center rounded ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
+                  whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
+                  whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
+                >
+                  Geri
+                </motion.button>
+                
+                {getPageNumbers().map(number => (
+                  <motion.button
+                    key={number}
+                    onClick={() => setCurrentPage(number)}
+                    className={`w-8 h-8 flex items-center justify-center rounded border border-[#E7E7E7] ${
+                      currentPage === number 
+                        ? 'bg-[#2E92A0] text-white border-none' 
+                        : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'
+                    }`}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {number}
+                  </motion.button>
+                ))}
+                
+                <motion.button 
+                  onClick={nextPage} 
+                  disabled={currentPage === totalPages}
+                  className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
+                  whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
+                  whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
+                >
+                  İrəli
+                </motion.button>
               </div>
-            ))
-          ) : (
-            <div className="p-[16px] text-center text-[#3F3F3F]">
-              Axtarışa uyğun nəticə tapılmadı
             </div>
           )}
         </div>
