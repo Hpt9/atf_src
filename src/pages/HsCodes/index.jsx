@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { LuInfo } from "react-icons/lu";
 import { FaRegFilePdf } from "react-icons/fa6";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowBack, IoIosArrowForward, IoIosArrowDown, IoIosArrowForward as IoIosArrowRight } from "react-icons/io";
 import { useSearchBar } from "../../context/SearchBarContext";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -9,112 +9,178 @@ const HsCodesPage = () => {
   const { setSearchBar } = useSearchBar();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedGroups, setExpandedGroups] = useState({});
   const itemsPerPage = 10;
 
-  const hs_codes = [
+  // Updated hierarchical data structure for HS codes
+  const hs_codes_data = [
     {
-      id: 1,
-      name: "Canlı ferid; Heyvan mənşəli məhsullar",
+      id: "I",
+      name: "CANLI HEYVANLAR; HEYVAN MƏNŞƏLİ MƏHSULLAR",
+      isGroup: true,
+      children: [
+        {
+          id: "01",
+          name: "Canlı heyvanlar",
+          isGroup: true,
+          children: [
+            { id: "0101", name: "Canlı atlar, eşşəklər, qatırlar və xəçərlər", isGroup: false },
+            { id: "0102", name: "Canlı iribuynuzlu mal-qara", isGroup: false },
+            { id: "0103", name: "Canlı donuzlar", isGroup: false },
+            { id: "0104", name: "Canlı qoyunlar və keçilər", isGroup: false },
+          ]
+        },
+        {
+          id: "02",
+          name: "Ət və əlavə ət məhsulları",
+          isGroup: true,
+          children: [
+            { id: "0201", name: "İribuynuzlu mal-qaranın əti, təzə və ya soyudulmuş", isGroup: false },
+            { id: "0202", name: "İribuynuzlu mal-qaranın əti, dondurulmuş", isGroup: false },
+            { id: "0203", name: "Donuz əti, təzə, soyudulmuş və ya dondurulmuş", isGroup: false },
+          ]
+        }
+      ]
     },
     {
-      id: 2,
-      name: "Canlı feride; Heyvan mənşəli məhsullar",
+      id: "II",
+      name: "BİTKİ MƏNŞƏLİ QIDALAR",
+      isGroup: true,
+      children: [
+        {
+          id: "06",
+          name: "Canlı ağaclar və digər bitkilər",
+          isGroup: true,
+          children: [
+            { id: "0601", name: "Soğanaqlar, köklər və s.", isGroup: false },
+            { id: "0602", name: "Digər canlı bitkilər", isGroup: false },
+          ]
+        },
+        {
+          id: "07",
+          name: "Yeməli tərəvəzlər və bəzi köklər və yumrular",
+          isGroup: true,
+          children: [
+            { id: "0701", name: "Kartof, təzə və ya soyudulmuş", isGroup: false },
+            { id: "0702", name: "Pomidor, təzə və ya soyudulmuş", isGroup: false },
+          ]
+        }
+      ]
     },
     {
-      id: 3,
-      name: "Canlı leyla; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 4,
-      name: "Canlı pakize; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 5,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 6,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 7,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 8,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 9,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 10,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 11,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 12,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 13,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 14,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 15,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 16,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 17,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 18,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 19,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 20,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 21,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 22,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 23,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
-    {
-      id: 24,
-      name: "Canlı heyvanlar; Heyvan mənşəli məhsullar",
-    },
+      id: "III",
+      name: "HEYVAN, BİTKİ VƏ YA MİKROBİOLOJİ MƏNŞƏLİ PİYLƏR VƏ YAĞLAR VƏ YA ONLARIN PARÇALANMA MƏHSULLARI; HAZIR QIDA YAĞLARI; HEYVAN VƏ YA BİTKİ MƏNŞƏLİ MUMLAR",
+      isGroup: true,
+      children: [
+        {
+          id: "15",
+          name: "Heyvan və ya bitki mənşəli piylər və yağlar",
+          isGroup: true,
+          children: [
+            { id: "1501", name: "Donuz piyi və digər donuz yağları", isGroup: false },
+            { id: "1502", name: "İribuynuzlu mal-qara, qoyun və ya keçi yağları", isGroup: false },
+          ]
+        }
+      ]
+    }
   ];
 
-  // Filter hs_codes based on search query
-  const filteredHsCodes = hs_codes.filter(code => 
-    code.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Toggle expansion of a group
+  const toggleGroup = (groupId) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupId]: !prev[groupId]
+    }));
+  };
 
+  // Check if a group is expanded
+  const isExpanded = (groupId) => {
+    return !!expandedGroups[groupId];
+  };
+
+  // Flatten the hierarchical data for pagination and filtering
+  const flattenData = (data, level = 0, parentExpanded = true) => {
+    let result = [];
+    
+    data.forEach(item => {
+      // Only include items whose parents are expanded
+      if (parentExpanded) {
+        // Add the current item
+        result.push({
+          ...item,
+          level,
+          visible: true
+        });
+        
+        // If this is a group and it's expanded, add its children
+        if (item.isGroup && item.children && isExpanded(item.id)) {
+          result = [...result, ...flattenData(item.children, level + 1, true)];
+        }
+      }
+    });
+    
+    return result;
+  };
+
+  // Filter and flatten the data
+  const getFilteredAndFlattenedData = () => {
+    if (!searchQuery) {
+      return flattenData(hs_codes_data);
+    }
+    
+    // For search, we'll show all matching items and their parents
+    const searchLower = searchQuery.toLowerCase();
+    const matches = new Set();
+    
+    // First pass: find all matches and their parent chains
+    const findMatches = (items, parentChain = []) => {
+      items.forEach(item => {
+        const itemMatches = item.name.toLowerCase().includes(searchLower);
+        
+        if (itemMatches) {
+          // Add this item and all its parents to matches
+          matches.add(item.id);
+          parentChain.forEach(parentId => matches.add(parentId));
+        }
+        
+        // Check children recursively
+        if (item.isGroup && item.children) {
+          findMatches(item.children, [...parentChain, item.id]);
+        }
+      });
+    };
+    
+    findMatches(hs_codes_data);
+    
+    // Second pass: create a filtered and flattened list
+    const filterAndFlatten = (items, level = 0) => {
+      let result = [];
+      
+      items.forEach(item => {
+        const itemMatches = matches.has(item.id);
+        
+        if (itemMatches) {
+          result.push({
+            ...item,
+            level,
+            visible: true
+          });
+          
+          // If this is a group, always include its children in search results
+          if (item.isGroup && item.children) {
+            result = [...result, ...filterAndFlatten(item.children, level + 1)];
+          }
+        }
+      });
+      
+      return result;
+    };
+    
+    return filterAndFlatten(hs_codes_data);
+  };
+
+  const filteredHsCodes = getFilteredAndFlattenedData();
+  
   // Calculate total pages based on filtered items
   const totalPages = Math.ceil(filteredHsCodes.length / itemsPerPage);
   
@@ -171,7 +237,7 @@ const HsCodesPage = () => {
   const newContentRef = useRef(null);
   const prevContentRef = useRef(null);
   
-  // Update height immediately when page changes
+  // Update height immediately when page changes or groups expand/collapse
   useEffect(() => {
     if (prevPageRef.current !== currentPage) {
       // Store the previous content height
@@ -196,7 +262,7 @@ const HsCodesPage = () => {
         }
       });
     }
-  }, [currentPage]);
+  }, [currentPage, expandedGroups]);
 
   // Change page - reset the view when changing pages
   const paginate = (pageNumber) => {
@@ -261,14 +327,10 @@ const HsCodesPage = () => {
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[1920px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
-        {/* <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#3F3F3F]">HS Kodlar</h1>
-        </div> */}
-        
         <div className="bg-white border border-[#E7E7E7] rounded-[8px] overflow-hidden">
           <div className="p-[16px] flex justify-between items-center border-b border-[#E7E7E7]">
             <div className="flex items-center mobile:gap-x-[16px] lg:gap-x-[100px]">
-              <p className="font-medium text-[#3F3F3F] text-[14px] w-[20px]">#</p>
+              <p className="font-medium text-[#3F3F3F] text-[14px] w-[60px]">Kod</p>
               <p className="font-medium text-[#3F3F3F] text-[14px]">HS adı</p>
             </div>
             <p className="font-medium text-[#3F3F3F] text-[14px]">Əməliyyatlar</p>
@@ -283,7 +345,7 @@ const HsCodesPage = () => {
           >
             <AnimatePresence mode="wait">
               <motion.div
-                key={currentPage}
+                key={currentPage + Object.keys(expandedGroups).length}
                 ref={newContentRef}
                 variants={tableVariants}
                 initial="hidden"
@@ -297,17 +359,55 @@ const HsCodesPage = () => {
                 }}
               >
                 {currentItems.length > 0 ? (
-                  currentItems.map((hs_code) => (
+                  currentItems.map((item) => (
                     <motion.div 
-                      key={hs_code.id} 
-                      className="hs_row p-[16px] flex justify-between items-center border-t border-[#E7E7E7] hover:bg-[#F5F5F5]"
+                      key={item.id} 
+                      className={`p-[16px] flex justify-between items-center border-t border-[#E7E7E7] hover:bg-[#F5F5F5] ${
+                        item.level === 0 ? 'bg-[#F9F9F9]' : 
+                        item.level === 1 ? 'bg-[#FCFCFC]' : 
+                        'bg-white'
+                      }`}
                       variants={rowVariants}
                     >
-                      <div className="flex items-center mobile:gap-x-[16px] lg:gap-x-[100px]">
-                        <p className="text-[#3F3F3F] text-[14px] w-[20px]">{hs_code.id}</p>
-                        <p className="text-[#3F3F3F] text-[14px]">{hs_code.name}</p>
+                      <div className="flex items-center w-full">
+                        {/* Indentation based on level */}
+                        <div style={{ width: `${item.level * 24}px` }} className="flex-shrink-0"></div>
+                        
+                        {/* Toggle button or spacer */}
+                        {item.isGroup ? (
+                          <button 
+                            onClick={() => toggleGroup(item.id)}
+                            className="mr-2 text-[#3F3F3F] focus:outline-none flex-shrink-0"
+                          >
+                            {isExpanded(item.id) ? 
+                              <IoIosArrowDown className="text-[#2E92A0]" /> : 
+                              <IoIosArrowRight className="text-[#2E92A0]" />
+                            }
+                          </button>
+                        ) : (
+                          <div className="mr-2 w-4 flex-shrink-0"></div> // Spacer for alignment
+                        )}
+                        
+                        {/* Content with different styling based on level */}
+                        <div className="flex items-center w-full">
+                          <p className={`text-[#3F3F3F] text-[14px] w-[60px] ${
+                            item.level === 0 ? 'font-bold' : 
+                            item.level === 1 ? 'font-medium' : 
+                            'font-normal'
+                          }`}>
+                            {item.id}
+                          </p>
+                          <p className={`text-[#3F3F3F] text-[14px] ${
+                            item.level === 0 ? 'font-bold uppercase' : 
+                            item.level === 1 ? 'font-medium' : 
+                            'font-normal'
+                          }`}>
+                            {item.name}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-x-[8px]">
+                      
+                      <div className="flex items-center gap-x-[8px] flex-shrink-0">
                         <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]">
                           <LuInfo className="w-[20px] h-[20px] text-[#2E92A0]" />
                         </button>
@@ -332,9 +432,6 @@ const HsCodesPage = () => {
           {/* Pagination */}
           {filteredHsCodes.length > 0 && (
             <div className="pagination flex items-center justify-between p-4 border-t border-[#E7E7E7]">
-              {/* <div>
-                <span className="text-sm text-[#3F3F3F]">Geriyə</span>
-              </div> */}
               <div className="w-full justify-center flex items-center gap-2">
                 <motion.button 
                   onClick={prevPage} 
@@ -372,9 +469,6 @@ const HsCodesPage = () => {
                   İrəli
                 </motion.button>
               </div>
-              {/* <div>
-                <span className="text-sm text-[#3F3F3F]">İrəli</span>
-              </div> */}
             </div>
           )}
         </div>
