@@ -13,7 +13,7 @@ const IcazelerPage = () => {
   const itemsPerPage = 12;
 
   // Sample data for permits
-  const permits = Array(50).fill().map((_, index) => ({
+  const permits = Array(100).fill().map((_, index) => ({
     id: index + 1,
     name: `AQTA ${index}`,
     fullName: "Azərbaycan Food Security Agency",
@@ -79,7 +79,7 @@ const IcazelerPage = () => {
   // Set the search bar when component mounts
   useEffect(() => {
     setSearchBar(
-      <div className="relative w-[300px]">
+      <div className="relative w-full md:w-[300px] px-[16px]">
         <input
           type="text"
           placeholder="İcazələri axtar"
@@ -87,7 +87,7 @@ const IcazelerPage = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
+        <button className="absolute right-7 top-1/2 transform -translate-y-1/2">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="#A0A0A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -161,7 +161,7 @@ const IcazelerPage = () => {
 
   return (
     <div className="w-full flex justify-center">
-      <div className="w-full max-w-[1920px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
+      <div className="w-full max-w-[1920px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-4 md:py-8">
         <AnimatePresence mode="wait">
           {!selectedCard ? (
             <motion.div

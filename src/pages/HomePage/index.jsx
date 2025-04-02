@@ -52,16 +52,16 @@ const HomePage = () => {
   return (
     <div className="">
       <div
-        className="w-full h-[457px] bg-no-repeat bg-cover bg-center"
+        className="w-full h-[220px] md:h-[457px] bg-no-repeat bg-cover bg-center"
         style={{ backgroundImage: `url(${IMG})` }}
       >
         <div className="title w-full h-full flex flex-col justify-center items-center relative">
           <div className="cover w-[100%] h-[100%] bg-[rgba(5,32,75,0.72)] absolute top-0 left-0"></div>
-          <div className="text_container w-[100%] max-w-[1920px] h-[100%] flex flex-col relative z-10 md:px-[32px] lg:px-[50px] xl:px-[108px] pt-[80px]">
-            <h1 className="text-[white] text-[48px] font-bold w-[698px] mb-[30px]">
+          <div className="text_container w-[100%] max-w-[1920px] h-[100%] flex flex-col relative z-10 px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] pt-[64px] md:pt-[80px]">
+            <h1 className="text-[white] text-[24px] md:text-[48px] font-bold w-fit md:w-[698px] mb-[30px]">
               Biznes və əməkdaşlıq üçün innovativ platforma!
             </h1>
-            <div className="search_container w-[496px] flex items-center gap-x-[8px] relative z-10 rounded-[8px] bg-white px-[16px] py-[12px]">
+            <div className="search_container w-[496px] hidden md:flex items-center gap-x-[8px] relative z-10 rounded-[8px] bg-white px-[16px] py-[12px]">
               <CiSearch className="text-[rgba(160,160,160,1)] w-[16px] h-[16px]" />
               <input
                 type="text"
@@ -75,9 +75,9 @@ const HomePage = () => {
 
       {/* Services Section */}
       <div className="w-full flex justify-center">
-      <div className="services w-full max-w-[1920px] flex flex-col md:px-[32px] lg:px-[50px] xl:px-[108px] py-[50px] gap-y-[27px]">
-        <h1 className="text-[#3F3F3F] text-[24px] font-bold">Xidmətlərimiz</h1>
-        <div className="services_container grid grid-cols-3 gap-6">
+      <div className="services w-full max-w-[1920px] flex flex-col px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-[50px] gap-y-[27px]">
+        <h1 className="text-[#3F3F3F] text-[16px] md:text-[24px] font-bold">Xidmətlərimiz</h1>
+        <div className="services_container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {services.map((service) => (
             <div
               key={service.id+"s"}

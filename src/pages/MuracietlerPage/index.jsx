@@ -105,8 +105,8 @@ const MuracietlerPage = () => {
   // Set the search bar when component mounts
   useEffect(() => {
     setSearchBar(
-      <div className="flex items-center">
-        <div className="relative w-[300px]">
+      <div className="flex items-center px-[16px] md:px-0 w-full md:w-[300px] ">
+        <div className="relative w-[50%]">
           <input
             type="text"
             placeholder="Axtar"
@@ -121,7 +121,7 @@ const MuracietlerPage = () => {
           </button>
         </div>
         <motion.button 
-          className="ml-4 px-4 py-2 bg-[#2E92A0] text-white rounded-lg flex items-center"
+          className="ml-2 md:ml-4 px-4 py-2 bg-[#2E92A0] text-white rounded-lg flex items-center justify-between w-[50%]"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
         >
@@ -209,13 +209,13 @@ const MuracietlerPage = () => {
 
   return (
     <div className="w-full flex justify-center">
-      <div className="w-full max-w-[1920px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
+      <div className="w-full max-w-[1920px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
         <div className="bg-white border border-[#E7E7E7] rounded-[8px] overflow-hidden">
           {/* Table Header */}
           <div className="p-[16px] flex justify-between items-center border-b border-[#E7E7E7] bg-white">
-            <div className="flex items-center">
+            <div className="flex items-center gap-x-[8px]">
               <div 
-                className="w-[150px] flex items-center cursor-pointer"
+                className="w-[64px] md:w-[150px] flex items-center cursor-pointer"
                 onClick={() => handleSort("code")}
               >
                 <p className="font-medium text-[#3F3F3F] text-[14px]">Kod</p>
@@ -226,7 +226,7 @@ const MuracietlerPage = () => {
                 )}
               </div>
               <div 
-                className="w-[150px] flex items-center gap-x-[8px] cursor-pointer"
+                className="w-[75px] md:w-[150px] flex items-center gap-x-[8px] cursor-pointer"
                 onClick={() => handleSort("date")}
               >
                 <p className="font-medium text-[#3F3F3F] text-[14px]">Tarix</p>
@@ -234,14 +234,14 @@ const MuracietlerPage = () => {
 
               </div>
               <div 
-                className="w-[150px] flex items-center "
+                className="w-[50px] md:w-[150px] flex items-center "
                 
               >
                 <p className="font-medium text-[#3F3F3F] text-[14px]">Qurum</p>
                 
               </div>
             </div>
-            <p className="font-medium text-[#3F3F3F] text-[14px] w-[80px] text-center">Yüklə</p>
+            <p className="font-medium text-[#3F3F3F] text-[14px] w-[40px] md-[80px] text-center">Yüklə</p>
           </div>
           
           {/* Improved animated container */}
@@ -273,12 +273,12 @@ const MuracietlerPage = () => {
                       className="p-[16px] flex justify-between items-center border-t border-[#E7E7E7] hover:bg-[#F5F5F5]"
                       variants={rowVariants}
                     >
-                      <div className="flex items-center">
-                        <p className="text-[#3F3F3F] text-[14px] w-[150px]">{app.code}</p>
-                        <p className="text-[#3F3F3F] text-[14px] w-[150px]">{app.date}</p>
-                        <p className="text-[#3F3F3F] text-[14px] w-[150px]">{app.description}</p>
+                      <div className="flex items-center gap-x-[8px]">
+                        <p className="text-[#3F3F3F] text-[14px] w-[64px] md:w-[150px]">{app.code}</p>
+                        <p className="text-[#3F3F3F] text-[14px] w-[75px] md:w-[150px]">{app.date}</p>
+                        <p className="text-[#3F3F3F] text-[14px] w-[50px] md:w-[150px]">{app.description}</p>
                       </div>
-                      <div className="w-[80px] flex justify-center">
+                      <div className="w-[40px] md:w-[80px] flex justify-center">
                         <button className="text-[#2E92A0] hover:text-[#1E7A8A] transition-colors">
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

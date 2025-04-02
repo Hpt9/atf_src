@@ -9,6 +9,7 @@ import FAQPage from "./pages/FAQPage";
 import ElaqePage from "./pages/ElaqePage";
 import PageTransition from "./components/PageTransition";
 import './App.css'
+import { Authentication } from "./pages/Authentication";
 
 function App() {
   const location = useLocation();
@@ -48,6 +49,8 @@ function App() {
             </PageTransition>
           } />
         </Route>
+        <Route path="/authentication" element={<Authentication/>}></Route>
+        
       </Routes>
     </AnimatePresence>
   );
