@@ -139,7 +139,7 @@ const FaqPage = () => {
               className="border border-[#E7E7E7] rounded-lg bg-[#FAFAFA] overflow-hidden"
             >
               <motion.button
-                className="w-full p-4 flex justify-between items-center text-left"
+                className="w-full p-4 flex justify-between items-center text-left cursor-pointer"
                 onClick={() => toggleAccordion(index)}
               >
                 <span className="text-[#3F3F3F] font-medium">{faq.question}</span>
@@ -189,7 +189,7 @@ const FaqPage = () => {
               <button
                 key={page}
                 onClick={() => handlePageChange(page)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer ${
                   currentPage === page
                     ? 'bg-[#2E92A0] text-white'
                     : 'text-[#3F3F3F] border border-[#E7E7E7] hover:bg-[#E7E7E7]'

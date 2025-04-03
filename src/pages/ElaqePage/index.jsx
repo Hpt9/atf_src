@@ -138,7 +138,7 @@ const ElaqePage = () => {
               </div>
               <button
                 type="submit"
-                className="w-full bg-[#2E92A0] text-white py-2 px-4 rounded-lg hover:bg-[#267A85] transition-colors"
+                className="w-full bg-[#2E92A0] text-white py-2 px-4 rounded-lg hover:bg-[#267A85] transition-colors cursor-pointer"
               >
                 Göndər
               </button>

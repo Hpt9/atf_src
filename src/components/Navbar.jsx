@@ -11,22 +11,22 @@ const Navbar = () => {
       <nav className=" w-full">
         <div className="flex items-center justify-between">
           <div className=" items-center space-x-8">
-            <Link to="/" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/' ? 'font-medium' : ''}`}>
+            <Link to="/" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 cursor-pointer ${location.pathname === '/' ? 'font-medium' : ''}`}>
               Ana səhifə
             </Link>
-            <Link to="/hs-codes" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/hs-codes' ? 'font-medium' : ''}`}>
+            <Link to="/hs-codes" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 cursor-pointer ${location.pathname === '/hs-codes' ? 'font-medium' : ''}`}>
               Hs Kodlar
             </Link>
-            <Link to="/icazeler" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/icazeler' ? 'font-medium' : ''}`}>
+            <Link to="/icazeler" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 cursor-pointer ${location.pathname === '/icazeler' ? 'font-medium' : ''}`}>
               İcazələr
             </Link>
-            <Link to="/muracietler" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/muracietler' ? 'font-medium' : ''}`}>
+            <Link to="/muracietler" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 cursor-pointer ${location.pathname === '/muracietler' ? 'font-medium' : ''}`}>
               Müraciətlər
             </Link>
-            <Link to="/faq" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/faq' ? 'font-medium' : ''}`}>
+            <Link to="/faq" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 cursor-pointer ${location.pathname === '/faq' ? 'font-medium' : ''}`}>
               FAQ
             </Link>
-            <Link to="/elaqe" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/elaqe' ? 'font-medium' : ''}`}>
+            <Link to="/elaqe" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 cursor-pointer ${location.pathname === '/elaqe' ? 'font-medium' : ''}`}>
               Əlaqə
             </Link>
           </div>

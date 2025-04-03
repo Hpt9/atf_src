@@ -70,14 +70,15 @@ const Header = () => {
             </button>
           </div>
           <div className="flex md:hidden gap-x-[8px]">
-            <button className="w-[44px] h-[44px] flex justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px] relative"
+            <button 
+              className="w-[44px] h-[44px] flex justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px] relative cursor-pointer"
               onClick={openMobileMenu}
             >
               <LuSearch className="w-[24px] h-[24px]" />
             </button>
             <button
               onClick={toggleMobileMenu}
-              className="flex md:hidden w-[44px] h-[44px] justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px] relative"
+              className="flex md:hidden w-[44px] h-[44px] justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px] relative cursor-pointer"
             >
               <IoClose
                 className={`w-[24px] h-[24px] absolute transition-all duration-200 ease-in-out ${

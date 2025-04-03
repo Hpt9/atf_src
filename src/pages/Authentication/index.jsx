@@ -71,8 +71,9 @@ const LoginForm = ({ setLogin }) => {
       </div>
       <div className="w-full flex justify-between items-center">
         <div 
-        onClick={() => navigate("/")}
-        className="w-[44px] h-[44px] bg-[#FFF] rounded-full border border-[#B9B9B9] flex items-center justify-center hover:bg-[#2E92A0] hover:text-white hover:border-[#2E92A0] transition-colors">
+          onClick={() => navigate("/")}
+          className="w-[44px] h-[44px] bg-[#FFF] rounded-full border border-[#B9B9B9] flex items-center justify-center hover:bg-[#2E92A0] hover:text-white hover:border-[#2E92A0] transition-colors cursor-pointer"
+        >
           <IoIosArrowBack size={24} className="relative right-[2px]"/>
         </div>
         <div className="flex items-center gap-[16px]">
@@ -102,7 +103,7 @@ const LoginForm = ({ setLogin }) => {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0]"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] cursor-pointer"
           >
             {showPassword ? (
               <IoEyeOffOutline size={20} />
@@ -114,7 +115,7 @@ const LoginForm = ({ setLogin }) => {
         <div className="flex justify-end">
           <button
             type="button"
-            className="text-[#2E92A0] text-sm hover:underline"
+            className="text-[#2E92A0] text-sm hover:underline cursor-pointer"
           >
             Şifrənizi unutmusunuz?
           </button>
@@ -164,8 +165,9 @@ const RegisterForm = ({ setLogin }) => {
       </div>
       <div className="w-full flex justify-between items-center">
         <div 
-        onClick={() => navigate("/")}
-        className="w-[44px] h-[44px] bg-[#FFF] rounded-full border border-[#B9B9B9] flex items-center justify-center hover:bg-[#2E92A0] hover:text-white hover:border-[#2E92A0] transition-colors">
+          onClick={() => navigate("/")}
+          className="w-[44px] h-[44px] bg-[#FFF] rounded-full border border-[#B9B9B9] flex items-center justify-center hover:bg-[#2E92A0] hover:text-white hover:border-[#2E92A0] transition-colors cursor-pointer"
+        >
           <IoIosArrowBack size={24} className="relative right-[2px]" />
         </div>
         <div className="flex items-center gap-[16px]">
@@ -210,7 +212,7 @@ const RegisterForm = ({ setLogin }) => {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0]"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] cursor-pointer"
           >
             {showPassword ? (
               <IoEyeOffOutline size={20} />
@@ -228,7 +230,7 @@ const RegisterForm = ({ setLogin }) => {
           <button
             type="button"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0]"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] cursor-pointer"
           >
             {showConfirmPassword ? (
               <IoEyeOffOutline size={20} />
