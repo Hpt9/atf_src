@@ -8,8 +8,9 @@ import { RxHamburgerMenu } from "react-icons/rx";
 import { IoClose } from "react-icons/io5";
 import { FaArrowRight } from "react-icons/fa6";
 import { LuSearch } from "react-icons/lu";
-
+import { useNavigate } from "react-router-dom";
 const Header = () => {
+  const navigate = useNavigate();
   const { searchBar } = useSearchBar();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -53,14 +54,18 @@ const Header = () => {
               <option value="en">EN</option>
               <option value="ru">RU</option>
             </select>
-            <button className="px-4 py-[10px] font-semibold text-[#2E92A0]  hover:text-[white] rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0]">
+            <button className="px-4 py-[10px] font-semibold text-[#2E92A0]  hover:text-[white] rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0]"
+              onClick={() => navigate("/giris")}
+            >
               Qeydiyyat
             </button>
-            <button className="px-6 py-[10px] bg-[#2E92A0] text-white rounded-[8px] hover:bg-[white] hover:text-[#2E92A0] transition-colors  border border-[#2E92A0]">
+            <button className="px-6 py-[10px] bg-[#2E92A0] text-white rounded-[8px] hover:bg-[white] hover:text-[#2E92A0] transition-colors  border border-[#2E92A0]"
+              onClick={() => navigate("/giris")}
+            >
               Daxil ol
             </button>
           </div>
-          <div className="flex md:hidden flex gap-x-[8px]">
+          <div className="flex md:hidden gap-x-[8px]">
             <button className="w-[44px] h-[44px] flex justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px] relative"
               onClick={openMobileMenu}
             >
@@ -99,10 +104,14 @@ const Header = () => {
                   <option value="ru">RU</option>
                 </select>
                 <div className="flex gap-x-[8px]">
-                  <button className="px-4 py-[10px] font-semibold text-[#2E92A0] rounded-[8px] bg-white hover:bg-[#2E92A0] hover:text-white transition-colors border border-[#2E92A0]">
+                  <button className="px-4 py-[10px] font-semibold text-[#2E92A0] rounded-[8px] bg-white hover:bg-[#2E92A0] hover:text-white transition-colors border border-[#2E92A0]"
+                    onClick={() => navigate("/giris")}
+                  >
                     Qeydiyyat
                   </button>
-                  <button className="px-6 py-[10px] bg-[#2E92A0] text-white rounded-[8px] hover:bg-white hover:text-[#2E92A0] transition-colors border border-[#2E92A0]">
+                  <button className="px-6 py-[10px] bg-[#2E92A0] text-white rounded-[8px] hover:bg-white hover:text-[#2E92A0] transition-colors border border-[#2E92A0]"
+                    onClick={() => navigate("/giris")}
+                  >
                     Daxil ol
                   </button>
                 </div>

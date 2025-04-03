@@ -49,7 +49,7 @@ function App() {
             </PageTransition>
           } />
         </Route>
-        <Route path="/authentication" element={<Authentication/>}></Route>
+        <Route path="/giris" element={<Authentication/>}></Route>
         
       </Routes>
     </AnimatePresence>
