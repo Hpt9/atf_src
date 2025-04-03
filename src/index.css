@@ -8,3 +8,6 @@
   color: #3F3F3F !important;
 }
 
+#root > div > main > div > div > div > div > div.max-h-\[600px\].overflow-y-auto > div > div > div.flex.items-center.w-full.gap-x-\[\] > div.flex.items-center.w-full{
+  column-gap: 8px !important;
+}

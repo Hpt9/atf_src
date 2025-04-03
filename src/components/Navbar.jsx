@@ -12,10 +12,10 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           <div className=" items-center space-x-8">
             <Link to="/" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/' ? 'font-medium' : ''}`}>
-              Ana Səhifə
+              Ana səhifə
             </Link>
             <Link to="/hs-codes" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/hs-codes' ? 'font-medium' : ''}`}>
-              Hs kodları
+              Hs Kodlar
             </Link>
             <Link to="/icazeler" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 ${location.pathname === '/icazeler' ? 'font-medium' : ''}`}>
               İcazələr

@@ -32,21 +32,7 @@ const HomePage = () => {
         <FaRegFileAlt className="w-[24px] h-[24px] group-hover:text-[#2E92A0] transition-all duration-200" />
       ),
       title: "İcazə ərizəsinin əldə edilməsi",
-    },
-    {
-      id: 4,
-      icon: (
-        <FaRegFileAlt className="w-[24px] h-[24px] group-hover:text-[#2E92A0] transition-all duration-200" />
-      ),
-      title: "İcazə ərizəsinin əldə edilməsi",
-    },
-    {
-      id: 5,
-      icon: (
-        <FaRegFileAlt className="w-[24px] h-[24px] group-hover:text-[#2E92A0] transition-all duration-200" />
-      ),
-      title: "İcazə ərizəsinin əldə edilməsi",
-    },
+    }
   ];
 
   return (
@@ -57,7 +43,7 @@ const HomePage = () => {
       >
         <div className="title w-full h-full flex flex-col justify-center items-center relative">
           <div className="cover w-[100%] h-[100%] bg-[rgba(5,32,75,0.72)] absolute top-0 left-0"></div>
-          <div className="text_container w-[100%] max-w-[1920px] h-[100%] flex flex-col relative z-10 px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] pt-[64px] md:pt-[80px]">
+          <div className="text_container w-[100%] max-w-[2136px] h-[100%] flex flex-col relative z-10 px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] pt-[64px] md:pt-[80px]">
             <h1 className="text-[white] text-[24px] md:text-[48px] font-bold w-fit md:w-[698px] mb-[30px]">
               Biznes və əməkdaşlıq üçün innovativ platforma!
             </h1>
@@ -75,7 +61,7 @@ const HomePage = () => {
 
       {/* Services Section */}
       <div className="w-full flex justify-center">
-      <div className="services w-full max-w-[1920px] flex flex-col px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-[50px] gap-y-[27px]">
+      <div className="services w-full max-w-[2136px] flex flex-col px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px]  py-[50px] gap-y-[27px]">
         <h1 className="text-[#3F3F3F] text-[16px] md:text-[24px] font-bold">Xidmətlərimiz</h1>
         <div className="services_container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {services.map((service) => (
@@ -89,7 +75,7 @@ const HomePage = () => {
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <h3 className="text-[#3F3F3F] text-[20px] font-medium group-hover:text-[#2E92A0]  transition-all duration-200">
+                <h3 className="text-[#3F3F3F] text-[14px] md:text-[20px] font-medium group-hover:text-[#2E92A0]  transition-all duration-200">
                   {service.title}
                 </h3>
                 <FaArrowRight className="text-[#3F3F3F] w-6 h-6 group-hover:text-[#2E92A0] group-hover:rotate-[-45deg]  transition-all duration-200" />

@@ -70,7 +70,7 @@ const HsCodesPage = () => {
     },
     {
       id: "III",
-      name: "HEYVAN, BİTKİ VƏ YA MİKROBİOLOJİ MƏNŞƏLİ PİYLƏR VƏ YAĞLAR VƏ YA ONLARIN PARÇALANMA MƏHSULLARI; HAZIR QIDA YAĞLARI; HEYVAN VƏ YA BİTKİ MƏNŞƏLİ MUMLAR",
+      name: "HEYVAN, BİTKİ VƏ YA MİKROBİOLOJİ MƏNŞƏLİ PİYLƏR VƏ YAĞLAR VƏ YA ",
       isGroup: true,
       children: [
         {
@@ -245,7 +245,7 @@ const HsCodesPage = () => {
 
   return (
     <div className="w-full flex justify-center">
-      <div className="w-full max-w-[1920px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
+      <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
         <div className="bg-white border border-[#E7E7E7] rounded-[8px] overflow-hidden">
           <div className="p-[16px] flex justify-between items-center border-b border-[#E7E7E7]">
             <div className="flex items-center mobile:gap-x-[16px] lg:gap-x-[100px]">
@@ -277,7 +277,7 @@ const HsCodesPage = () => {
                     onClick={item.isGroup ? () => toggleGroup(item.id) : undefined}
                     variants={rowVariants}
                   >
-                    <div className="flex items-center w-full">
+                    <div className="flex items-center w-full gap-x-[]">
                       {/* Indentation based on level */}
                       <div style={{ width: `${item.level * 24}px` }} className="flex-shrink-0"></div>
                       
@@ -295,7 +295,7 @@ const HsCodesPage = () => {
                       
                       {/* Content with different styling based on level */}
                       <div className="flex items-center w-full">
-                        <p className={`text-[#3F3F3F] text-[14px] w-[60px] ${
+                        <p className={`text-[#3F3F3F] text-[14px] w-fit md:w-[20px] ${
                           item.level === 0 ? 'font-bold' : 
                           item.level === 1 ? 'font-medium' : 
                           'font-normal'

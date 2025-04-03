@@ -10,9 +10,9 @@ import { FaTwitter } from "react-icons/fa";
 const Footer = () => {
   return (
     <div className="w-full flex justify-center">
-      <footer className="bg-[#FAFAFA] text-white py-[16px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] w-full max-w-[1920px]">
-      <div className="flex flex-col-reverse md:flex-row gap-y-[32px] md:gap-y-0 justify-between items-center">
-        <p className="text-center text-[rgba(63,63,63,1)]">Bütün hüquqlar qorunur - 2025</p>
+      <footer className="bg-[#FAFAFA] text-white py-[16px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] w-full flex justify-center">
+      <div className="flex flex-col-reverse md:flex-row gap-y-[32px] md:gap-y-0 justify-between items-center w-full max-w-[1920px]">
+        <p className=" text-center text-[rgba(63,63,63,1)]">Bütün hüquqlar qorunur - 2025</p>
         <div className="flex items-center gap-x-[24px] lg:gap-x-[32px] xl:gap-x-[64px]">
           <img src={KOB_LOGO} alt="KOB LOGO" className="w-[55px] h-[70px]" />
           <img src={AGTL_LOGO} alt="AGTL LOGO" className="w-[70px] h-[64px]" />

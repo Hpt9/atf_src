@@ -7,6 +7,7 @@ import { useSearchBar } from "../context/SearchBarContext";
 import { RxHamburgerMenu } from "react-icons/rx";
 import { IoClose } from "react-icons/io5";
 import { FaArrowRight } from "react-icons/fa6";
+import { LuSearch } from "react-icons/lu";
 
 const Header = () => {
   const { searchBar } = useSearchBar();
@@ -28,10 +29,13 @@ const Header = () => {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+  const openMobileMenu = () => {
+    setIsMobileMenuOpen(true);
+  };
 
   return (
     <div className="w-full flex justify-center sticky top-0 z-[1000]">
-      <div className="w-full max-w-[1920px] flex flex-col sticky top-0 z-50">
+      <div className="w-full max-w-[2136px] flex flex-col sticky top-0 z-50">
         <div className="login w-full h-[118px] bg-white flex justify-between items-center px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-[20px]">
           <img
             src={ATF_LOGO}
@@ -56,25 +60,32 @@ const Header = () => {
               Daxil ol
             </button>
           </div>
-          <button
-            onClick={toggleMobileMenu}
-            className="flex md:hidden w-[44px] h-[44px] justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px] relative"
-          >
-            <IoClose
-              className={`w-[24px] h-[24px] absolute transition-all duration-300 ease-in-out ${
-                isMobileMenuOpen
-                  ? "opacity-100 rotate-0"
-                  : "opacity-0 rotate-90"
-              }`}
-            />
-            <RxHamburgerMenu
-              className={`w-[24px] h-[24px] absolute transition-all duration-300 ease-in-out ${
-                isMobileMenuOpen
-                  ? "opacity-0 -rotate-90"
-                  : "opacity-100 rotate-0"
-              }`}
-            />
-          </button>
+          <div className="flex md:hidden flex gap-x-[8px]">
+            <button className="w-[44px] h-[44px] flex justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px] relative"
+              onClick={openMobileMenu}
+            >
+              <LuSearch className="w-[24px] h-[24px]" />
+            </button>
+            <button
+              onClick={toggleMobileMenu}
+              className="flex md:hidden w-[44px] h-[44px] justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px] relative"
+            >
+              <IoClose
+                className={`w-[24px] h-[24px] absolute transition-all duration-200 ease-in-out ${
+                  isMobileMenuOpen
+                    ? "opacity-100 rotate-0"
+                    : "opacity-0 rotate-90"
+                }`}
+              />
+              <RxHamburgerMenu
+                className={`w-[24px] h-[24px] absolute transition-all duration-200 ease-in-out ${
+                  isMobileMenuOpen
+                    ? "opacity-0 -rotate-90"
+                    : "opacity-100 rotate-0"
+                }`}
+              />
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}

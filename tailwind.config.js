@@ -7,12 +7,14 @@ export default {
   theme: {
     screens: {
       'mobile': '320px',
+      'mobile-sm': '400px',
       'xs': '475px',
       'sm': '640px',
       'md': '768px',
       'lg': '1024px',
       'xl': '1280px',
-      '2xl': '1536px'
+      '2xl': '1536px',
+      '3xl': '1920px'
     },
     extend: {
       textColor: {

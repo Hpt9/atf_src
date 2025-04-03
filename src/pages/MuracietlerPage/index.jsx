@@ -209,7 +209,7 @@ const MuracietlerPage = () => {
 
   return (
     <div className="w-full flex justify-center">
-      <div className="w-full max-w-[1920px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
+      <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
         <div className="bg-white border border-[#E7E7E7] rounded-[8px] overflow-hidden">
           {/* Table Header */}
           <div className="p-[16px] flex justify-between items-center border-b border-[#E7E7E7] bg-white">
@@ -276,7 +276,7 @@ const MuracietlerPage = () => {
                       <div className="flex items-center gap-x-[8px]">
                         <p className="text-[#3F3F3F] text-[14px] w-[64px] md:w-[150px]">{app.code}</p>
                         <p className="text-[#3F3F3F] text-[14px] w-[75px] md:w-[150px]">{app.date}</p>
-                        <p className="text-[#3F3F3F] text-[14px] w-[50px] md:w-[150px]">{app.description}</p>
+                        <p className="text-[#3F3F3F] text-[14px] w-[55px] mobile-sm:w-[80px] xs:w-[100px] md:w-[150px]">{app.description}</p>
                       </div>
                       <div className="w-[40px] md:w-[80px] flex justify-center">
                         <button className="text-[#2E92A0] hover:text-[#1E7A8A] transition-colors">
