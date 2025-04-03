@@ -1,17 +1,22 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { slideAnimation } from './shared/animations';
 
-const HSCodeStep = ({ selectedHsCode, setSelectedHsCode, closeModal, setModalStep }) => {
+const HSCodeStep = ({ selectedHsCode, setSelectedHsCode, closeModal, setModalStep, custom }) => {
   const handleNext = () => {
-    if (!selectedHsCode.trim()) {
-      // You might want to add error state and message here
-      return;
-    }
+    if (!selectedHsCode.trim()) return;
     setModalStep(2);
   };
 
   return (
-    <>
-      <div>
+    <motion.div
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      custom={custom}
+      variants={slideAnimation}
+    >
+      <div className='mb-2'>
         <input
           type="text"
           placeholder="HS Kodu daxil edin"
@@ -40,7 +45,7 @@ const HSCodeStep = ({ selectedHsCode, setSelectedHsCode, closeModal, setModalSte
           Növbəti
         </button>
       </div>
-    </>
+    </motion.div>
   );
 };
 

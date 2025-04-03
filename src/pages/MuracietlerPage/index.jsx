@@ -7,6 +7,7 @@ import HSCodeStep from './components/HSCodeStep';
 import PermissionsStep from './components/PermissionsStep';
 import FormStep from './components/FormStep';
 import SuccessStep from './components/SuccessStep';
+import { modalOverlayAnimation, modalContentAnimation } from './components/shared/animations';
 
 const MuracietlerPage = () => {
   const { setSearchBar } = useSearchBar();
@@ -289,85 +290,119 @@ const MuracietlerPage = () => {
     setIsSuccess(true);
   };
 
+  // Add direction state to track navigation direction
+  const [direction, setDirection] = useState(1);
+
+  // Update the step change functions
+  const goToNextStep = (nextStep) => {
+    setDirection(1);
+    setModalStep(nextStep);
+  };
+
+  const goToPrevStep = (prevStep) => {
+    setDirection(-1);
+    setModalStep(prevStep);
+  };
+
   return (
     <div className="w-full flex justify-center">
-      {isMuracietModalOpen && (
-        <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-[1000] flex items-center justify-center">
-          <div className="bg-white rounded-[8px] w-[90%] max-w-[361px]">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-[16px] border-b border-[#E7E7E7]">
-              {modalStep === 3 && (
-                <button
-                  onClick={() => setModalStep(2)}
-                  className="w-[32px] h-[32px] flex items-center justify-center rounded-full hover:bg-[#F5F5F5]"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+      <AnimatePresence>
+        {isMuracietModalOpen && (
+          <motion.div
+            className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-[1000] flex items-center justify-center"
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={modalOverlayAnimation}
+          >
+            <motion.div
+              className="bg-white rounded-[8px] w-[90%] max-w-[361px]"
+              variants={modalContentAnimation}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-[16px] border-b border-[#E7E7E7]">
+                {modalStep === 3 && (
+                  <button
+                    onClick={() => setModalStep(2)}
+                    className="w-[32px] h-[32px] flex items-center justify-center rounded-full hover:bg-[#F5F5F5]"
                   >
-                    <path
-                      d="M19 12H5M5 12L12 19M5 12L12 5"
-                      stroke="#3F3F3F"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              )}
-              {!isSuccess && (
-                <h2
-                  className={`text-[18px] font-medium text-[#3F3F3F] ${
-                    modalStep === 3 ? "flex-1 text-right" : ""
-                  }`}
-                >
-                  {modalStep === 1
-                    ? "HS Kodu"
-                    : modalStep === 2
-                    ? "İcazələr"
-                    : "Seçilmiş icazələrə uyğun formu doldurun və təsdiq edin"}
-                </h2>
-              )}
-            </div>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M19 12H5M5 12L12 19M5 12L12 5"
+                        stroke="#3F3F3F"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                )}
+                {!isSuccess && (
+                  <h2
+                    className={`text-[18px] font-medium text-[#3F3F3F] ${
+                      modalStep === 3 ? "flex-1 text-right" : ""
+                    }`}
+                  >
+                    {modalStep === 1
+                      ? "HS Kodu"
+                      : modalStep === 2
+                      ? "İcazələr"
+                      : "Seçilmiş icazələrə uyğun formu doldurun və təsdiq edin"}
+                  </h2>
+                )}
+              </div>
 
-            {/* Modal Content */}
-            <div className="p-[16px] space-y-4">
-              {isSuccess ? (
-                <SuccessStep closeModal={closeModal} />
-              ) : (
-                <>
-                  {modalStep === 1 ? (
-                    <HSCodeStep 
-                      selectedHsCode={selectedHsCode}
-                      setSelectedHsCode={setSelectedHsCode}
-                      closeModal={closeModal}
-                      setModalStep={setModalStep}
-                    />
-                  ) : modalStep === 2 ? (
-                    <PermissionsStep 
-                      selectedHsCode={selectedHsCode}
-                      setModalStep={setModalStep}
-                      closeModal={closeModal}
-                      selectedPermissions={selectedPermissions}
-                      setSelectedPermissions={setSelectedPermissions}
-                    />
+              {/* Modal Content */}
+              <div className="p-[16px] space-y-4 overflow-hidden">
+                <AnimatePresence mode="wait" initial={false} custom={direction}>
+                  {isSuccess ? (
+                    <SuccessStep key="success" closeModal={closeModal} />
                   ) : (
-                    <FormStep 
-                      formData={formData}
-                      handleInputChange={handleInputChange}
-                      closeModal={closeModal}
-                      handleFormSubmit={handleFormSubmit}
-                    />
+                    <>
+                      {modalStep === 1 ? (
+                        <HSCodeStep 
+                          key="step1"
+                          selectedHsCode={selectedHsCode}
+                          setSelectedHsCode={setSelectedHsCode}
+                          closeModal={closeModal}
+                          setModalStep={goToNextStep}
+                          custom={direction}
+                        />
+                      ) : modalStep === 2 ? (
+                        <PermissionsStep 
+                          key="step2"
+                          selectedHsCode={selectedHsCode}
+                          setModalStep={(step) => step < 2 ? goToPrevStep(step) : goToNextStep(step)}
+                          closeModal={closeModal}
+                          selectedPermissions={selectedPermissions}
+                          setSelectedPermissions={setSelectedPermissions}
+                          custom={direction}
+                        />
+                      ) : (
+                        <FormStep 
+                          key="step3"
+                          formData={formData}
+                          handleInputChange={handleInputChange}
+                          closeModal={closeModal}
+                          handleFormSubmit={handleFormSubmit}
+                          setModalStep={goToPrevStep}
+                          custom={direction}
+                        />
+                      )}
+                    </>
                   )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
         <div className="bg-white border border-[#E7E7E7] rounded-[8px] overflow-hidden">
           {/* Table Header */}

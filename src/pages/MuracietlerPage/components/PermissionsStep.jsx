@@ -1,6 +1,8 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { slideAnimation } from './shared/animations';
 
-const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, selectedPermissions, setSelectedPermissions }) => {
+const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, selectedPermissions, setSelectedPermissions, custom }) => {
   const handlePermissionChange = (permission) => {
     setSelectedPermissions(prev => {
       if (prev.includes(permission)) {
@@ -11,11 +13,26 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, selectedPer
     });
   };
 
+  const handleNext = () => {
+    if (selectedPermissions.length === 0) return;
+    setModalStep(3);
+  };
+
+  const handleBack = () => {
+    setModalStep(1);
+  };
+
   return (
-    <>
+    <motion.div
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      custom={custom}
+      variants={slideAnimation}
+    >
       <div className="flex items-center gap-4 mb-4">
         <button
-          onClick={() => setModalStep(1)}
+          onClick={handleBack}
           className="w-[32px] h-[32px] flex items-center justify-center rounded-full hover:bg-[#F5F5F5]"
         >
           <svg
@@ -34,7 +51,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, selectedPer
             />
           </svg>
         </button>
-        <h2 className="text-[18px] font-medium text-[#3F3F3F] text-right flex-1">
+        <h2 className="text-[18px] font-medium text-[#3F3F3F] flex-1">
           HS Kodu: {selectedHsCode}
         </h2>
       </div>
@@ -71,7 +88,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, selectedPer
           Ləğv et
         </button>
         <button
-          onClick={() => setModalStep(3)}
+          onClick={handleNext}
           className={`w-full py-2 px-4 rounded-lg transition-colors ${
             selectedPermissions.length === 0
               ? 'bg-gray-300 cursor-not-allowed text-white'
@@ -82,7 +99,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, selectedPer
           Növbəti
         </button>
       </div>
-    </>
+    </motion.div>
   );
 };
 

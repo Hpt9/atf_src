@@ -1,12 +1,24 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { slideAnimation } from './shared/animations';
 
-const FormStep = ({ formData, handleInputChange, closeModal, handleFormSubmit }) => {
+const FormStep = ({ formData, handleInputChange, closeModal, handleFormSubmit, setModalStep, custom }) => {
   const isFormValid = () => {
     return Object.values(formData).every(value => value.trim() !== '');
   };
 
+  const handleBack = () => {
+    setModalStep(2);
+  };
+
   return (
-    <div className="p-[16px] space-y-4">
+    <motion.div
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      custom={custom}
+      variants={slideAnimation}
+    >
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <input
@@ -63,7 +75,7 @@ const FormStep = ({ formData, handleInputChange, closeModal, handleFormSubmit })
           Təsdiq edin
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
