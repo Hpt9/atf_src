@@ -258,7 +258,7 @@ const HsCodesPage = () => {
           {/* Scrollable content container */}
           <div 
             ref={contentRef}
-            className="max-h-[600px] overflow-y-auto"
+            className="max-h-[640px] overflow-y-auto"
           >
             <motion.div
               variants={tableVariants}
@@ -294,7 +294,7 @@ const HsCodesPage = () => {
                       )}
                       
                       {/* Content with different styling based on level */}
-                      <div className="flex items-center w-full">
+                      <div className="flex items-center w-full gap-x-[8px]">
                         <p className={`text-[#3F3F3F] text-[14px] w-fit md:w-[20px] ${
                           item.level === 0 ? 'font-bold' : 
                           item.level === 1 ? 'font-medium' : 

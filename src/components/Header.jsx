@@ -41,26 +41,30 @@ const Header = () => {
           <img
             src={ATF_LOGO}
             alt="ATF LOGO"
-            className="w-[94px] h-[78px] hidden md:flex"
+            className="w-[94px] h-[78px] hidden md:flex hover:cursor-pointer"
+            onClick={() => navigate("/")}
           />
           <img
             src={ATF_LOGO_MOBIL}
             alt="ATF LOGO"
-            className="w-[150px] flex md:hidden"
+            className="w-[150px] flex md:hidden hover:cursor-pointer"
+            onClick={() => navigate("/")}
           />
           <div className="hidden md:flex gap-4">
-            <select className="bg-transparent border-none outline-none cursor-pointer">
+            {/* <select className="bg-transparent border-none outline-none cursor-pointer">
               <option value="az">AZ</option>
               <option value="en">EN</option>
               <option value="ru">RU</option>
-            </select>
-            <button className="px-4 py-[10px] font-semibold text-[#2E92A0]  hover:text-[white] rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0]"
-              onClick={() => navigate("/giris")}
+            </select> */}
+            <button 
+              className="px-4 py-[10px] font-semibold text-[#2E92A0] hover:text-[white] rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0]"
+              onClick={() => navigate("/giris?type=register")}
             >
               Qeydiyyat
             </button>
-            <button className="px-6 py-[10px] bg-[#2E92A0] text-white rounded-[8px] hover:bg-[white] hover:text-[#2E92A0] transition-colors  border border-[#2E92A0]"
-              onClick={() => navigate("/giris")}
+            <button 
+              className="px-6 py-[10px] bg-[#2E92A0] text-white rounded-[8px] hover:bg-[white] hover:text-[#2E92A0] transition-colors border border-[#2E92A0]"
+              onClick={() => navigate("/giris?type=login")}
             >
               Daxil ol
             </button>
@@ -98,19 +102,21 @@ const Header = () => {
           <div className="fixed inset-0 bg-white z-50 mt-[118px] md:hidden">
             <div className="flex flex-col p-4">
               <div className="flex gap-4 justify-between mb-4">
-                <select className="bg-transparent border-none outline-none cursor-pointer">
+                {/* <select className="bg-transparent border-none outline-none cursor-pointer">
                   <option value="az">AZ</option>
                   <option value="en">EN</option>
                   <option value="ru">RU</option>
-                </select>
-                <div className="flex gap-x-[8px]">
-                  <button className="px-4 py-[10px] font-semibold text-[#2E92A0] rounded-[8px] bg-white hover:bg-[#2E92A0] hover:text-white transition-colors border border-[#2E92A0]"
-                    onClick={() => navigate("/giris")}
+                </select> */}
+                <div className="flex gap-x-[8px] w-full">
+                  <button 
+                    className="px-4 py-[10px] w-[50%] font-semibold text-[#2E92A0] rounded-[8px] bg-white hover:bg-[#2E92A0] hover:text-white transition-colors border border-[#2E92A0]"
+                    onClick={() => navigate("/giris?type=register")}
                   >
                     Qeydiyyat
                   </button>
-                  <button className="px-6 py-[10px] bg-[#2E92A0] text-white rounded-[8px] hover:bg-white hover:text-[#2E92A0] transition-colors border border-[#2E92A0]"
-                    onClick={() => navigate("/giris")}
+                  <button 
+                    className="px-6 py-[10px] w-[50%] bg-[#2E92A0] text-white rounded-[8px] hover:bg-white hover:text-[#2E92A0] transition-colors border border-[#2E92A0]"
+                    onClick={() => navigate("/giris?type=login")}
                   >
                     Daxil ol
                   </button>

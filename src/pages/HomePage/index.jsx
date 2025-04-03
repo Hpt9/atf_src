@@ -5,8 +5,10 @@ import { FaRegFileAlt } from "react-icons/fa";
 import { HiOutlineCreditCard } from "react-icons/hi2";
 import { PiDotsSixBold } from "react-icons/pi";
 import { FaArrowRight } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const services = [
     {
       id: 1,
@@ -15,7 +17,7 @@ const HomePage = () => {
       ),
       title: "Qeydiyyat",
       number: "305",
-      link: "/qeydiyyat",
+      link: "/giris?type=register",
     },
     {
       id: 2,
@@ -32,6 +34,8 @@ const HomePage = () => {
         <FaRegFileAlt className="w-[24px] h-[24px] group-hover:text-[#2E92A0] transition-all duration-200" />
       ),
       title: "İcazə ərizəsinin əldə edilməsi",
+      number: "1163",
+      link: "/icazeler",
     }
   ];
 
@@ -68,6 +72,7 @@ const HomePage = () => {
             <div
               key={service.id+"s"}
               className="service_card group  rounded-[16px] p-6 cursor-pointer  transition-all duration-300 bg-[#FAFAFA]"
+              onClick={() => navigate(service.link)}
             >
               <div className="flex justify-between items-start mb-6">
                 <div className="icon w-[40px] h-[40px] rounded-full border border-[#E7E7E7] bg-[#F5F5F5] flex items-center justify-center  group-hover:border-[#2E92A0]  transition-all duration-200">
