@@ -10,7 +10,7 @@ import ElaqePage from "./pages/ElaqePage";
 import PageTransition from "./components/PageTransition";
 import './App.css'
 import { Authentication } from "./pages/Authentication";
-
+import AdminChat from "./components/AdminChat";
 function App() {
   const location = useLocation();
 
@@ -50,7 +50,7 @@ function App() {
           } />
         </Route>
         <Route path="/giris" element={<Authentication/>}></Route>
-        
+        <Route path="/admin/chat" element={<AdminChat />}></Route>
       </Routes>
     </AnimatePresence>
   );
