@@ -10,6 +10,14 @@ const AdminChat = () => {
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
   const adminUsername = "ADMIN";
+  const pusherRef = useRef(null);
+
+  // Initialize Pusher
+  useEffect(() => {
+    pusherRef.current = new Pusher("6801d180c935c080fb57", {
+      cluster: "eu"
+    });
+  }, []);
 
   // Fetch all users with chat history
   useEffect(() => {
@@ -29,68 +37,77 @@ const AdminChat = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch messages for selected user
+  // Subscribe to public admin channel
   useEffect(() => {
-    if (!selectedUser) return;
+    if (!pusherRef.current) return;
 
-    const fetchMessages = async () => {
-      try {
-        const response = await fetch(`https://atfplatform.tw1.ru/api/messages/${selectedUser.userId}`);
-        const data = await response.json();
-        setMessages(data);
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-      }
-    };
-
-    fetchMessages();
-
-    // Subscribe to selected user's channel
-    const pusher = new Pusher("6801d180c935c080fb57", {
-      cluster: "eu",
-    });
-
-    const channel = pusher.subscribe(`chat-${selectedUser.userId}`);
-    channel.bind("message", function (data) {
-      setMessages(prevMessages => [...prevMessages, data]);
-      // Update last message in users list
-      setActiveUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.userId === selectedUser.userId 
-            ? { ...user, lastMessage: data.message, lastMessageTime: new Date() }
+    const adminChannel = pusherRef.current.subscribe('admin-channel');
+    
+    adminChannel.bind('client-new-message', function(data) {
+      // Add new user to active users if not exists
+      setActiveUsers(prevUsers => {
+        if (!prevUsers.find(u => u.username === data.username)) {
+          return [...prevUsers, {
+            username: data.username,
+            lastMessage: data.message,
+            lastMessageTime: new Date(),
+            unreadCount: 1
+          }];
+        }
+        return prevUsers.map(user => 
+          user.username === data.username 
+            ? {
+                ...user,
+                lastMessage: data.message,
+                lastMessageTime: new Date(),
+                unreadCount: user.unreadCount + 1
+              }
             : user
-        )
-      );
+        );
+      });
+
+      // Add message to current chat if user is selected
+      if (selectedUser?.username === data.username) {
+        setMessages(prevMessages => [...prevMessages, {
+          id: Date.now(),
+          text: data.message,
+          sender: data.username,
+          isAdmin: false,
+          time: data.time
+        }]);
+      }
     });
 
     return () => {
-      channel.unbind_all();
-      channel.unsubscribe();
+      adminChannel.unbind_all();
+      adminChannel.unsubscribe();
     };
   }, [selectedUser]);
 
   const sendAdminResponse = async (e) => {
     e.preventDefault();
-    
     if (!message.trim() || !selectedUser) return;
 
     try {
-      const response = await fetch("https://atfplatform.tw1.ru/api/messages", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          userId: selectedUser.userId,
-          username: adminUsername,
-          message,
-          isAdmin: true
-        }),
+      const pusher = new Pusher("6801d180c935c080fb57", {
+        cluster: "eu"
+      });
+      
+      // Send to user's public channel
+      const userChannel = pusher.subscribe(`chat-${selectedUser.username}`);
+      userChannel.trigger('admin-message', {
+        message,
+        time: new Date().toLocaleTimeString()
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
+      // Add message to local state
+      setMessages(prevMessages => [...prevMessages, {
+        id: Date.now(),
+        text: message,
+        sender: 'ADMIN',
+        isAdmin: true,
+        time: new Date().toLocaleTimeString()
+      }]);
       
       setMessage('');
     } catch (error) {
@@ -151,8 +168,8 @@ const AdminChat = () => {
                       ? 'bg-[#95C901] text-white' 
                       : 'bg-white border text-[#3F3F3F]'
                   }`}>
-                    <p>{msg.message}</p>
-                    <p className="text-xs opacity-70 mt-1">{new Date(msg.created_at).toLocaleTimeString()}</p>
+                    <p>{msg.text}</p>
+                    <p className="text-xs opacity-70 mt-1">{msg.time}</p>
                   </div>
                 </div>
               ))}

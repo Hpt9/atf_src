@@ -28,19 +28,19 @@ const ChatBot = () => {
   };
 
   useEffect(() => {
-    Pusher.logToConsole = true;
-
     const pusher = new Pusher("6801d180c935c080fb57", {
-      cluster: "eu",
+      cluster: "eu"
     });
 
-    const channel = pusher.subscribe("realtime");
-    channel.bind("message", function (data) {
+    // Use public channel (no auth required)
+    const channel = pusher.subscribe(`chat-${username}`);
+    
+    channel.bind("admin-message", function (data) {
       setMessages(prevMessages => [...prevMessages, {
         id: Date.now(),
         text: data.message,
-        sender: data.username,
-        isUser: data.username === username,
+        sender: "ADMIN",
+        isUser: false,
         time: new Date().toLocaleTimeString()
       }]);
     });
@@ -58,24 +58,29 @@ const ChatBot = () => {
 
   const submit = async (e) => {
     e.preventDefault();
-    
     if (!message.trim()) return;
 
     try {
-      const response = await fetch("https://atfplatform.tw1.ru/api/messages", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username,
-          message
-        }),
+      // Use public admin channel
+      const pusher = new Pusher("6801d180c935c080fb57", {
+        cluster: "eu"
+      });
+      
+      const adminChannel = pusher.subscribe('admin-channel');
+      adminChannel.trigger('client-new-message', {
+        username,
+        message,
+        time: new Date().toLocaleTimeString()
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
+      // Add message to local state
+      setMessages(prevMessages => [...prevMessages, {
+        id: Date.now(),
+        text: message,
+        sender: username,
+        isUser: true,
+        time: new Date().toLocaleTimeString()
+      }]);
       
       setMessage('');
     } catch (error) {
