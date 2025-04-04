@@ -12,6 +12,8 @@ const ChatBot = () => {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
   
   // Generate and store unique username
   const [username] = useState(() => {
@@ -32,9 +34,10 @@ const ChatBot = () => {
       cluster: "eu"
     });
 
-    // Use public channel (no auth required)
-    const channel = pusher.subscribe(`chat-${username}`);
+    // Subscribe to user's personal channel
+    const channel = pusher.subscribe(`chat-user-${username}`);
     
+    // Listen for admin messages only for this user
     channel.bind("admin-message", function (data) {
       setMessages(prevMessages => [...prevMessages, {
         id: Date.now(),
@@ -43,6 +46,11 @@ const ChatBot = () => {
         isUser: false,
         time: new Date().toLocaleTimeString()
       }]);
+    });
+
+    // Listen for admin typing status
+    channel.bind("admin-typing", function (data) {
+      setIsTyping(data.typing);
     });
 
     return () => {
@@ -56,17 +64,42 @@ const ChatBot = () => {
     scrollToBottom();
   }, [messages]);
 
+  const handleTyping = (e) => {
+    setMessage(e.target.value);
+
+    // Send typing status to admin
+    const pusher = new Pusher("6801d180c935c080fb57", { cluster: "eu" });
+    const adminChannel = pusher.subscribe('admin-channel');
+    
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    // Send typing status
+    adminChannel.trigger('client-user-typing', {
+      username,
+      typing: true
+    });
+
+    // Stop typing after 1 second of no input
+    typingTimeoutRef.current = setTimeout(() => {
+      adminChannel.trigger('client-user-typing', {
+        username,
+        typing: false
+      });
+    }, 1000);
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     if (!message.trim()) return;
 
     try {
-      // Use public admin channel
-      const pusher = new Pusher("6801d180c935c080fb57", {
-        cluster: "eu"
-      });
-      
+      const pusher = new Pusher("6801d180c935c080fb57", { cluster: "eu" });
       const adminChannel = pusher.subscribe('admin-channel');
+      
+      // Send message to admin with user info
       adminChannel.trigger('client-new-message', {
         username,
         message,
@@ -146,6 +179,11 @@ const ChatBot = () => {
 
           {/* Chat Input */}
           <div className="p-4 border-t">
+            {isTyping && (
+              <div className="text-sm text-gray-500 mb-2">
+                Admin is typing...
+              </div>
+            )}
             <form onSubmit={submit} className="flex items-center gap-2">
               <button 
                 type="button"
@@ -158,7 +196,7 @@ const ChatBot = () => {
                 placeholder="Mesajınızı yazın"
                 className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:border-[#2E92A0]"
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={handleTyping}
               />
               <button 
                 type="submit"
