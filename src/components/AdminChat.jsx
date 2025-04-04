@@ -4,91 +4,46 @@ import Pusher from "pusher-js";
 import { FaUser } from "react-icons/fa";
 
 const AdminChat = () => {
-  const [activeUsers, setActiveUsers] = useState([]);
+  const [activeUsers, setActiveUsers] = useState({}); // Change to object for easier updates
   const [selectedUser, setSelectedUser] = useState(null);
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
-  const adminUsername = "ADMIN";
   const pusherRef = useRef(null);
-  const [typingUsers, setTypingUsers] = useState({});
-  const typingTimeoutRef = useRef({});
 
   // Initialize Pusher
   useEffect(() => {
     pusherRef.current = new Pusher("6801d180c935c080fb57", {
       cluster: "eu"
     });
-  }, []);
 
-  // Fetch all users with chat history
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch("https://atfplatform.tw1.ru/api/chat-users");
-        const data = await response.json();
-        setActiveUsers(data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
-    fetchUsers();
-    const interval = setInterval(fetchUsers, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Subscribe to public admin channel
-  useEffect(() => {
-    if (!pusherRef.current) return;
-
-    const pusher = pusherRef.current;
-
-    // Subscribe to the public channel
-    const channel = pusher.subscribe('chat');
+    const channel = pusherRef.current.subscribe('chat');
     
     channel.bind('message', function(data) {
       // Handle messages from users (not from ADMIN)
       if (data.username !== 'ADMIN') {
         setActiveUsers(prevUsers => {
-          const existingUser = prevUsers.find(u => u.username === data.username);
-          if (!existingUser) {
-            return [...prevUsers, {
+          const updatedUsers = { ...prevUsers };
+          
+          if (!updatedUsers[data.username]) {
+            updatedUsers[data.username] = {
               username: data.username,
-              messages: [{
-                text: data.message,
-                time: new Date().toLocaleTimeString(),
-                isAdmin: false
-              }],
-              lastMessage: data.message,
-              lastMessageTime: new Date(),
-              unreadCount: 1
-            }];
+              messages: [],
+              lastMessage: '',
+              unreadCount: 0
+            };
           }
 
-          return prevUsers.map(user => 
-            user.username === data.username 
-              ? {
-                  ...user,
-                  messages: [...user.messages, {
-                    text: data.message,
-                    time: new Date().toLocaleTimeString(),
-                    isAdmin: false
-                  }],
-                  lastMessage: data.message,
-                  lastMessageTime: new Date(),
-                  unreadCount: user.unreadCount + 1
-                }
-              : user
-          );
+          updatedUsers[data.username].messages.push({
+            text: data.message,
+            time: new Date().toLocaleTimeString(),
+            isAdmin: false
+          });
+          updatedUsers[data.username].lastMessage = data.message;
+          updatedUsers[data.username].unreadCount += 1;
+
+          return updatedUsers;
         });
       }
-    });
-
-    // Listen for user typing status
-    channel.bind('client-user-typing', function(data) {
-      const { username, typing } = data;
-      setTypingUsers(prev => ({ ...prev, [username]: typing }));
     });
 
     return () => {
@@ -97,37 +52,12 @@ const AdminChat = () => {
     };
   }, []);
 
-  const handleTyping = (e) => {
-    setMessage(e.target.value);
-
-    if (!selectedUser) return;
-
-    // Clear previous timeout
-    if (typingTimeoutRef.current[selectedUser.username]) {
-      clearTimeout(typingTimeoutRef.current[selectedUser.username]);
-    }
-
-    // Send typing status to user
-    const pusher = new Pusher("6801d180c935c080fb57", { cluster: "eu" });
-    const userChannel = pusher.subscribe(`chat-user-${selectedUser.username}`);
-    
-    userChannel.trigger('admin-typing', {
-      typing: true
-    });
-
-    // Stop typing after 1 second
-    typingTimeoutRef.current[selectedUser.username] = setTimeout(() => {
-      userChannel.trigger('admin-typing', {
-        typing: false
-      });
-    }, 1000);
-  };
-
   const sendAdminResponse = async (e) => {
     e.preventDefault();
     if (!message.trim() || !selectedUser) return;
 
     try {
+      // Send message through API
       const response = await fetch("https://atfplatform.tw1.ru/api/messages", {
         method: "POST",
         headers: {
@@ -143,32 +73,23 @@ const AdminChat = () => {
         throw new Error('Failed to send message');
       }
 
-      // Update active users with new message
-      setActiveUsers(prevUsers =>
-        prevUsers.map(user =>
-          user.username === selectedUser.username
-            ? {
-                ...user,
-                messages: [...user.messages, {
-                  text: message,
-                  time: new Date().toLocaleTimeString(),
-                  isAdmin: true
-                }]
-              }
-            : user
-        )
-      );
+      // Update local state
+      setActiveUsers(prevUsers => {
+        const updatedUsers = { ...prevUsers };
+        updatedUsers[selectedUser].messages.push({
+          text: message,
+          time: new Date().toLocaleTimeString(),
+          isAdmin: true
+        });
+        updatedUsers[selectedUser].lastMessage = message;
+        return updatedUsers;
+      });
       
       setMessage('');
     } catch (error) {
       console.error("Error sending message:", error);
     }
   };
-
-  // Get selected user's messages when user is selected
-  const selectedUserMessages = selectedUser ? 
-    activeUsers.find(u => u.username === selectedUser.username)?.messages || [] 
-    : [];
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -178,12 +99,19 @@ const AdminChat = () => {
           <h2 className="text-xl font-semibold text-[#2E92A0]">Aktiv İstifadəçilər</h2>
         </div>
         <div className="overflow-y-auto h-full">
-          {activeUsers.map(user => (
+          {Object.values(activeUsers).map(user => (
             <div
               key={user.username}
-              onClick={() => setSelectedUser(user)}
+              onClick={() => {
+                setSelectedUser(user.username);
+                // Reset unread count when selecting user
+                setActiveUsers(prev => ({
+                  ...prev,
+                  [user.username]: { ...prev[user.username], unreadCount: 0 }
+                }));
+              }}
               className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${
-                selectedUser?.username === user.username ? 'bg-gray-100' : ''
+                selectedUser === user.username ? 'bg-gray-100' : ''
               }`}
             >
               <div className="flex items-center gap-3">
@@ -192,9 +120,7 @@ const AdminChat = () => {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-medium">İstifadəçi {user.username}</h3>
-                  <p className="text-sm text-gray-500 truncate">
-                    {typingUsers[user.username] ? 'Typing...' : user.lastMessage}
-                  </p>
+                  <p className="text-sm text-gray-500 truncate">{user.lastMessage}</p>
                 </div>
                 {user.unreadCount > 0 && (
                   <div className="w-5 h-5 rounded-full bg-[#95C901] text-white text-xs flex items-center justify-center">
@@ -213,14 +139,11 @@ const AdminChat = () => {
           <>
             <div className="p-4 border-b bg-white">
               <h2 className="text-lg font-medium">
-                İstifadəçi {selectedUser.username}
-                {typingUsers[selectedUser.username] && (
-                  <span className="text-sm text-gray-500 ml-2">typing...</span>
-                )}
+                İstifadəçi {selectedUser}
               </h2>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {selectedUserMessages.map((msg, index) => (
+              {activeUsers[selectedUser]?.messages.map((msg, index) => (
                 <div
                   key={index}
                   className={`flex ${msg.isAdmin ? 'justify-end' : 'justify-start'}`}
@@ -242,7 +165,7 @@ const AdminChat = () => {
                 <input
                   type="text"
                   value={message}
-                  onChange={handleTyping}
+                  onChange={(e) => setMessage(e.target.value)}
                   placeholder="Mesajınızı yazın..."
                   className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:border-[#2E92A0]"
                 />
