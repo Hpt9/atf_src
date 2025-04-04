@@ -5,29 +5,39 @@ import { IoAttach } from "react-icons/io5";
 import { IoSend } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
 import Pusher from "pusher-js";
+import { v4 as uuidv4 } from 'uuid';
 
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [username] = useState("FERID");
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
+  
+  // Generate and store unique user ID
+  const [userId] = useState(() => {
+    const stored = localStorage.getItem('chat_user_id');
+    if (stored) return stored;
+    
+    const newId = uuidv4();
+    localStorage.setItem('chat_user_id', newId);
+    return newId;
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
-    // Initial messages load
+    // Initial messages load for this user only
     const fetchMessages = async () => {
       try {
-        const response = await fetch("https://atfplatform.tw1.ru/api/messages");
+        const response = await fetch(`https://atfplatform.tw1.ru/api/messages/${userId}`);
         const data = await response.json();
         setMessages(data.map(msg => ({
           id: msg.id || Date.now(),
           text: msg.message,
           sender: msg.username,
-          isUser: msg.username === username,
+          isUser: msg.userId === userId,
           time: new Date(msg.created_at || Date.now()).toLocaleTimeString()
         })));
       } catch (error) {
@@ -36,21 +46,21 @@ const ChatBot = () => {
     };
 
     fetchMessages();
-  }, [username]);
+  }, [userId]);
 
   useEffect(() => {
-    // Real-time updates with Pusher
     const pusher = new Pusher("6801d180c935c080fb57", {
       cluster: "eu",
     });
 
-    const channel = pusher.subscribe("realtime");
+    // Subscribe to user's personal channel
+    const channel = pusher.subscribe(`chat-${userId}`);
     channel.bind("message", function (data) {
       setMessages(prevMessages => [...prevMessages, {
         id: data.id || Date.now(),
         text: data.message,
         sender: data.username,
-        isUser: data.username === username,
+        isUser: data.userId === userId,
         time: new Date().toLocaleTimeString()
       }]);
     });
@@ -59,7 +69,7 @@ const ChatBot = () => {
       channel.unbind_all();
       channel.unsubscribe();
     };
-  }, [username]);
+  }, [userId]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -78,7 +88,7 @@ const ChatBot = () => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          username,
+          userId,
           message,
         }),
       });
