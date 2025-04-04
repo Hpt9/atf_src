@@ -13,8 +13,8 @@ const ChatBot = () => {
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
   
-  // Generate and store unique user ID
-  const [userId] = useState(() => {
+  // Generate and store unique user ID but use it as username
+  const [username] = useState(() => {
     const stored = localStorage.getItem('chat_user_id');
     if (stored) return stored;
     
@@ -31,13 +31,13 @@ const ChatBot = () => {
     // Initial messages load for this user only
     const fetchMessages = async () => {
       try {
-        const response = await fetch(`https://atfplatform.tw1.ru/api/messages/${userId}`);
+        const response = await fetch(`https://atfplatform.tw1.ru/api/messages/${username}`);
         const data = await response.json();
         setMessages(data.map(msg => ({
           id: msg.id || Date.now(),
           text: msg.message,
           sender: msg.username,
-          isUser: msg.userId === userId,
+          isUser: msg.username === username,
           time: new Date(msg.created_at || Date.now()).toLocaleTimeString()
         })));
       } catch (error) {
@@ -46,21 +46,21 @@ const ChatBot = () => {
     };
 
     fetchMessages();
-  }, [userId]);
+  }, [username]);
 
   useEffect(() => {
     const pusher = new Pusher("6801d180c935c080fb57", {
       cluster: "eu",
     });
 
-    // Subscribe to user's personal channel
-    const channel = pusher.subscribe(`chat-${userId}`);
+    // Subscribe to user's personal channel using username
+    const channel = pusher.subscribe(`chat-${username}`);
     channel.bind("message", function (data) {
       setMessages(prevMessages => [...prevMessages, {
         id: data.id || Date.now(),
         text: data.message,
         sender: data.username,
-        isUser: data.userId === userId,
+        isUser: data.username === username,
         time: new Date().toLocaleTimeString()
       }]);
     });
@@ -69,7 +69,7 @@ const ChatBot = () => {
       channel.unbind_all();
       channel.unsubscribe();
     };
-  }, [userId]);
+  }, [username]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -88,8 +88,8 @@ const ChatBot = () => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          userId,
-          message,
+          username, // Changed from userId to username
+          message
         }),
       });
 
