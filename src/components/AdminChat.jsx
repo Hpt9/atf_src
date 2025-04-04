@@ -42,56 +42,58 @@ const AdminChat = () => {
   useEffect(() => {
     if (!pusherRef.current) return;
 
-    const adminChannel = pusherRef.current.subscribe('admin-channel');
-    
-    // Listen for new messages from users
-    adminChannel.bind('client-new-message', function(data) {
-      const { username, message, time } = data;
-      
-      // Add new user or update existing user
-      setActiveUsers(prevUsers => {
-        const existingUser = prevUsers.find(u => u.username === username);
-        if (!existingUser) {
-          return [...prevUsers, {
-            username,
-            messages: [{
-              text: message,
-              time,
-              isAdmin: false
-            }],
-            lastMessage: message,
-            lastMessageTime: new Date(),
-            unreadCount: 1
-          }];
-        }
+    const pusher = pusherRef.current;
 
-        return prevUsers.map(user => 
-          user.username === username 
-            ? {
-                ...user,
-                messages: [...user.messages, {
-                  text: message,
-                  time,
-                  isAdmin: false
-                }],
-                lastMessage: message,
-                lastMessageTime: new Date(),
-                unreadCount: user.unreadCount + 1
-              }
-            : user
-        );
-      });
+    // Subscribe to the public channel
+    const channel = pusher.subscribe('chat');
+    
+    channel.bind('message', function(data) {
+      // Handle messages from users (not from ADMIN)
+      if (data.username !== 'ADMIN') {
+        setActiveUsers(prevUsers => {
+          const existingUser = prevUsers.find(u => u.username === data.username);
+          if (!existingUser) {
+            return [...prevUsers, {
+              username: data.username,
+              messages: [{
+                text: data.message,
+                time: new Date().toLocaleTimeString(),
+                isAdmin: false
+              }],
+              lastMessage: data.message,
+              lastMessageTime: new Date(),
+              unreadCount: 1
+            }];
+          }
+
+          return prevUsers.map(user => 
+            user.username === data.username 
+              ? {
+                  ...user,
+                  messages: [...user.messages, {
+                    text: data.message,
+                    time: new Date().toLocaleTimeString(),
+                    isAdmin: false
+                  }],
+                  lastMessage: data.message,
+                  lastMessageTime: new Date(),
+                  unreadCount: user.unreadCount + 1
+                }
+              : user
+          );
+        });
+      }
     });
 
     // Listen for user typing status
-    adminChannel.bind('client-user-typing', function(data) {
+    channel.bind('client-user-typing', function(data) {
       const { username, typing } = data;
       setTypingUsers(prev => ({ ...prev, [username]: typing }));
     });
 
     return () => {
-      adminChannel.unbind_all();
-      adminChannel.unsubscribe();
+      channel.unbind_all();
+      channel.unsubscribe();
     };
   }, []);
 
@@ -126,14 +128,20 @@ const AdminChat = () => {
     if (!message.trim() || !selectedUser) return;
 
     try {
-      const pusher = new Pusher("6801d180c935c080fb57", { cluster: "eu" });
-      
-      // Send to specific user's channel
-      const userChannel = pusher.subscribe(`chat-user-${selectedUser.username}`);
-      userChannel.trigger('admin-message', {
-        message,
-        time: new Date().toLocaleTimeString()
+      const response = await fetch("https://atfplatform.tw1.ru/api/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: 'ADMIN',
+          message: message
+        })
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
 
       // Update active users with new message
       setActiveUsers(prevUsers =>

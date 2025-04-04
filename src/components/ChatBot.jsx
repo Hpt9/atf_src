@@ -34,23 +34,21 @@ const ChatBot = () => {
       cluster: "eu"
     });
 
-    // Subscribe to user's personal channel
-    const channel = pusher.subscribe(`chat-user-${username}`);
+    // Subscribe to the public channel
+    const channel = pusher.subscribe('chat');
     
-    // Listen for admin messages only for this user
-    channel.bind("admin-message", function (data) {
-      setMessages(prevMessages => [...prevMessages, {
-        id: Date.now(),
-        text: data.message,
-        sender: "ADMIN",
-        isUser: false,
-        time: new Date().toLocaleTimeString()
-      }]);
-    });
-
-    // Listen for admin typing status
-    channel.bind("admin-typing", function (data) {
-      setIsTyping(data.typing);
+    // Listen for messages
+    channel.bind("message", function (data) {
+      // Only show messages from ADMIN or self
+      if (data.username === 'ADMIN' || data.username === username) {
+        setMessages(prevMessages => [...prevMessages, {
+          id: Date.now(),
+          text: data.message,
+          sender: data.username,
+          isUser: data.username === username,
+          time: new Date().toLocaleTimeString()
+        }]);
+      }
     });
 
     return () => {
@@ -96,15 +94,20 @@ const ChatBot = () => {
     if (!message.trim()) return;
 
     try {
-      const pusher = new Pusher("6801d180c935c080fb57", { cluster: "eu" });
-      const adminChannel = pusher.subscribe('admin-channel');
-      
-      // Send message to admin with user info
-      adminChannel.trigger('client-new-message', {
-        username,
-        message,
-        time: new Date().toLocaleTimeString()
+      const response = await fetch("https://atfplatform.tw1.ru/api/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username,
+          message: message
+        })
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
 
       // Add message to local state
       setMessages(prevMessages => [...prevMessages, {
@@ -114,7 +117,7 @@ const ChatBot = () => {
         isUser: true,
         time: new Date().toLocaleTimeString()
       }]);
-      
+
       setMessage('');
     } catch (error) {
       console.error("Error sending message:", error);
