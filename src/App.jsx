@@ -11,7 +11,9 @@ import PageTransition from "./components/PageTransition";
 import './App.css'
 import { Authentication } from "./pages/Authentication";
 import AdminChat from "./components/AdminChat";
+import { useState } from "react";
 function App() {
+  const [isChatOpen, setIsChatOpen] = useState(true);
   const location = useLocation();
 
   return (
@@ -50,7 +52,7 @@ function App() {
           } />
         </Route>
         <Route path="/giris" element={<Authentication/>}></Route>
-        <Route path="/admin/chat" element={<AdminChat />}></Route>
+        {isChatOpen && <Route path="/admin/chat" element={<AdminChat />}></Route>}
       </Routes>
     </AnimatePresence>
   );

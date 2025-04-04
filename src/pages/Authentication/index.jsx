@@ -80,7 +80,7 @@ const LoginForm = ({ setLogin }) => {
           <span className="text-[#3F3F3F]">Hesabınız yoxdur?</span>
           <button
             onClick={() => navigate("/giris?type=register")}
-            className="text-[#696969]  px-[16px] py-[8px] rounded-[8px] bg-[white] border border-[#B9B9B9] hover:bg-[#2E92A0] hover:text-white hover:border-[#2E92A0] transition-colors"
+            className="text-[#696969]  px-[16px] py-[8px] rounded-[8px] bg-[white] border border-[#B9B9B9] hover:bg-[#2E92A0] hover:text-white hover:border-[#2E92A0] transition-colors hover:cursor-pointer"
           >
             Qeydiyyat
           </button>
@@ -91,14 +91,14 @@ const LoginForm = ({ setLogin }) => {
           <input
             type="email"
             placeholder="E-mail ünvanı"
-            className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+            className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           />
         </div>
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
             placeholder="Şifrənizi daxil edin"
-            className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+            className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           />
           <button
             type="button"
@@ -123,7 +123,7 @@ const LoginForm = ({ setLogin }) => {
         <button
           onClick={() => navigate("/")}
           type="submit"
-          className="w-full bg-[#2E92A0] text-white py-4 px-4 rounded-lg hover:bg-[#267A85] transition-colors"
+          className="w-full bg-[#2E92A0] text-white py-4 px-4 rounded-lg hover:bg-[#267A85] transition-colors hover:cursor-pointer"
         >
           Daxil ol
         </button>
@@ -174,7 +174,7 @@ const RegisterForm = ({ setLogin }) => {
           <span className="text-[#3F3F3F]">Hesabınız var?</span>
           <button
             onClick={() => navigate("/giris?type=login")}
-            className="text-[#696969] px-[16px] py-[8px] rounded-[8px] bg-[white] border border-[#B9B9B9] hover:bg-[#2E92A0] hover:text-white hover:border-[#2E92A0] transition-colors"
+            className="text-[#696969] px-[16px] py-[8px] rounded-[8px] bg-[white] border border-[#B9B9B9] hover:bg-[#2E92A0] hover:text-white hover:border-[#2E92A0] transition-colors hover:cursor-pointer"
           >
             Daxil ol
           </button>
@@ -185,12 +185,12 @@ const RegisterForm = ({ setLogin }) => {
           <input
             type="text"
             placeholder="Ad"
-            className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+            className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           />
           <input
             type="text"
             placeholder="Soyad"
-            className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+            className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           />
         </div>
         {/* <select className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F] bg-white">
@@ -201,13 +201,13 @@ const RegisterForm = ({ setLogin }) => {
         <input
           type="email"
           placeholder="E-mail ünvanı"
-          className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+          className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
         />
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
             placeholder="Şifrə təyin edin"
-            className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+            className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           />
           <button
             type="button"
@@ -225,7 +225,7 @@ const RegisterForm = ({ setLogin }) => {
           <input
             type={showConfirmPassword ? "text" : "password"}
             placeholder="Şifrəni təkrarlayın"
-            className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+            className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           />
           <button
             type="button"
@@ -251,11 +251,11 @@ const RegisterForm = ({ setLogin }) => {
         </div>
         <button
           type="submit"
-          className="w-full bg-[#2E92A0] text-white py-2 px-4 rounded-lg hover:bg-[#267A85] transition-colors"
+          className="w-full bg-[#2E92A0] text-white py-4 px-4 rounded-lg hover:bg-[#267A85] transition-colors hover:cursor-pointer"
         >
           Qeydiyyatı tamamla
         </button>
-        <button className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-[#E7E7E7] rounded-lg hover:bg-[#F5F5F5] transition-colors">
+        <button className="w-full flex items-center justify-center gap-2 py-4 px-4 border border-[#E7E7E7] rounded-lg hover:bg-[#F5F5F5] transition-colors">
           <FcGoogle size={20} />
           <span className="text-[#3F3F3F]">Google ilə davam et</span>
         </button>

@@ -57,13 +57,13 @@ const Header = () => {
               <option value="ru">RU</option>
             </select> */}
             <button 
-              className="px-4 py-[10px] font-semibold text-[#2E92A0] hover:text-[white] rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0]"
+              className="px-4 py-[10px] font-semibold text-[#2E92A0] hover:text-[white] rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer"
               onClick={() => navigate("/giris?type=register")}
             >
               Qeydiyyat
             </button>
             <button 
-              className="px-6 py-[10px] bg-[#2E92A0] text-white rounded-[8px] hover:bg-[white] hover:text-[#2E92A0] transition-colors border border-[#2E92A0]"
+              className="px-6 py-[10px] bg-[#2E92A0] text-white rounded-[8px] hover:bg-[white] hover:text-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer"
               onClick={() => navigate("/giris?type=login")}
             >
               Daxil ol

@@ -24,16 +24,16 @@ const Footer = () => {
         </div>
         <div className="social_medias flex items-center gap-x-[16px]">
           <div className="w-[40px] h-[40px] rounded-full border border-[#E7E7E7] flex items-center justify-center">
-            <FaFacebook className="text-[rgba(63,63,63,1)] w-[20px] h-[20px]" />
+            <FaFacebook className="text-[rgba(63,63,63,1)] w-[20px] h-[20px] hover:cursor-pointer hover:text-[#2E92A0] transition-colors" onClick={() => window.open("https://www.facebook.com/atf.az/", "_blank")}/>
           </div>
           <div className="w-[40px] h-[40px] rounded-full border border-[#E7E7E7] flex items-center justify-center">
-            <FaLinkedin className="text-[rgba(63,63,63,1)] w-[20px] h-[20px]" />
+            <FaLinkedin className="text-[rgba(63,63,63,1)] w-[20px] h-[20px] hover:cursor-pointer hover:text-[#2E92A0] transition-colors" onClick={() => window.open("https://www.linkedin.com/company/atf.az/", "_blank")}/>
           </div>
           <div className="w-[40px] h-[40px] rounded-full border border-[#E7E7E7] flex items-center justify-center">
-            <FaInstagram className="text-[rgba(63,63,63,1)] w-[20px] h-[20px]" />
+            <FaInstagram className="text-[rgba(63,63,63,1)] w-[20px] h-[20px] hover:cursor-pointer hover:text-[#2E92A0] transition-colors" onClick={() => window.open("https://www.instagram.com/atf.az/", "_blank")}/>
           </div>
           <div className="w-[40px] h-[40px] rounded-full border border-[#E7E7E7] flex items-center justify-center">
-            <FaTwitter className="text-[rgba(63,63,63,1)] w-[20px] h-[20px]" />
+            <FaTwitter className="text-[rgba(63,63,63,1)] w-[20px] h-[20px] hover:cursor-pointer hover:text-[#2E92A0] transition-colors" onClick={() => window.open("https://www.twitter.com/atf.az/", "_blank")}/>
           </div>
         </div>
       </div>

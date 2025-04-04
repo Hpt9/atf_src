@@ -209,42 +209,52 @@ const IcazelerPage = () => {
               </div>
               
               {/* Pagination - only show if we have items */}
-              {filteredPermits.length > 0 && (
-                <motion.div 
-                  className="pagination flex items-center justify-center mt-8 gap-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1, transition: { delay: 0.3 } }}
-                >
-                  <button 
-                    onClick={prevPage} 
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-8">
+                  <motion.button
+                    onClick={() => paginate(Math.max(currentPage - 1, 1))}
                     disabled={currentPage === 1}
-                    className={`px-[16px] py-[3px] border border-[#E7E7E7] bg-[#FAFAFA] flex items-center justify-center rounded ${currentPage === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
+                    className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
+                      currentPage === 1
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-[#3F3F3F] hover:bg-[#E7E7E7]"
+                    }`}
+                    whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
+                    whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
                   >
                     Geri
-                  </button>
-                  
-                  {getPageNumbers().map(number => (
-                    <button
+                  </motion.button>
+
+                  {getPageNumbers().map((number) => (
+                    <motion.button
                       key={number}
                       onClick={() => paginate(number)}
-                      className={`w-8 h-8 flex items-center justify-center rounded border border-[#E7E7E7] ${
-                        currentPage === number 
-                          ? 'bg-[#2E92A0] text-white border-none' 
-                          : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer ${
+                        currentPage === number
+                          ? "bg-[#2E92A0] text-white"
+                          : "text-[#3F3F3F] border border-[#E7E7E7] hover:bg-[#E7E7E7]"
                       }`}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
                     >
                       {number}
-                    </button>
+                    </motion.button>
                   ))}
-                  
-                  <button 
-                    onClick={nextPage} 
+
+                  <motion.button
+                    onClick={() => paginate(Math.min(currentPage + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${currentPage === totalPages ? 'text-gray-400 cursor-not-allowed' : 'text-[#3F3F3F] hover:bg-[#E7E7E7]'}`}
+                    className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
+                      currentPage === totalPages
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-[#3F3F3F] hover:bg-[#E7E7E7]"
+                    }`}
+                    whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
+                    whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
                   >
                     İrəli
-                  </button>
-                </motion.div>
+                  </motion.button>
+                </div>
               )}
             </motion.div>
           ) : (

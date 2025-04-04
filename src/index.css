@@ -14,3 +14,10 @@
 #root > div > main > div > div > div > div > div.max-h-\[640px\].overflow-y-auto > div > div > div.flex.items-center.w-full.gap-x-\[\] > div.flex.items-center.w-full > p.text-\[\#3F3F3F\].text-\[14px\].w-fit.md\:w-\[20px\].font-normal{
   width: 35px !important;
 }
+
+/* Add this to handle iOS height */
+@supports (-webkit-touch-callout: none) {
+  .h-screen {
+    height: -webkit-fill-available;
+  }
+}

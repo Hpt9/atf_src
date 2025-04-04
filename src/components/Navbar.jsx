@@ -11,22 +11,64 @@ const Navbar = () => {
       <nav className=" w-full">
         <div className="flex items-center justify-between">
           <div className=" items-center space-x-8">
-            <Link to="/" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 cursor-pointer ${location.pathname === '/' ? 'font-medium' : ''}`}>
+            <Link 
+              to="/" 
+              className={`text-[14px] font-medium transition-all duration-150 cursor-pointer ${
+                location.pathname === '/' 
+                  ? 'text-[#2E92A0]' 
+                  : 'text-[#3F3F3F] hover:text-[#2E92A0]'
+              }`}
+            >
               Ana səhifə
             </Link>
-            <Link to="/hs-codes" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 cursor-pointer ${location.pathname === '/hs-codes' ? 'font-medium' : ''}`}>
+            <Link 
+              to="/hs-codes" 
+              className={`text-[14px] font-medium transition-all duration-150 cursor-pointer ${
+                location.pathname === '/hs-codes' 
+                  ? 'text-[#2E92A0]' 
+                  : 'text-[#3F3F3F] hover:text-[#2E92A0]'
+              }`}
+            >
               Hs Kodlar
             </Link>
-            <Link to="/icazeler" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 cursor-pointer ${location.pathname === '/icazeler' ? 'font-medium' : ''}`}>
+            <Link 
+              to="/icazeler" 
+              className={`text-[14px] font-medium transition-all duration-150 cursor-pointer ${
+                location.pathname === '/icazeler' 
+                  ? 'text-[#2E92A0]' 
+                  : 'text-[#3F3F3F] hover:text-[#2E92A0]'
+              }`}
+            >
               İcazələr
             </Link>
-            <Link to="/muracietler" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 cursor-pointer ${location.pathname === '/muracietler' ? 'font-medium' : ''}`}>
+            <Link 
+              to="/muracietler" 
+              className={`text-[14px] font-medium transition-all duration-150 cursor-pointer ${
+                location.pathname === '/muracietler' 
+                  ? 'text-[#2E92A0]' 
+                  : 'text-[#3F3F3F] hover:text-[#2E92A0]'
+              }`}
+            >
               Müraciətlər
             </Link>
-            <Link to="/faq" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 cursor-pointer ${location.pathname === '/faq' ? 'font-medium' : ''}`}>
+            <Link 
+              to="/faq" 
+              className={`text-[14px] font-medium transition-all duration-150 cursor-pointer ${
+                location.pathname === '/faq' 
+                  ? 'text-[#2E92A0]' 
+                  : 'text-[#3F3F3F] hover:text-[#2E92A0]'
+              }`}
+            >
               FAQ
             </Link>
-            <Link to="/elaqe" className={`text-[14px] text-[#3F3F3F] font-medium hover:text-[#2E92A0] transition-all duration-150 cursor-pointer ${location.pathname === '/elaqe' ? 'font-medium' : ''}`}>
+            <Link 
+              to="/elaqe" 
+              className={`text-[14px] font-medium transition-all duration-150 cursor-pointer ${
+                location.pathname === '/elaqe' 
+                  ? 'text-[#2E92A0]' 
+                  : 'text-[#3F3F3F] hover:text-[#2E92A0]'
+              }`}
+            >
               Əlaqə
             </Link>
           </div>
