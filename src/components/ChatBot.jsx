@@ -5,50 +5,54 @@ import { IoAttach } from "react-icons/io5";
 import { IoSend } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
 import Pusher from "pusher-js";
-import { v4 as uuidv4 } from 'uuid';
 
 const ChatBot = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [username] = useState("FERID");
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
-  const [isTyping, setIsTyping] = useState(false);
-  const typingTimeoutRef = useRef(null);
-  
-  // Generate and store unique username
-  const [username] = useState(() => {
-    const stored = localStorage.getItem('chat_user_id');
-    if (stored) return stored;
-    
-    const newId = uuidv4().slice(0, 8); // Using shorter ID for username
-    localStorage.setItem('chat_user_id', newId);
-    return newId;
-  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
+    // Initial messages load
+    const fetchMessages = async () => {
+      try {
+        const response = await fetch("https://atfplatform.tw1.ru/api/messages");
+        const data = await response.json();
+        setMessages(data.map(msg => ({
+          id: msg.id || Date.now(),
+          text: msg.message,
+          sender: msg.username,
+          isUser: msg.username === username,
+          time: new Date(msg.created_at || Date.now()).toLocaleTimeString()
+        })));
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      }
+    };
+
+    fetchMessages();
+  }, [username]);
+
+  useEffect(() => {
+    // Real-time updates with Pusher
     const pusher = new Pusher("6801d180c935c080fb57", {
-      cluster: "eu"
+      cluster: "eu",
     });
 
-    // Subscribe to the public channel
-    const channel = pusher.subscribe('chat');
-    
-    // Listen for messages
+    const channel = pusher.subscribe("realtime");
     channel.bind("message", function (data) {
-      // Only show messages from ADMIN or self
-      if (data.username === 'ADMIN' || data.username === username) {
-        setMessages(prevMessages => [...prevMessages, {
-          id: Date.now(),
-          text: data.message,
-          sender: data.username,
-          isUser: data.username === username,
-          time: new Date().toLocaleTimeString()
-        }]);
-      }
+      setMessages(prevMessages => [...prevMessages, {
+        id: data.id || Date.now(),
+        text: data.message,
+        sender: data.username,
+        isUser: data.username === username,
+        time: new Date().toLocaleTimeString()
+      }]);
     });
 
     return () => {
@@ -62,62 +66,27 @@ const ChatBot = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleTyping = (e) => {
-    setMessage(e.target.value);
-
-    // Send typing status to admin
-    const pusher = new Pusher("6801d180c935c080fb57", { cluster: "eu" });
-    const adminChannel = pusher.subscribe('admin-channel');
-    
-    // Clear previous timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // Send typing status
-    adminChannel.trigger('client-user-typing', {
-      username,
-      typing: true
-    });
-
-    // Stop typing after 1 second of no input
-    typingTimeoutRef.current = setTimeout(() => {
-      adminChannel.trigger('client-user-typing', {
-        username,
-        typing: false
-      });
-    }, 1000);
-  };
-
   const submit = async (e) => {
     e.preventDefault();
+    
     if (!message.trim()) return;
 
     try {
       const response = await fetch("https://atfplatform.tw1.ru/api/messages", {
         method: "POST",
-        headers: {
+        headers: { 
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
           username,
-          message: message
-        })
+          message,
+        }),
       });
 
       if (!response.ok) {
         throw new Error('Failed to send message');
       }
-
-      // Add message to local state
-      setMessages(prevMessages => [...prevMessages, {
-        id: Date.now(),
-        text: message,
-        sender: username,
-        isUser: true,
-        time: new Date().toLocaleTimeString()
-      }]);
-
+      
       setMessage('');
     } catch (error) {
       console.error("Error sending message:", error);
@@ -180,13 +149,18 @@ const ChatBot = () => {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Feedback Buttons */}
+          <div className="flex justify-center gap-4 py-3 border-t">
+            <button className="text-gray-500 hover:text-green-500 transition-colors">
+              <FaRegThumbsUp size={20} />
+            </button>
+            <button className="text-gray-500 hover:text-red-500 transition-colors">
+              <FaRegThumbsDown size={20} />
+            </button>
+          </div>
+
           {/* Chat Input */}
           <div className="p-4 border-t">
-            {isTyping && (
-              <div className="text-sm text-gray-500 mb-2">
-                Admin is typing...
-              </div>
-            )}
             <form onSubmit={submit} className="flex items-center gap-2">
               <button 
                 type="button"
@@ -199,7 +173,7 @@ const ChatBot = () => {
                 placeholder="Mesajınızı yazın"
                 className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:border-[#2E92A0]"
                 value={message}
-                onChange={handleTyping}
+                onChange={(e) => setMessage(e.target.value)}
               />
               <button 
                 type="submit"
