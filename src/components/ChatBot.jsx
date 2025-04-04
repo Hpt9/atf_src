@@ -13,12 +13,12 @@ const ChatBot = () => {
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
   
-  // Generate and store unique user ID but use it as username
+  // Generate and store unique username
   const [username] = useState(() => {
     const stored = localStorage.getItem('chat_user_id');
     if (stored) return stored;
     
-    const newId = uuidv4();
+    const newId = uuidv4().slice(0, 8); // Using shorter ID for username
     localStorage.setItem('chat_user_id', newId);
     return newId;
   });
@@ -28,36 +28,16 @@ const ChatBot = () => {
   };
 
   useEffect(() => {
-    // Initial messages load for this user only
-    const fetchMessages = async () => {
-      try {
-        const response = await fetch(`https://atfplatform.tw1.ru/api/messages/${username}`);
-        const data = await response.json();
-        setMessages(data.map(msg => ({
-          id: msg.id || Date.now(),
-          text: msg.message,
-          sender: msg.username,
-          isUser: msg.username === username,
-          time: new Date(msg.created_at || Date.now()).toLocaleTimeString()
-        })));
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-      }
-    };
+    Pusher.logToConsole = true;
 
-    fetchMessages();
-  }, [username]);
-
-  useEffect(() => {
     const pusher = new Pusher("6801d180c935c080fb57", {
       cluster: "eu",
     });
 
-    // Subscribe to user's personal channel using username
-    const channel = pusher.subscribe(`chat-${username}`);
+    const channel = pusher.subscribe("realtime");
     channel.bind("message", function (data) {
       setMessages(prevMessages => [...prevMessages, {
-        id: data.id || Date.now(),
+        id: Date.now(),
         text: data.message,
         sender: data.username,
         isUser: data.username === username,
@@ -88,7 +68,7 @@ const ChatBot = () => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          username, // Changed from userId to username
+          username,
           message
         }),
       });
@@ -157,16 +137,6 @@ const ChatBot = () => {
               </div>
             ))}
             <div ref={messagesEndRef} />
-          </div>
-
-          {/* Feedback Buttons */}
-          <div className="flex justify-center gap-4 py-3 border-t">
-            <button className="text-gray-500 hover:text-green-500 transition-colors">
-              <FaRegThumbsUp size={20} />
-            </button>
-            <button className="text-gray-500 hover:text-red-500 transition-colors">
-              <FaRegThumbsDown size={20} />
-            </button>
           </div>
 
           {/* Chat Input */}
