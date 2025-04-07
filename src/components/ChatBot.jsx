@@ -19,26 +19,26 @@ const ChatBot = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(() => {
-    // Initial messages load
-    const fetchMessages = async () => {
-      try {
-        const response = await fetch("https://atfplatform.tw1.ru/api/messages");
-        const data = await response.json();
-        setMessages(data.map(msg => ({
-          id: msg.id || Date.now(),
-          text: msg.message,
-          sender: msg.username,
-          isUser: msg.username === username,
-          time: new Date(msg.created_at || Date.now()).toLocaleTimeString()
-        })));
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-      }
-    };
+  // useEffect(() => {
+  //   // Initial messages load
+  //   const fetchMessages = async () => {
+  //     try {
+  //       const response = await fetch("https://atfplatform.tw1.ru/api/messages");
+  //       const data = await response.json();
+  //       setMessages(data.map(msg => ({
+  //         id: msg.id || Date.now(),
+  //         text: msg.message,
+  //         sender: msg.username,
+  //         isUser: msg.username === username,
+  //         time: new Date(msg.created_at || Date.now()).toLocaleTimeString()
+  //       })));
+  //     } catch (error) {
+  //       console.error("Error fetching messages:", error);
+  //     }
+  //   };
 
-    fetchMessages();
-  }, [username]);
+  //   fetchMessages();
+  // }, [username]);
 
   useEffect(() => {
     // Real-time updates with Pusher
