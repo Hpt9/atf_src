@@ -128,7 +128,7 @@ const FaqPage = () => {
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
-        <h1 className="text-[32px] font-semibold text-[#2E92A0] mb-8">
+        <h1 className="text-[20px] md:text-[32px] font-semibold text-[#2E92A0] mb-8">
           Tez-tez verilən suallar
         </h1>
 

@@ -24,13 +24,13 @@ const ElaqePage = () => {
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
-        <div className="grid md:grid-cols-2 gap-8 bg-[#FAFAFA] p-[64px] rounded-[24px]">
+        <div className="grid md:grid-cols-2 gap-8 bg-[transparent] md:bg-[#FAFAFA] p-0 md:p-[64px] rounded-[24px]">
           {/* Left Side - Contact Info */}
           <div className="space-y-6">
-            <h1 className="text-[32px] font-semibold text-[#2E92A0]">
+            <h1 className="text-[20px] md:text-[32px] font-semibold text-[#2E92A0]">
               Bizimlə əlaqə saxlayın
             </h1>
-            <p className="text-[#3F3F3F] text-[16px]">
+            <p className="text-[#3F3F3F] text-[16px] md:text-[24px]">
               Bütün sual, problem, bildirişlərinizi göndərə bilərsiniz
             </p>
 
