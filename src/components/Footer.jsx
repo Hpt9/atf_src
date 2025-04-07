@@ -14,12 +14,12 @@ const Footer = () => {
       <div className="flex flex-col-reverse md:flex-row gap-y-[32px] md:gap-y-0 justify-between items-center w-full max-w-[1920px]">
         <p className=" text-center text-[rgba(63,63,63,1)]">Bütün hüquqlar qorunur - 2025</p>
         <div className="flex items-center gap-x-[24px] lg:gap-x-[32px] xl:gap-x-[64px]">
-          <img src={KOB_LOGO} alt="KOB LOGO" className="w-[55px] h-[70px]" />
-          <img src={AGTL_LOGO} alt="AGTL LOGO" className="w-[70px] h-[64px]" />
+          <img src={KOB_LOGO} alt="KOB LOGO" className="w-[40px] h-[55px] lg:w-[55px] lg:h-[70px] " />
+          <img src={AGTL_LOGO} alt="AGTL LOGO" className="w-[55px] h-[49px] lg:w-[70px] lg:h-[64px]" />
           <img
             src={PASHA_LOGO}
             alt="PASHA LOGO"
-            className="w-[110px] h-[40px]"
+            className="w-[95px] h-[25px] lg:w-[110px] lg:h-[40px]"
           />
         </div>
         <div className="social_medias flex items-center gap-x-[16px]">

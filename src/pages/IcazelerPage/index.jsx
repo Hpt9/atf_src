@@ -271,7 +271,7 @@ const IcazelerPage = () => {
               <div className="p-4 border-b border-[#E7E7E7] flex items-center">
                 <motion.button 
                   onClick={() => setSelectedCard(null)}
-                  className="mr-4 text-[#3F3F3F] hover:text-[#2E92A0] transition-colors"
+                  className="mr-4 text-[#3F3F3F] hover:text-[#2E92A0] transition-colors hover:cursor-pointer w-[30px] h-[30px] hover:scale-110 hover:bg-[#fafafa] rounded-[50%] flex items-center justify-center"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >

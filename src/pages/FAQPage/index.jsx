@@ -173,43 +173,49 @@ const FaqPage = () => {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mt-8">
-            <button
+            <motion.button
               onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
               disabled={currentPage === 1}
-              className={`px-4 py-2 rounded-lg border ${
+              className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
                 currentPage === 1
-                  ? 'text-gray-400 border-gray-200'
-                  : 'text-[#3F3F3F] border-[#E7E7E7] hover:bg-[#E7E7E7]'
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-[#3F3F3F] hover:bg-[#E7E7E7]"
               }`}
+              whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
+              whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
             >
               Geri
-            </button>
+            </motion.button>
 
-            {getPageNumbers().map((page) => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
+            {getPageNumbers().map((number) => (
+              <motion.button
+                key={number}
+                onClick={() => handlePageChange(number)}
                 className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer ${
-                  currentPage === page
-                    ? 'bg-[#2E92A0] text-white'
-                    : 'text-[#3F3F3F] border border-[#E7E7E7] hover:bg-[#E7E7E7]'
+                  currentPage === number
+                    ? "bg-[#2E92A0] text-white"
+                    : "text-[#3F3F3F] border border-[#E7E7E7] hover:bg-[#E7E7E7]"
                 }`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
               >
-                {page}
-              </button>
+                {number}
+              </motion.button>
             ))}
 
-            <button
+            <motion.button
               onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className={`px-4 py-2 rounded-lg border ${
+              className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
                 currentPage === totalPages
-                  ? 'text-gray-400 border-gray-200'
-                  : 'text-[#3F3F3F] border-[#E7E7E7] hover:bg-[#E7E7E7]'
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-[#3F3F3F] hover:bg-[#E7E7E7]"
               }`}
+              whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
+              whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
             >
               İrəli
-            </button>
+            </motion.button>
           </div>
         )}
       </div>

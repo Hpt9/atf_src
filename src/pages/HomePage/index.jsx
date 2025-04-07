@@ -36,6 +36,24 @@ const HomePage = () => {
       title: "İcazə ərizəsinin əldə edilməsi",
       number: "1163",
       link: "/icazeler",
+    },
+    {
+      id: 4,
+      icon: (
+        <FaRegFileAlt className="w-[24px] h-[24px] group-hover:text-[#2E92A0] transition-all duration-200" />
+      ),
+      title: "İcazə ərizəsinin əldə edilməsi",
+      number: "1163",
+      link: "/icazeler",
+    },
+    {
+      id: 5,
+      icon: (
+        <FaRegFileAlt className="w-[24px] h-[24px] group-hover:text-[#2E92A0] transition-all duration-200" />
+      ),
+      title: "İcazə ərizəsinin əldə edilməsi",
+      number: "1163",
+      link: "/icazeler",
     }
   ];
 

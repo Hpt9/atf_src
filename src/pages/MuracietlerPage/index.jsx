@@ -476,7 +476,7 @@ const MuracietlerPage = () => {
                           {app.description}
                         </p>
                       </div>
-                      <div className="w-[40px] md:w-[80px] flex justify-center">
+                      <div className="w-[40px] md:w-[80px] flex justify-end">
                         <button className="text-[#2E92A0] hover:text-[#1E7A8A] transition-colors cursor-pointer">
                           <svg
                             width="24"

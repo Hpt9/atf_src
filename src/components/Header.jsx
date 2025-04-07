@@ -35,8 +35,8 @@ const Header = () => {
   };
 
   return (
-    <div className="w-full flex justify-center sticky top-0 z-[1000]">
-      <div className="w-full max-w-[2136px] flex flex-col sticky top-0 z-50">
+    <div className="w-full flex justify-center sticky top-0 z-[1000] bg-white">
+      <div className="w-full max-w-[2136px] flex flex-col ">
         <div className="login w-full h-[118px] bg-white flex justify-between items-center px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-[20px]">
           <img
             src={ATF_LOGO}
@@ -63,7 +63,7 @@ const Header = () => {
               Qeydiyyat
             </button>
             <button 
-              className="px-6 py-[10px] bg-[#2E92A0] text-white rounded-[8px] hover:bg-[white] hover:text-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer"
+              className="px-6 py-[10px] bg-[#2E92A0] font-semibold text-white rounded-[8px] hover:bg-[white] hover:text-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer"
               onClick={() => navigate("/giris?type=login")}
             >
               Daxil ol
@@ -116,7 +116,7 @@ const Header = () => {
                     Qeydiyyat
                   </button>
                   <button 
-                    className="px-6 py-[10px] w-[50%] bg-[#2E92A0] text-white rounded-[8px] hover:bg-white hover:text-[#2E92A0] transition-colors border border-[#2E92A0]"
+                    className="px-6 py-[10px] w-[50%] font-semibold bg-[#2E92A0] text-white rounded-[8px] hover:bg-white hover:text-[#2E92A0] transition-colors border border-[#2E92A0]"
                     onClick={() => navigate("/giris?type=login")}
                   >
                     Daxil ol

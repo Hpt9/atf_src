@@ -11,7 +11,7 @@ const Navbar = () => {
     <header className=" text-white md:px-[32px] lg:px-[50px] xl:px-[108px] py-[20px] border-t border-[#FAFAFA] bg-white h-[83px] hidden md:flex items-center">
       <nav className=" w-full">
         <div className="flex items-center justify-between">
-          <div className=" items-center space-x-8 flex relative">
+          <div className=" items-center space-x-4 lg:space-x-8 flex relative">
             <Link 
               to="/" 
               className={`text-[14px] font-medium transition-all duration-150 cursor-pointer relative ${
