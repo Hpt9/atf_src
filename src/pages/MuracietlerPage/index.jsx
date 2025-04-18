@@ -8,8 +8,12 @@ import PermissionsStep from './components/PermissionsStep';
 import FormStep from './components/FormStep';
 import SuccessStep from './components/SuccessStep';
 import { modalOverlayAnimation, modalContentAnimation } from './components/shared/animations';
-
+import { useNavigate } from "react-router-dom";
 const MuracietlerPage = () => {
+  const navigate = useNavigate();
+  if(localStorage.getItem("token") === null){
+    navigate("/giris");
+  }
   const { setSearchBar } = useSearchBar();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState("date");

@@ -6,6 +6,8 @@ import { FcGoogle } from "react-icons/fc";
 import { IoIosArrowBack } from "react-icons/io";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { GradientText } from "../../components/shared/GradientText/GradientText";
+import { useAuth } from "../../context/AuthContext";
+import axios from "axios";
 
 export const Authentication = () => {
   const [searchParams] = useSearchParams();
@@ -56,7 +58,40 @@ export const Authentication = () => {
 
 const LoginForm = ({ setLogin }) => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  function handleLogin() {
+    setError(false);
+    setErrorMessage("");
+    
+    axios
+      .post("https://atfplatform.tw1.ru/api/login", {
+        email: email,
+        password: password,
+      })
+      .then((res) => {
+        if (res.status === 200) {
+          const { token, ...userData } = res.data;
+          login(userData, token);
+          navigate("/");
+        }
+      })
+      .catch((err) => {
+        setError(true);
+        if (err.response) {
+          setErrorMessage(err.response.data.message || "Email və ya şifrə yanlışdır");
+        } else if (err.request) {
+          setErrorMessage("Təkrar yoxlayın.");
+        } else {
+          setErrorMessage("Bir xəta baş verdi. Yenidən yoxlayın.");
+        }
+      });
+  }
 
   return (
     <motion.div
@@ -94,14 +129,22 @@ const LoginForm = ({ setLogin }) => {
           <input
             type="email"
             placeholder="E-mail ünvanı"
-            className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
+              error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
+            }`}
           />
         </div>
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
             placeholder="Şifrənizi daxil edin"
-            className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
+              error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
+            }`}
           />
           <button
             type="button"
@@ -115,6 +158,11 @@ const LoginForm = ({ setLogin }) => {
             )}
           </button>
         </div>
+        {error && (
+          <div className="text-[#E94134] text-sm">
+            {errorMessage}
+          </div>
+        )}
         <div className="flex justify-end">
           <button
             type="button"
@@ -124,7 +172,10 @@ const LoginForm = ({ setLogin }) => {
           </button>
         </div>
         <button
-          onClick={() => navigate("/")}
+          onClick={(e) => {
+            e.preventDefault();
+            handleLogin();
+          }}
           type="submit"
           className="w-full bg-[#2E92A0] text-white py-4 px-4 rounded-[16px] hover:bg-[#267A85] transition-colors hover:cursor-pointer"
         >
