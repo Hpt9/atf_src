@@ -7,6 +7,7 @@ import { IoIosArrowBack } from "react-icons/io";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { GradientText } from "../../components/shared/GradientText/GradientText";
 import { useAuth } from "../../context/AuthContext";
+import toast, { Toaster } from 'react-hot-toast';
 import axios from "axios";
 
 export const Authentication = () => {
@@ -24,6 +25,7 @@ export const Authentication = () => {
 
   return (
     <div className="w-full overflow-hidden flex justify-center h-screen">
+      <Toaster position="top-right" />
       <div className="w-full max-w-[1920px] flex gap-x-[32px] lg:gap-x-[100px] p-[16px] md:p-[30px] lg:p-[60px]">
         <motion.div
           className="w-[50%] h-full hidden md:flex justify-end "
@@ -199,6 +201,85 @@ const RegisterForm = ({ setLogin }) => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    surname: "",
+    phone: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const clearForm = () => {
+    setFormData({
+      name: "",
+      surname: "",
+      phone: "",
+      email: "",
+      password: "",
+      confirmPassword: ""
+    });
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    setError(false);
+    setErrorMessage("");
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError(true);
+      setErrorMessage("Şifrələr eyni deyil");
+      return;
+    }
+
+    // Prepare data for API
+    const registerData = {
+      name: formData.name,
+      surname: formData.surname,
+      phone: formData.phone.replace(/\D/g, ''), // Remove non-digits
+      email: formData.email,
+      password: formData.password
+    };
+
+    axios
+      .post("https://atfplatform.tw1.ru/api/register", registerData)
+      .then((res) => {
+        if (res.status === 200 || res.status === 201) {
+          toast.success('Qeydiyyat uğurla tamamlandı!', {
+            duration: 2000,
+          });
+          
+          // Clear form immediately
+          clearForm();
+          
+          // Wait for toast duration before redirecting
+          setTimeout(() => {
+            navigate("/giris?type=login");
+          }, 2000);
+        }
+      })
+      .catch((err) => {
+        setError(true);
+        if (err.response) {
+          setErrorMessage(err.response.data.message || "Qeydiyyat zamanı xəta baş verdi");
+        } else if (err.request) {
+          setErrorMessage("Şəbəkə xətası");
+        } else {
+          setErrorMessage("Xəta baş verdi");
+        }
+      });
+  };
 
   return (
     <motion.div
@@ -209,12 +290,6 @@ const RegisterForm = ({ setLogin }) => {
       transition={{ duration: 0.4, ease: "easeInOut" }}
     >
       <div className="flex items-center gap-4">
-        {/* <button
-          onClick={() => setLogin(true)}
-          className="text-[#3F3F3F] hover:text-[#2E92A0] transition-colors"
-        >
-          <IoIosArrowBack size={24} />
-        </button> */}
         <div className="space-y-2">
           <h1 className="text-[32px] font-semibold text-[#3F3F3F]">
             Xoş gəlmisiniz!
@@ -239,34 +314,59 @@ const RegisterForm = ({ setLogin }) => {
           </button>
         </div>
       </div>
-      <form className="space-y-4">
+      <form onSubmit={handleRegister} className="space-y-4">
         <div className="grid grid-cols-1 gap-4">
           <input
             type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
             placeholder="Ad"
-            className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+            className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
+              error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
+            }`}
           />
           <input
             type="text"
+            name="surname"
+            value={formData.surname}
+            onChange={handleChange}
             placeholder="Soyad"
-            className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+            className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
+              error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
+            }`}
           />
         </div>
-        {/* <select className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F] bg-white">
-          <option value="">Cinsiniz</option>
-          <option value="male">Kişi</option>
-          <option value="female">Qadın</option>
-        </select> */}
+        <input
+          type="tel"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          placeholder="994559385489"
+          className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
+            error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
+          }`}
+        />
         <input
           type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
           placeholder="E-mail ünvanı"
-          className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+          className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
+            error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
+          }`}
         />
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
             placeholder="Şifrə təyin edin"
-            className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+            className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
+              error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
+            }`}
           />
           <button
             type="button"
@@ -283,8 +383,13 @@ const RegisterForm = ({ setLogin }) => {
         <div className="relative">
           <input
             type={showConfirmPassword ? "text" : "password"}
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
             placeholder="Şifrəni təkrarlayın"
-            className="w-full px-4 py-4 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+            className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
+              error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
+            }`}
           />
           <button
             type="button"
@@ -298,6 +403,11 @@ const RegisterForm = ({ setLogin }) => {
             )}
           </button>
         </div>
+        {error && (
+          <div className="text-[#E94134] text-sm">
+            {errorMessage}
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -310,7 +420,7 @@ const RegisterForm = ({ setLogin }) => {
         </div>
         <button
           type="submit"
-          className="w-full bg-[#2E92A0] text-white py-4 px-4 rounded-lg hover:bg-[#267A85] transition-colors hover:cursor-pointer"
+          className="w-full bg-[#2E92A0] text-white py-4 px-4 rounded-[16px] hover:bg-[#267A85] transition-colors hover:cursor-pointer"
         >
           Qeydiyyatı tamamla
         </button>
