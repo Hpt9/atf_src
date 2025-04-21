@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 const MuracietlerPage = () => {
   const navigate = useNavigate();
   if(localStorage.getItem("token") === null){
-    navigate("/giris");
+    navigate("/giris?type=login");
   }
   const { setSearchBar } = useSearchBar();
   const [searchQuery, setSearchQuery] = useState("");

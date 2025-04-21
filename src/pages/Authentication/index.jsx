@@ -210,13 +210,13 @@ const RegisterForm = ({ setLogin }) => {
     phone: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    password_confirmation: ""
   });
   const [errors, setErrors] = useState({
     phone: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    password_confirmation: "",
     terms: ""
   });
 
@@ -351,7 +351,8 @@ const RegisterForm = ({ setLogin }) => {
       surname: formData.surname,
       phone: formData.phone.replace(/\D/g, ''), // Remove all non-digits
       email: formData.email,
-      password: formData.password
+      password: formData.password,
+      password_confirmation: formData.confirmPassword
     };
 
     setIsLoading(true);
