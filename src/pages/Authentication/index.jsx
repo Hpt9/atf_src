@@ -199,8 +199,11 @@ const LoginForm = ({ setLogin }) => {
 
 const RegisterForm = ({ setLogin }) => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     surname: "",
@@ -209,75 +212,192 @@ const RegisterForm = ({ setLogin }) => {
     password: "",
     confirmPassword: ""
   });
-  const [error, setError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errors, setErrors] = useState({
+    phone: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    terms: ""
+  });
 
-  const clearForm = () => {
-    setFormData({
-      name: "",
-      surname: "",
-      phone: "",
-      email: "",
-      password: "",
-      confirmPassword: ""
-    });
+  const formatPhoneNumber = (value) => {
+    // Remove all non-digit characters
+    const number = value.replace(/\D/g, '');
+    
+    // Return empty if no input
+    if (number.length === 0) return '';
+    
+    // Start building the formatted number
+    let formatted = '+';
+    
+    // Add the country code
+    if (number.length >= 3) {
+      formatted += number.slice(0, 3);
+      if (number.length > 3) formatted += '-';
+    } else {
+      return formatted + number;
+    }
+    
+    // Add the operator code
+    if (number.length >= 5) {
+      formatted += number.slice(3, 5);
+      if (number.length > 5) formatted += '-';
+    } else {
+      return formatted + number.slice(3);
+    }
+    
+    // Add the first part of subscriber number
+    if (number.length >= 8) {
+      formatted += number.slice(5, 8);
+      if (number.length > 8) formatted += '-';
+    } else {
+      return formatted + number.slice(5);
+    }
+    
+    // Add the second part
+    if (number.length >= 10) {
+      formatted += number.slice(8, 10);
+      if (number.length > 10) formatted += '-';
+    } else {
+      return formatted + number.slice(8);
+    }
+    
+    // Add the last part
+    if (number.length >= 12) {
+      formatted += number.slice(10, 12);
+    } else {
+      return formatted + number.slice(10);
+    }
+    
+    return formatted;
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // Special handling for phone number formatting
+    if (name === 'phone') {
+      const formattedNumber = formatPhoneNumber(value);
+      setFormData(prev => ({
+        ...prev,
+        [name]: formattedNumber
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ""
+      }));
+    }
+
+    // Real-time password match validation
+    if (name === "password" || name === "confirmPassword") {
+      const password = name === "password" ? value : formData.password;
+      const confirmPassword = name === "confirmPassword" ? value : formData.confirmPassword;
+      
+      if (password && confirmPassword) {
+        if (password !== confirmPassword) {
+          setErrors(prev => ({
+            ...prev,
+            password: "Şifrələr eyni deyil",
+            confirmPassword: "Şifrələr eyni deyil"
+          }));
+        } else {
+          setErrors(prev => ({
+            ...prev,
+            password: "",
+            confirmPassword: ""
+          }));
+        }
+      }
+    }
   };
 
   const handleRegister = (e) => {
     e.preventDefault();
-    setError(false);
-    setErrorMessage("");
-
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError(true);
-      setErrorMessage("Şifrələr eyni deyil");
+    
+    // Validate terms acceptance
+    if (!acceptedTerms) {
+      setErrors(prev => ({
+        ...prev,
+        terms: "Qeydiyyatdan keçmək üçün istifadəçi şərtlərini qəbul etməlisiniz"
+      }));
       return;
     }
 
-    // Prepare data for API
+    // Only validate password match in frontend
+    if (formData.password !== formData.confirmPassword) {
+      setErrors({
+        ...errors,
+        password: "Şifrələr eyni deyil",
+        confirmPassword: "Şifrələr eyni deyil"
+      });
+      return;
+    }
+
+    // Clear any existing errors before submission
+    setErrors({});
+
+    // Prepare data for API - strip formatting from phone number
     const registerData = {
       name: formData.name,
       surname: formData.surname,
-      phone: formData.phone.replace(/\D/g, ''), // Remove non-digits
+      phone: formData.phone.replace(/\D/g, ''), // Remove all non-digits
       email: formData.email,
       password: formData.password
     };
+
+    setIsLoading(true);
 
     axios
       .post("https://atfplatform.tw1.ru/api/register", registerData)
       .then((res) => {
         if (res.status === 200 || res.status === 201) {
+          const { token, user } = res.data;
+          
+          // Show success toast
           toast.success('Qeydiyyat uğurla tamamlandı!', {
             duration: 2000,
           });
           
-          // Clear form immediately
-          clearForm();
+          // Log in the user immediately
+          login(user, token);
           
-          // Wait for toast duration before redirecting
+          // Navigate to home page after toast
           setTimeout(() => {
-            navigate("/giris?type=login");
+            navigate("/");
           }, 2000);
         }
       })
       .catch((err) => {
-        setError(true);
-        if (err.response) {
-          setErrorMessage(err.response.data.message || "Qeydiyyat zamanı xəta baş verdi");
+        if (err.response && err.response.data) {
+          // Handle only backend-specific validation errors (email and phone)
+          const backendErrors = err.response.data;
+          const newErrors = {};
+          
+          if (backendErrors.phone) {
+            newErrors.phone = "Belə bir telefon artıq mövcuddur.";
+          }
+          if (backendErrors.email) {
+            newErrors.email = "Belə bir e-poçt ünvanı artıq mövcuddur.";
+          }
+          
+          setErrors(newErrors);
         } else if (err.request) {
-          setErrorMessage("Şəbəkə xətası");
+          toast.error("Şəbəkə xətası");
         } else {
-          setErrorMessage("Xəta baş verdi");
+          toast.error("Xəta baş verdi");
         }
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -322,9 +442,7 @@ const RegisterForm = ({ setLogin }) => {
             value={formData.name}
             onChange={handleChange}
             placeholder="Ad"
-            className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
-              error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
-            }`}
+            className="w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] border-[#E7E7E7] focus:border-[#2E92A0]"
           />
           <input
             type="text"
@@ -332,98 +450,143 @@ const RegisterForm = ({ setLogin }) => {
             value={formData.surname}
             onChange={handleChange}
             placeholder="Soyad"
-            className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
-              error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
-            }`}
+            className="w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] border-[#E7E7E7] focus:border-[#2E92A0]"
           />
         </div>
-        <input
-          type="tel"
-          name="phone"
-          value={formData.phone}
-          onChange={handleChange}
-          placeholder="994559385489"
-          className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
-            error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
-          }`}
-        />
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          placeholder="E-mail ünvanı"
-          className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
-            error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
-          }`}
-        />
-        <div className="relative">
+        <div className="space-y-1">
           <input
-            type={showPassword ? "text" : "password"}
-            name="password"
-            value={formData.password}
+            type="tel"
+            name="phone"
+            value={formData.phone}
             onChange={handleChange}
-            placeholder="Şifrə təyin edin"
+            placeholder="+994-99-999-99-99"
             className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
-              error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
+              errors.phone ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
             }`}
           />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] cursor-pointer"
-          >
-            {showPassword ? (
-              <IoEyeOffOutline size={20} />
-            ) : (
-              <IoEyeOutline size={20} />
-            )}
-          </button>
+          {errors.phone && (
+            <div className="text-[#E94134] text-sm">
+              {errors.phone}
+            </div>
+          )}
         </div>
-        <div className="relative">
+        <div className="space-y-1">
           <input
-            type={showConfirmPassword ? "text" : "password"}
-            name="confirmPassword"
-            value={formData.confirmPassword}
+            type="email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
-            placeholder="Şifrəni təkrarlayın"
+            placeholder="E-mail ünvanı"
             className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
-              error ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
+              errors.email ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
             }`}
           />
-          <button
-            type="button"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] cursor-pointer"
-          >
-            {showConfirmPassword ? (
-              <IoEyeOffOutline size={20} />
-            ) : (
-              <IoEyeOutline size={20} />
-            )}
-          </button>
+          {errors.email && (
+            <div className="text-[#E94134] text-sm">
+              {errors.email}
+            </div>
+          )}
         </div>
-        {error && (
-          <div className="text-[#E94134] text-sm">
-            {errorMessage}
+        <div className="space-y-1">
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Şifrə təyin edin"
+              className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
+                errors.password ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
+              }`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] cursor-pointer"
+            >
+              {showPassword ? (
+                <IoEyeOffOutline size={20} />
+              ) : (
+                <IoEyeOutline size={20} />
+              )}
+            </button>
           </div>
-        )}
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="terms"
-            className="w-4 h-4 rounded border-[#E7E7E7] text-[#2E92A0] focus:ring-[#2E92A0]"
-          />
-          <label htmlFor="terms" className="text-[#3F3F3F] text-sm">
-            İstifadəçi şərtlərini oxudum və razıyam
-          </label>
+          {errors.password && (
+            <div className="text-[#E94134] text-sm">
+              {errors.password}
+            </div>
+          )}
         </div>
+        <div className="space-y-1">
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Şifrəni təkrarlayın"
+              className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
+                errors.confirmPassword ? 'border-[#E94134]' : 'border-[#E7E7E7] focus:border-[#2E92A0]'
+              }`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A0A0A0] cursor-pointer"
+            >
+              {showConfirmPassword ? (
+                <IoEyeOffOutline size={20} />
+              ) : (
+                <IoEyeOutline size={20} />
+              )}
+            </button>
+          </div>
+          {errors.confirmPassword && (
+            <div className="text-[#E94134] text-sm">
+              {errors.confirmPassword}
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={acceptedTerms}
+              onChange={(e) => {
+                setAcceptedTerms(e.target.checked);
+                if (e.target.checked && errors.terms) {
+                  setErrors(prev => ({ ...prev, terms: "" }));
+                }
+              }}
+              className="w-4 h-4 rounded border-[#E7E7E7] text-[#2E92A0] focus:ring-[#2E92A0]"
+            />
+            <label htmlFor="terms" className="text-[#3F3F3F] text-sm">
+              İstifadəçi şərtlərini oxudum və razıyam
+            </label>
+          </div>
+          {errors.terms && (
+            <div className="text-[#E94134] text-sm">
+              {errors.terms}
+            </div>
+          )}
+        </div>
+
         <button
           type="submit"
-          className="w-full bg-[#2E92A0] text-white py-4 px-4 rounded-[16px] hover:bg-[#267A85] transition-colors hover:cursor-pointer"
+          disabled={isLoading}
+          className="w-full bg-[#2E92A0] text-white py-4 px-4 rounded-[16px] hover:bg-[#267A85] transition-colors hover:cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed relative"
         >
-          Qeydiyyatı tamamla
+          {isLoading ? (
+            <div className="inset-0 flex items-center justify-center">
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            "Qeydiyyatı tamamla"
+          )}
         </button>
+
         <GradientText
           colors={["#4286F5", "#34A853", "#F9BB04", "#E94134"]}
           animationSpeed={20}
@@ -433,6 +596,13 @@ const RegisterForm = ({ setLogin }) => {
           Google ilə davam et
         </GradientText>
       </form>
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-[#0000003f] bg-opacity-50 flex items-center justify-center z-[1001]">
+          <div className="w-16 h-16 border-4 border-[#2E92A0] border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
     </motion.div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -20,15 +21,29 @@ export const AuthProvider = ({ children }) => {
   const login = (userData, token) => {
     setUser(userData);
     setToken(token);
-    // localStorage.setItem('user', JSON.stringify(userData));
-    // localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('token', token);
   };
 
   const logout = () => {
-    setUser(null);
-    setToken(null);
-    // localStorage.removeItem('user');
-    // localStorage.removeItem('token');
+    axios.post('https://atfplatform.tw1.ru/api/logout', {}, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    }).then((response) => {
+      console.log(response);
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    }).catch((error) => {
+      // Even if the API call fails, we should still clear the local state
+      console.log(error);
+      // setUser(null);
+      // setToken(null);
+      // localStorage.removeItem('user');
+      // localStorage.removeItem('token');
+    });
   };
 
   return (
