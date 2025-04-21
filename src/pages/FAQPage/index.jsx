@@ -1,93 +1,17 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoIosArrowDown } from "react-icons/io";
+import { useEffect } from 'react';
+import axios from "axios";
+import useLanguageStore from "../../store/languageStore";
 
 const FaqPage = () => {
   const [openIndex, setOpenIndex] = useState(null);
-
-  const faqData = [
-    {
-      id: 1,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 2,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 3,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 4,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 5,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 6,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 7,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 8,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 9,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 10,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 11,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 12,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 13,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 14,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 15,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    },
-    {
-      id: 16,
-      question: "Sifarişlərin statusuna haradan baxa bilərəm?",
-      answer: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae dolores deserunt ea doloremque natus error, rerum quas odio quaerat nam ex commodi hic, suscipit in a veritatis pariatur minus consequuntur!"
-    }
-  ];
-
+  const [faqData, setFaqData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { language } = useLanguageStore();
+  
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const totalPages = Math.ceil(faqData.length / itemsPerPage);
@@ -125,11 +49,67 @@ const FaqPage = () => {
     return pageNumbers;
   };
 
+  // Get page title based on language
+  const getPageTitle = () => {
+    switch(language) {
+      case 'en':
+        return 'Frequently Asked Questions';
+      case 'ru':
+        return 'Часто задаваемые вопросы';
+      default:
+        return 'Tez-tez verilən suallar';
+    }
+  };
+
+  // Get pagination text based on language
+  const getPaginationText = () => {
+    switch(language) {
+      case 'en':
+        return { prev: 'Previous', next: 'Next' };
+      case 'ru':
+        return { prev: 'Назад', next: 'Вперед' };
+      default:
+        return { prev: 'Əvvəl', next: 'Sonra' };
+    }
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    axios.get("https://atfplatform.tw1.ru/api/faqs")
+      .then((res) => {
+        setFaqData(res.data);
+        setError(null);
+      })
+      .catch((err) => {
+        setError("Failed to load FAQ data");
+        console.error("Error fetching FAQs:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="w-full flex justify-center items-center min-h-[400px]">
+        <div className="w-16 h-16 border-4 border-[#2E92A0] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full flex justify-center items-center min-h-[400px]">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
         <h1 className="text-[20px] md:text-[32px] font-semibold text-[#2E92A0] mb-8">
-          Tez-tez verilən suallar
+          {getPageTitle()}
         </h1>
 
         <div className="space-y-4">
@@ -138,18 +118,19 @@ const FaqPage = () => {
               key={faq.id}
               className="border border-[#E7E7E7] rounded-lg bg-[#FAFAFA] overflow-hidden"
             >
-              <motion.button
+              <button
                 className="w-full p-4 flex justify-between items-center text-left cursor-pointer"
                 onClick={() => toggleAccordion(index)}
               >
-                <span className="text-[#3F3F3F] font-medium">{faq.question}</span>
-                <motion.div
-                  animate={{ rotate: openIndex === index ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
+                <span className="text-[#3F3F3F] font-medium">{faq.question[language]}</span>
+                <div
+                  className={`transform transition-transform duration-200 ${
+                    openIndex === index ? 'rotate-180' : ''
+                  }`}
                 >
                   <IoIosArrowDown className="text-[#2E92A0] text-xl" />
-                </motion.div>
-              </motion.button>
+                </div>
+              </button>
 
               <AnimatePresence>
                 {openIndex === index && (
@@ -160,9 +141,10 @@ const FaqPage = () => {
                     transition={{ duration: 0.2 }}
                     className="border-t border-[#E7E7E7]"
                   >
-                    <div className="p-4 text-[#3F3F3F]">
-                      {faq.answer}
-                    </div>
+                    <div 
+                      className="p-4 text-[#3F3F3F]"
+                      dangerouslySetInnerHTML={{ __html: faq.answer[language] }}
+                    />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -173,7 +155,7 @@ const FaqPage = () => {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mt-8">
-            <motion.button
+            <button
               onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
               disabled={currentPage === 1}
               className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
@@ -181,14 +163,12 @@ const FaqPage = () => {
                   ? "text-gray-400 cursor-not-allowed"
                   : "text-[#3F3F3F] hover:bg-[#E7E7E7]"
               }`}
-              whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
-              whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
             >
-              Geri
-            </motion.button>
+              {getPaginationText().prev}
+            </button>
 
             {getPageNumbers().map((number) => (
-              <motion.button
+              <button
                 key={number}
                 onClick={() => handlePageChange(number)}
                 className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer ${
@@ -196,14 +176,12 @@ const FaqPage = () => {
                     ? "bg-[#2E92A0] text-white"
                     : "text-[#3F3F3F] border border-[#E7E7E7] hover:bg-[#E7E7E7]"
                 }`}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
               >
                 {number}
-              </motion.button>
+              </button>
             ))}
 
-            <motion.button
+            <button
               onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
               disabled={currentPage === totalPages}
               className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
@@ -211,11 +189,9 @@ const FaqPage = () => {
                   ? "text-gray-400 cursor-not-allowed"
                   : "text-[#3F3F3F] hover:bg-[#E7E7E7]"
               }`}
-              whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
-              whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
             >
-              İrəli
-            </motion.button>
+              {getPaginationText().next}
+            </button>
           </div>
         )}
       </div>

@@ -4,35 +4,44 @@ import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { IoClose, IoArrowBack } from "react-icons/io5";
 import { FaDownload } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
+import useLanguageStore from "../../store/languageStore";
 
 const IcazelerPage = () => {
   const { setSearchBar } = useSearchBar();
+  const { language } = useLanguageStore();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCard, setSelectedCard] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const itemsPerPage = 12;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [approvalsData, setApprovalsData] = useState({
+    data: [],
+    total: 0,
+    per_page: 12,
+    current_page: 1,
+    last_page: 1
+  });
 
-  // Sample data for permits
-  const permits = Array(100).fill().map((_, index) => ({
-    id: index + 1,
-    name: `AQTA ${index}`,
-    fullName: "Azərbaycan Food Security Agency",
-    logo: "/src/assets/images/aqta-logo.png", // Replace with actual logo path
-  }));
+  // Fetch approvals data
+  const fetchApprovals = async (page) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`https://atfplatform.tw1.ru/api/approvals?page=${page}`);
+      setApprovalsData(response.data);
+      setError(null);
+    } catch (err) {
+      setError("Məlumatları yükləyərkən xəta baş verdi");
+      console.error("Error fetching approvals:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Filter permits based on search query
-  const filteredPermits = permits.filter(permit => 
-    permit.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    permit.fullName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Calculate total pages based on filtered items
-  const totalPages = Math.ceil(filteredPermits.length / itemsPerPage);
-  
-  // Get current items from filtered list
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredPermits.slice(indexOfFirstItem, indexOfLastItem);
+  // Fetch data when page changes
+  useEffect(() => {
+    fetchApprovals(currentPage);
+  }, [currentPage]);
 
   // Reset to first page when search query changes
   useEffect(() => {
@@ -43,46 +52,26 @@ const IcazelerPage = () => {
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-  
-  // Go to next page
-  const nextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(prevPage => prevPage + 1);
-    }
-  };
-  
-  // Go to previous page
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(prevPage => prevPage - 1);
+
+  // Update search placeholder based on language
+  const getSearchPlaceholder = () => {
+    switch(language) {
+      case 'en':
+        return "Search permits";
+      case 'ru':
+        return "Поиск разрешений";
+      default:
+        return "İcazələri axtar";
     }
   };
 
-  // Generate page numbers
-  const getPageNumbers = () => {
-    const pageNumbers = [];
-    let startPage = Math.max(1, currentPage - 2);
-    let endPage = Math.min(totalPages, startPage + 4);
-    
-    // Adjust start page if we're near the end
-    if (endPage - startPage < 4) {
-      startPage = Math.max(1, endPage - 4);
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-      pageNumbers.push(i);
-    }
-    
-    return pageNumbers;
-  };
-
-  // Set the search bar when component mounts
+  // Set the search bar when component mounts or language changes
   useEffect(() => {
     setSearchBar(
       <div className="relative w-full md:w-[300px] px-[16px]">
         <input
           type="text"
-          placeholder="İcazələri axtar"
+          placeholder={getSearchPlaceholder()}
           className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -95,9 +84,8 @@ const IcazelerPage = () => {
       </div>
     );
     
-    // Clean up when component unmounts
     return () => setSearchBar(null);
-  }, [setSearchBar, searchQuery]);
+  }, [setSearchBar, searchQuery, language]);
 
   // Animation variants
   const containerVariants = {
@@ -159,6 +147,30 @@ const IcazelerPage = () => {
     }
   };
 
+  // Get pagination text based on language
+  const getPaginationText = () => {
+    switch(language) {
+      case 'en':
+        return { prev: 'Previous', next: 'Next' };
+      case 'ru':
+        return { prev: 'Назад', next: 'Вперед' };
+      default:
+        return { prev: 'Əvvəl', next: 'Sonra' };
+    }
+  };
+
+  // Get no results text based on language
+  const getNoResultsText = () => {
+    switch(language) {
+      case 'en':
+        return "No results found";
+      case 'ru':
+        return "Результаты не найдены";
+      default:
+        return "Axtarışa uyğun nəticə tapılmadı";
+    }
+  };
+
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-4 md:py-8">
@@ -171,94 +183,97 @@ const IcazelerPage = () => {
               animate="visible"
               exit="exit"
             >
-              {/* Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {currentItems.length > 0 ? (
-                  currentItems.map((permit) => (
-                    <motion.div
-                      key={permit.id}
-                      variants={cardVariants}
-                      whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
-                      onClick={() => setSelectedCard(permit)}
-                      className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden cursor-pointer"
-                    >
-                      <div className="relative">
-                        <div className="h-[180px] bg-[#FAFAFA] flex items-center justify-center px-[32px] py-[16px] border-b border-[#E7E7E7]">
-                          <div className="flex flex-col items-center">
-                            <div className="w-24 h-24 mb-2">
-                              {/* Replace with actual logo */}
-                              <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                                <path d="M30,20 L70,20 L85,50 L70,80 L30,80 L15,50 L30,20 Z" fill="#f0f0f0" stroke="#d2a679" strokeWidth="2" />
-                                <text x="50" y="55" fontSize="24" textAnchor="middle" fill="#333">AQTA</text>
-                              </svg>
+              {loading ? (
+                <div className="flex justify-center items-center min-h-[400px]">
+                  <div className="w-16 h-16 border-4 border-[#2E92A0] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : error ? (
+                <div className="text-center text-red-500 py-8">{error}</div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {approvalsData.data.length > 0 ? (
+                      approvalsData.data.map((approval) => (
+                        <motion.div
+                          key={approval.id}
+                          variants={cardVariants}
+                          whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
+                          onClick={() => setSelectedCard(approval)}
+                          className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden cursor-pointer"
+                        >
+                          <div className="relative">
+                            <div className="h-[180px] bg-[#FAFAFA] flex items-center justify-center px-[32px] py-[16px] border-b border-[#E7E7E7]">
+                              <img 
+                                src={`https://atfplatform.tw1.ru/storage/${approval.logo}`} 
+                                alt={approval.title[language]}
+                                className="max-h-full max-w-full object-contain"
+                              />
+                            </div>
+                            <div className="p-4 bg-white">
+                              <h3 className="text-left font-medium text-[#3F3F3F]">{approval.title[language]}</h3>
+                              <p className="text-left text-sm text-gray-600">{approval.alt_title[language]}</p>
                             </div>
                           </div>
-                        </div>
-                        <div className="p-4 bg-white">
-                          <h3 className="text-left font-medium text-[#3F3F3F]">{permit.name}</h3>
-                          <p className="text-left text-sm text-gray-600">{permit.fullName}</p>
-                        </div>
+                        </motion.div>
+                      ))
+                    ) : (
+                      <div className="col-span-4 p-[16px] text-center text-[#3F3F3F]">
+                        {getNoResultsText()}
                       </div>
-                    </motion.div>
-                  ))
-                ) : (
-                  <div className="col-span-4 p-[16px] text-center text-[#3F3F3F]">
-                    Axtarışa uyğun nəticə tapılmadı
+                    )}
                   </div>
-                )}
-              </div>
-              
-              {/* Pagination - only show if we have items */}
-              {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2 mt-8">
-                  <motion.button
-                    onClick={() => paginate(Math.max(currentPage - 1, 1))}
-                    disabled={currentPage === 1}
-                    className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
-                      currentPage === 1
-                        ? "text-gray-400 cursor-not-allowed"
-                        : "text-[#3F3F3F] hover:bg-[#E7E7E7]"
-                    }`}
-                    whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
-                    whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
-                  >
-                    Geri
-                  </motion.button>
+                  
+                  {approvalsData.last_page > 1 && (
+                    <div className="flex justify-center items-center gap-2 mt-8">
+                      <motion.button
+                        onClick={() => paginate(currentPage - 1)}
+                        disabled={!approvalsData.prev_page_url}
+                        className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
+                          !approvalsData.prev_page_url
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "text-[#3F3F3F] hover:bg-[#E7E7E7]"
+                        }`}
+                        whileHover={approvalsData.prev_page_url ? { scale: 1.05 } : {}}
+                        whileTap={approvalsData.prev_page_url ? { scale: 0.95 } : {}}
+                      >
+                        {getPaginationText().prev}
+                      </motion.button>
 
-                  {getPageNumbers().map((number) => (
-                    <motion.button
-                      key={number}
-                      onClick={() => paginate(number)}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer ${
-                        currentPage === number
-                          ? "bg-[#2E92A0] text-white"
-                          : "text-[#3F3F3F] border border-[#E7E7E7] hover:bg-[#E7E7E7]"
-                      }`}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      {number}
-                    </motion.button>
-                  ))}
+                      {approvalsData.links.slice(1, -1).map((link, index) => (
+                        <motion.button
+                          key={index}
+                          onClick={() => paginate(Number(link.label))}
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer ${
+                            link.active
+                              ? "bg-[#2E92A0] text-white"
+                              : "text-[#3F3F3F] border border-[#E7E7E7] hover:bg-[#E7E7E7]"
+                          }`}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          {link.label}
+                        </motion.button>
+                      ))}
 
-                  <motion.button
-                    onClick={() => paginate(Math.min(currentPage + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
-                      currentPage === totalPages
-                        ? "text-gray-400 cursor-not-allowed"
-                        : "text-[#3F3F3F] hover:bg-[#E7E7E7]"
-                    }`}
-                    whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
-                    whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
-                  >
-                    İrəli
-                  </motion.button>
-                </div>
+                      <motion.button
+                        onClick={() => paginate(currentPage + 1)}
+                        disabled={!approvalsData.next_page_url}
+                        className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
+                          !approvalsData.next_page_url
+                            ? "text-gray-400 cursor-not-allowed"
+                            : "text-[#3F3F3F] hover:bg-[#E7E7E7]"
+                        }`}
+                        whileHover={approvalsData.next_page_url ? { scale: 1.05 } : {}}
+                        whileTap={approvalsData.next_page_url ? { scale: 0.95 } : {}}
+                      >
+                        {getPaginationText().next}
+                      </motion.button>
+                    </div>
+                  )}
+                </>
               )}
             </motion.div>
           ) : (
-            /* Permit Detail View */
             <motion.div 
               key="detail"
               className="bg-white border border-[#E7E7E7] rounded-lg"
@@ -267,7 +282,6 @@ const IcazelerPage = () => {
               animate="visible"
               exit="exit"
             >
-              {/* Header with back button */}
               <div className="p-4 border-b border-[#E7E7E7] flex items-center">
                 <motion.button 
                   onClick={() => setSelectedCard(null)}
@@ -277,22 +291,25 @@ const IcazelerPage = () => {
                 >
                   <IoArrowBack size={20} />
                 </motion.button>
-                {/* <h2 className="text-xl font-medium text-[#3F3F3F]">{selectedCard.name} İcazəsi</h2> */}
+                <h2 className="text-xl font-medium text-[#3F3F3F]">{selectedCard.title[language]}</h2>
               </div>
               
-              {/* Permit content */}
               <div className="p-6">
                 <motion.div 
                   className="flex flex-col items-start mb-6"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0, transition: { delay: 0.2 } }}
                 >
-                  <div className="w-full h-[100px] bg-[#FAFAFA] flex justify-center items-center">
-                    logo
+                  <div className="w-full h-[200px] bg-[#FAFAFA] flex justify-center items-center mb-4">
+                    <img 
+                      src={`https://atfplatform.tw1.ru/storage/${selectedCard.logo}`}
+                      alt={selectedCard.title[language]}
+                      className="max-h-full max-w-full object-contain"
+                    />
                   </div>
                   <div>
-                    <h3 className="text-lg font-medium text-[#3F3F3F]">{selectedCard.name}</h3>
-                    <p className="text-gray-600">{selectedCard.fullName}</p>
+                    <h3 className="text-lg font-medium text-[#3F3F3F]">{selectedCard.title[language]}</h3>
+                    <p className="text-gray-600">{selectedCard.alt_title[language]}</p>
                   </div>
                 </motion.div>
                 
@@ -301,41 +318,42 @@ const IcazelerPage = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0, transition: { delay: 0.3 } }}
                 >
-                  <h4 className="text-md font-medium text-[#3F3F3F] mb-2">İcazə haqqında</h4>
-                  <p className="text-gray-600">
-                    Bu icazə Azərbaycan Respublikasının ərazisində qida təhlükəsizliyi sahəsində fəaliyyət göstərən müəssisələrə verilir. İcazə sahibi qida məhsullarının istehsalı, emalı, daşınması və satışı ilə məşğul ola bilər.
-                  </p>
+                  <h4 className="text-md font-medium text-[#3F3F3F] mb-2">
+                    {language === 'en' ? 'About the Permit' : 
+                     language === 'ru' ? 'О разрешении' : 
+                     'İcazə haqqında'}
+                  </h4>
+                  <div 
+                    className="text-gray-600"
+                    dangerouslySetInnerHTML={{ __html: selectedCard.description[language] }}
+                  />
                 </motion.div>
-                
-                <motion.div 
-                  className="mb-6"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}
-                >
-                  <h4 className="text-md font-medium text-[#3F3F3F] mb-2">Tələb olunan sənədlər</h4>
-                  <ul className="list-disc pl-5 text-gray-600">
-                    <li>Müəssisənin qeydiyyat sənədləri</li>
-                    <li>Vergi ödəyicisinin qeydiyyat şəhadətnaməsi</li>
-                    <li>Texniki təhlükəsizlik sertifikatı</li>
-                    <li>İşçilərin tibbi müayinə kartları</li>
-                    <li>Sanitariya-gigiyena sertifikatı</li>
-                  </ul>
-                </motion.div>
-                
-                <motion.div 
-                  className="mb-6"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0, transition: { delay: 0.5 } }}
-                >
-                  <h4 className="text-md font-medium text-[#3F3F3F] mb-2">Müraciət prosesi</h4>
-                  <ol className="list-decimal pl-5 text-gray-600">
-                    <li>Elektron portal vasitəsilə qeydiyyatdan keçin</li>
-                    <li>Tələb olunan sənədləri yükləyin</li>
-                    <li>Müraciət formasını doldurun</li>
-                    <li>Dövlət rüsumunu ödəyin</li>
-                    <li>Müraciətin təsdiqlənməsini gözləyin</li>
-                  </ol>
-                </motion.div>
+
+                {selectedCard.requests && selectedCard.requests.length > 0 && (
+                  <motion.div 
+                    className="mb-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}
+                  >
+                    <h4 className="text-md font-medium text-[#3F3F3F] mb-2">
+                      {language === 'en' ? 'Requests' : 
+                       language === 'ru' ? 'Заявки' : 
+                       'Müraciətlər'}
+                    </h4>
+                    <div className="space-y-4">
+                      {selectedCard.requests.map((request) => (
+                        <div key={request.id} className="p-4 bg-[#FAFAFA] rounded-lg">
+                          <p className="text-[#3F3F3F] font-medium">
+                            {language === 'en' ? 'Code: ' : 
+                             language === 'ru' ? 'Код: ' : 
+                             'Kod: '}{request.code}
+                          </p>
+                          <p className="text-gray-600">{request.organization[language]}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           )}

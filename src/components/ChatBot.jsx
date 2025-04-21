@@ -7,40 +7,52 @@ import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
 import { VscSend } from "react-icons/vsc";
 import { motion, AnimatePresence } from "framer-motion";
 import Pusher from "pusher-js";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const ChatBot = () => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const [username] = useState("FERID");
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // useEffect(() => {
-  //   // Initial messages load
-  //   const fetchMessages = async () => {
-  //     try {
-  //       const response = await fetch("https://atfplatform.tw1.ru/api/messages");
-  //       const data = await response.json();
-  //       setMessages(data.map(msg => ({
-  //         id: msg.id || Date.now(),
-  //         text: msg.message,
-  //         sender: msg.username,
-  //         isUser: msg.username === username,
-  //         time: new Date(msg.created_at || Date.now()).toLocaleTimeString()
-  //       })));
-  //     } catch (error) {
-  //       console.error("Error fetching messages:", error);
-  //     }
-  //   };
-
-  //   fetchMessages();
-  // }, [username]);
+  const handleChatClick = () => {
+    if (!isAuthenticated) {
+      navigate("/giris?type=login");
+      return;
+    }
+    setIsOpen(true);
+  };
 
   useEffect(() => {
+    if (!isAuthenticated) return;
+
+    axios.get("https://atfplatform.tw1.ru/api/messages", {
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
+      }
+    }).then((res) => {
+      if (res.data) {
+        setMessages(res.data);
+      }
+    }).catch((error) => {
+      if (error.response?.status === 401) {
+        setIsAuthenticated(false);
+        localStorage.removeItem("token");
+        navigate("/giris?type=login");
+      }
+    });
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
     // Real-time updates with Pusher
     const pusher = new Pusher("6801d180c935c080fb57", {
       cluster: "eu",
@@ -52,7 +64,7 @@ const ChatBot = () => {
         id: data.id || Date.now(),
         text: data.message,
         sender: data.username,
-        isUser: data.username === username,
+        isUser: data.username === localStorage.getItem("username"),
         time: new Date().toLocaleTimeString()
       }]);
     });
@@ -61,7 +73,7 @@ const ChatBot = () => {
       channel.unbind_all();
       channel.unsubscribe();
     };
-  }, [username]);
+  }, [isAuthenticated]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -71,18 +83,14 @@ const ChatBot = () => {
   // Add useEffect for scroll locking
   useEffect(() => {
     if (isOpen) {
-      // Lock scroll on body
       document.body.style.overflow = 'hidden';
-      // Add padding to prevent content shift if there's a scrollbar
       const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     } else {
-      // Restore scroll
       document.body.style.overflow = 'unset';
       document.body.style.paddingRight = '0px';
     }
 
-    // Cleanup function
     return () => {
       document.body.style.overflow = 'unset';
       document.body.style.paddingRight = '0px';
@@ -96,7 +104,7 @@ const ChatBot = () => {
       document.documentElement.style.setProperty('--vh', `${vh}px`);
     };
 
-    setVh(); // Set initial value
+    setVh();
     window.addEventListener('resize', setVh);
     window.addEventListener('orientationchange', setVh);
 
@@ -108,28 +116,19 @@ const ChatBot = () => {
 
   const submit = async (e) => {
     e.preventDefault();
-    
-    if (!message.trim()) return;
-
     try {
-      const response = await fetch("https://atfplatform.tw1.ru/api/messages", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          username,
-          message,
-        }),
+      const user = JSON.parse(localStorage.getItem("user"));
+      axios.post("https://atfplatform.tw1.ru/api/messages", {
+          name: user?.name || "Unknown",
+          id: user?.id || "Unknown",
+          message: message
+        }, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        }
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
-      
-      setMessage('');
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Error parsing user data:", error);
     }
   };
 
@@ -143,8 +142,10 @@ const ChatBot = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
             transition={{ duration: 0.3 }}
-            onClick={() => setIsOpen(true)}
-            className="w-[60px] h-[60px] bg-[#2E92A0] rounded-full flex items-center justify-center shadow-lg hover:bg-[#2e93a089]  fixed bottom-6 right-6 hover:scale-105 transition-all duration-200 hover:cursor-pointer"
+            onClick={handleChatClick}
+            className={`w-[60px] h-[60px] rounded-full flex items-center justify-center shadow-lg fixed bottom-6 right-6 hover:scale-105 transition-all duration-200 hover:cursor-pointer ${
+              isAuthenticated ? 'bg-[#2E92A0] hover:bg-[#2e93a089]' : 'bg-gray-400 hover:bg-gray-500'
+            }`}
           >
             <HiOutlineChatBubbleLeftRight className="text-white text-2xl" />
           </motion.button>
@@ -221,18 +222,14 @@ const ChatBot = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Bottom Section */}
+            {/* Chat Input */}
             <div className="flex-none bg-white">
-              {/* Like/Dislike */}
-              
-
-              {/* Chat Input */}
               <div className="px-4 py-3 border-t border-[#F5F5F5]">
                 <form onSubmit={submit} className="flex items-center gap-2 bg-[white] rounded-[8px] border border-[#E7E7E7]">
                   <input
                     type="text"
                     placeholder="Mesajınızı yazın"
-                    className="flex-1  rounded-full pl-4 py-3 text-[15px] focus:outline-none"
+                    className="flex-1 rounded-full pl-4 py-3 text-[15px] focus:outline-none"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                   />

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "./Navbar";
 import ATF_LOGO from "../assets/icons/atf_logo.svg";
@@ -13,6 +13,8 @@ import { useAuth } from "../context/AuthContext";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { IoLogOutOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
+import { IoChevronDown } from "react-icons/io5";
+import useLanguageStore from "../store/languageStore";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -20,6 +22,31 @@ const Header = () => {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
+  const [showMobileLanguageDropdown, setShowMobileLanguageDropdown] = useState(false);
+  const languageDropdownRef = useRef(null);
+  const mobileLanguageDropdownRef = useRef(null);
+  const { language, setLanguage } = useLanguageStore();
+
+  const languages = [
+    { code: 'az', label: 'AZ' },
+    { code: 'en', label: 'EN' },
+    { code: 'ru', label: 'RU' }
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target)) {
+        setShowLanguageDropdown(false);
+      }
+      if (mobileLanguageDropdownRef.current && !mobileLanguageDropdownRef.current.contains(event.target)) {
+        setShowMobileLanguageDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (isMobileMenuOpen || showLogoutModal) {
@@ -51,6 +78,12 @@ const Header = () => {
     navigate("/");
   };
 
+  const handleLanguageChange = (langCode) => {
+    setLanguage(langCode);
+    setShowLanguageDropdown(false);
+    setShowMobileLanguageDropdown(false);
+  };
+
   const navigationLinks = [
     { path: "/", label: "Ana səhifə" },
     { path: "/hs-codes", label: "HS Kodlar" },
@@ -77,7 +110,33 @@ const Header = () => {
               className="w-[150px] flex md:hidden hover:cursor-pointer"
               onClick={() => navigate("/")}
             />
-            <div className="hidden md:flex gap-4">
+            <div className="hidden md:flex items-center gap-4">
+              {/* Language Dropdown - Desktop */}
+              <div className="relative" ref={languageDropdownRef}>
+                <button
+                  onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
+                  className="flex items-center gap-1 px-3 py-2 text-[#3F3F3F] hover:text-[#2E92A0] transition-colors"
+                >
+                  <span className="uppercase">{language}</span>
+                  <IoChevronDown className={`transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                {showLanguageDropdown && (
+                  <div className="absolute top-full right-0 mt-1 bg-white border border-[#E7E7E7] rounded-lg shadow-lg py-2 min-w-[120px] z-[100]">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => handleLanguageChange(lang.code)}
+                        className={`w-full px-4 py-2 text-left hover:bg-[#F5F5F5] transition-colors ${
+                          language === lang.code ? 'text-[#2E92A0] font-medium' : 'text-[#3F3F3F]'
+                        }`}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {user ? (
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
@@ -98,18 +157,42 @@ const Header = () => {
                     className="px-4 py-[10px] font-semibold text-[#2E92A0] hover:text-[white] rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer"
                     onClick={() => navigate("/giris?type=register")}
                   >
-                    Qeydiyyat
+                    {language === 'az' ? 'Qeydiyyat' : language === 'en' ? 'Register' : 'Регистрация'}
                   </button>
                   <button 
                     className="px-6 py-[10px] bg-[#2E92A0] font-semibold text-white rounded-[8px] hover:bg-[white] hover:text-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer"
                     onClick={() => navigate("/giris?type=login")}
                   >
-                    Daxil ol
+                    {language === 'az' ? 'Daxil ol' : language === 'en' ? 'Login' : 'Войти'}
                   </button>
                 </>
               )}
             </div>
             <div className="flex md:hidden gap-x-[8px]">
+              {/* Language Dropdown - Mobile */}
+              <div className="relative" ref={mobileLanguageDropdownRef}>
+                <button
+                  onClick={() => setShowMobileLanguageDropdown(!showMobileLanguageDropdown)}
+                  className="w-[44px] h-[44px] flex justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px]"
+                >
+                  <span className="uppercase text-[#3F3F3F]">{language}</span>
+                </button>
+                {showMobileLanguageDropdown && (
+                  <div className="absolute top-full right-0 mt-1 bg-white border border-[#E7E7E7] rounded-lg shadow-lg py-2 min-w-[120px] z-[100]">
+                    {languages.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => handleLanguageChange(lang.code)}
+                        className={`w-full px-4 py-2 text-left hover:bg-[#F5F5F5] transition-colors ${
+                          language === lang.code ? 'text-[#2E92A0] font-medium' : 'text-[#3F3F3F]'
+                        }`}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button 
                 className="w-[44px] h-[44px] flex justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px] relative cursor-pointer"
                 onClick={openMobileMenu}
@@ -169,7 +252,7 @@ const Header = () => {
                         setIsMobileMenuOpen(false);
                       }}
                     >
-                      Qeydiyyat
+                      {language === 'az' ? 'Qeydiyyat' : language === 'en' ? 'Register' : 'Регистрация'}
                     </button>
                     <button 
                       className="px-6 py-[10px] w-[50%] font-semibold bg-[#2E92A0] text-white rounded-[8px] hover:bg-white hover:text-[#2E92A0] transition-colors border border-[#2E92A0]"
@@ -178,7 +261,7 @@ const Header = () => {
                         setIsMobileMenuOpen(false);
                       }}
                     >
-                      Daxil ol
+                      {language === 'az' ? 'Daxil ol' : language === 'en' ? 'Login' : 'Войти'}
                     </button>
                   </div>
                 )}

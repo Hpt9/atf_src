@@ -9,6 +9,9 @@ import FormStep from './components/FormStep';
 import SuccessStep from './components/SuccessStep';
 import { modalOverlayAnimation, modalContentAnimation } from './components/shared/animations';
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import useLanguageStore from "../../store/languageStore";
+
 const MuracietlerPage = () => {
   const navigate = useNavigate();
   if(localStorage.getItem("token") === null){
@@ -21,29 +24,36 @@ const MuracietlerPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   
-  const [applications, setApplications] = useState([
-    { id: 1, code: "TM188273", date: "12/12/2030", description: "TEST CARGO1" },
-    { id: 2, code: "TM188273", date: "12/12/2030", description: "TEST CARGO2" },
-    { id: 3, code: "TM188273", date: "12/12/2030", description: "TEST CARGO3" },
-    { id: 4, code: "TM188273", date: "12/12/2030", description: "TEST CARGO4" },
-    { id: 5, code: "TM188273", date: "12/12/2030", description: "TEST CARGO5" },
-    { id: 6, code: "TM188273", date: "12/12/2030", description: "TEST CARGO6" },
-    { id: 7, code: "TM188273", date: "12/12/2030", description: "TEST CARGO7" },
-    { id: 8, code: "TM188273", date: "12/12/2030", description: "TEST CARGO8" },
-    { id: 9, code: "TM188273", date: "12/12/2030", description: "TEST CARGO9" },
-    { id: 10, code: "TM188273", date: "12/12/2030", description: "TEST CARGO10" },
-    { id: 11, code: "TM188274", date: "15/12/2030", description: "TEST CARGO11" },
-    { id: 12, code: "TM188275", date: "18/12/2030", description: "TEST CARGO12" },
-    { id: 13, code: "TM188275", date: "18/12/2030", description: "TEST CARGO13" },
-    { id: 14, code: "TM188275", date: "18/12/2030", description: "TEST CARGO14" },
-    { id: 15, code: "TM188275", date: "18/12/2030", description: "TEST CARGO15" },
-    { id: 16, code: "TM188275", date: "18/12/2030", description: "TEST CARGO16" },
-    { id: 17, code: "TM188275", date: "18/12/2030", description: "TEST CARGO17" },
-    { id: 18, code: "TM188275", date: "18/12/2030", description: "TEST CARGO18" },
-    { id: 19, code: "TM188275", date: "18/12/2030", description: "TEST CARGO19" },
-    { id: 20, code: "TM188275", date: "18/12/2030", description: "TEST CARGO20" },
-    { id: 21, code: "TM188275", date: "18/12/2030", description: "TEST CARGO21" },
-  ]);
+  const [applications, setApplications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    setIsLoading(true);
+    axios.get('https://atfplatform.tw1.ru/api/applications', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    }).then((response) => {
+      if (response.data && Array.isArray(response.data)) {
+        setApplications(response.data);
+      } else {
+        setApplications([]);
+      }
+      setError(null);
+    }).catch((error) => {
+      if (error.response && error.response.status === 404) {
+        // Handle empty data case
+        setApplications([]);
+        setError(null);
+      } else {
+        setError("Məlumatları yükləmək mümkün olmadı");
+        console.error("Error loading applications:", error);
+      }
+    }).finally(() => {
+      setIsLoading(false);
+    });
+  }, []);
 
   // Filter applications based on search query
   const filteredApplications = applications.filter(
@@ -107,7 +117,7 @@ const MuracietlerPage = () => {
       setCurrentPage((prevPage) => prevPage + 1);
     }
   };
-  
+
   // Go to previous page
   const prevPage = () => {
     if (currentPage > 1) {
@@ -308,6 +318,31 @@ const MuracietlerPage = () => {
     setModalStep(prevStep);
   };
 
+  // Update the render logic to handle loading and empty states
+  if (isLoading) {
+    return (
+      <div className="w-full flex justify-center">
+        <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
+          <div className="w-full h-[400px] flex items-center justify-center">
+            <div className="w-16 h-16 border-4 border-[#2E92A0] border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full flex justify-center">
+        <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
+          <div className="w-full h-[400px] flex items-center justify-center">
+            <p className="text-red-500">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex justify-center">
       <AnimatePresence>
@@ -456,13 +491,33 @@ const MuracietlerPage = () => {
                 animate="visible"
                 exit="exit"
                 onAnimationStart={() => {
-                  // Fine-tune height as soon as animation starts
                   if (newContentRef.current) {
                     setContentHeight(newContentRef.current.offsetHeight);
                   }
                 }}
               >
-                {currentItems.length > 0 ? (
+                {applications.length === 0 ? (
+                  <motion.div 
+                    className="p-[16px] text-center text-[#3F3F3F] flex flex-col items-center justify-center space-y-4"
+                    variants={rowVariants}
+                  >
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M9 12H15M12 9V15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#A0A0A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <p>Hazırda heç bir müraciətiniz yoxdur</p>
+                    <motion.button 
+                      className="px-4 py-2 bg-[#2E92A0] text-white rounded-lg flex items-center gap-2"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => toogleMuracietModal()}
+                    >
+                      <span>Yeni müraciət et</span>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4V20M20 12H4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </motion.button>
+                  </motion.div>
+                ) : currentItems.length > 0 ? (
                   currentItems.map((app) => (
                     <motion.div 
                       key={app.id} 
@@ -528,7 +583,7 @@ const MuracietlerPage = () => {
           </motion.div>
           
           {/* Pagination */}
-          {filteredApplications.length > 0 && (
+          {applications.length > 0 && filteredApplications.length > 0 && (
             <div className="pagination flex items-center justify-between p-4 border-t border-[#E7E7E7] bg-white">
               <div className="w-full justify-center flex items-center gap-2">
                 <motion.button 
