@@ -33,26 +33,6 @@ const ChatBot = () => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    axios.get("https://atfplatform.tw1.ru/api/messages", {
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("token")}`
-      }
-    }).then((res) => {
-      if (res.data) {
-        setMessages(res.data);
-      }
-    }).catch((error) => {
-      if (error.response?.status === 401) {
-        setIsAuthenticated(false);
-        localStorage.removeItem("token");
-        navigate("/giris?type=login");
-      }
-    });
-  }, [isAuthenticated, navigate]);
-
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
     // Real-time updates with Pusher
     const pusher = new Pusher("6801d180c935c080fb57", {
       cluster: "eu",
@@ -116,19 +96,44 @@ const ChatBot = () => {
 
   const submit = async (e) => {
     e.preventDefault();
+    if (!message.trim() || !isAuthenticated) return;
+
     try {
       const user = JSON.parse(localStorage.getItem("user"));
-      axios.post("https://atfplatform.tw1.ru/api/messages", {
+      const token = localStorage.getItem("token");
+
+      const response = await axios.post(
+        "https://atfplatform.tw1.ru/api/messages",
+        {
           name: user?.name || "Unknown",
           id: user?.id || "Unknown",
           message: message
-        }, {
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
+        },
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
         }
-      });
+      );
+
+      if (response.data) {
+        setMessage(""); // Clear the input field after successful send
+        // Add the sent message to the messages state
+        setMessages(prevMessages => [...prevMessages, {
+          id: Date.now(),
+          text: message,
+          sender: user?.name || "Unknown",
+          isUser: true,
+          time: new Date().toLocaleTimeString()
+        }]);
+      }
     } catch (error) {
-      console.error("Error parsing user data:", error);
+      if (error.response?.status === 401) {
+        setIsAuthenticated(false);
+        localStorage.removeItem("token");
+        navigate("/giris?type=login");
+      }
+      console.error("Error sending message:", error);
     }
   };
 
