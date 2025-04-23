@@ -8,7 +8,7 @@ const SEO = ({
   ogUrl, 
   canonicalUrl 
 }) => {
-  const siteTitle = 'Your Site Name';
+  const siteTitle = 'ATF Platform';
   const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
   
   return (

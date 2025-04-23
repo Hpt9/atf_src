@@ -1,11 +1,23 @@
 import { useState, useEffect } from "react";
 import { useSearchBar } from "../../context/SearchBarContext";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-import { IoClose, IoArrowBack } from "react-icons/io5";
-import { FaDownload } from "react-icons/fa";
+import { IoArrowBack } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import useLanguageStore from "../../store/languageStore";
+
+// Create a custom axios instance for search
+const searchApi = axios.create();
+
+// Add response interceptor to handle 404 silently
+searchApi.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 404) {
+      return Promise.resolve({ data: [] }); // Return empty array for 404
+    }
+    return Promise.reject(error);
+  }
+);
 
 const IcazelerPage = () => {
   const { setSearchBar } = useSearchBar();
@@ -23,24 +35,66 @@ const IcazelerPage = () => {
     last_page: 1
   });
 
-  // Fetch approvals data
-  const fetchApprovals = async (page) => {
+  // Fetch approvals data with search
+  const fetchApprovals = async (page, query = "") => {
     try {
       setLoading(true);
-      const response = await axios.get(`https://atfplatform.tw1.ru/api/approvals?page=${page}`);
-      setApprovalsData(response.data);
+      let response;
+      
+      if (query.trim()) {
+        // Use search API when there's a query
+        response = await searchApi.post('https://atfplatform.tw1.ru/api/approval-search', {
+          q: query
+        });
+        // For search results, format the response to match the expected structure
+        setApprovalsData({
+          data: response.data,
+          total: response.data.length,
+          per_page: response.data.length,
+          current_page: 1,
+          last_page: 1
+        });
+      } else {
+        // Use regular API when no search query
+        response = await axios.get(`https://atfplatform.tw1.ru/api/approvals?page=${page}`);
+        setApprovalsData(response.data);
+      }
       setError(null);
     } catch (err) {
-      setError("Məlumatları yükləyərkən xəta baş verdi");
-      console.error("Error fetching approvals:", err);
+      if (!err.response || err.response.status !== 404) {
+        console.error("Error fetching approvals:", err);
+        setError("Məlumatları yükləyərkən xəta baş verdi");
+      }
+      setApprovalsData({
+        data: [],
+        total: 0,
+        per_page: 12,
+        current_page: 1,
+        last_page: 1
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch data when page changes
+  // Debounce search
   useEffect(() => {
-    fetchApprovals(currentPage);
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim().length >= 1) {
+        fetchApprovals(1, searchQuery);
+      } else if (searchQuery.trim().length === 0) {
+        fetchApprovals(1);
+      }
+    }, 300); // Reduced debounce time for better responsiveness
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  // Fetch data when page changes (only if no search query)
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      fetchApprovals(currentPage);
+    }
   }, [currentPage]);
 
   // Reset to first page when search query changes
@@ -74,7 +128,9 @@ const IcazelerPage = () => {
           placeholder={getSearchPlaceholder()}
           className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+          }}
         />
         <button className="absolute right-7 top-1/2 transform -translate-y-1/2">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -192,7 +248,7 @@ const IcazelerPage = () => {
               ) : (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {approvalsData.data.length > 0 ? (
+                    {approvalsData.data?.length > 0 ? (
                       approvalsData.data.map((approval) => (
                         <motion.div
                           key={approval.id}
