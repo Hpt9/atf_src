@@ -12,9 +12,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { IoLogOutOutline } from "react-icons/io5";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+import { motion as Motion } from "framer-motion";
 import { IoChevronDown } from "react-icons/io5";
+import { IoIosArrowForward } from "react-icons/io";
 import useLanguageStore from "../store/languageStore";
+import axios from "axios";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -27,6 +30,11 @@ const Header = () => {
   const languageDropdownRef = useRef(null);
   const mobileLanguageDropdownRef = useRef(null);
   const { language, setLanguage } = useLanguageStore();
+  const [localSearchValue, setLocalSearchValue] = useState("");
+  const [searchResults, setSearchResults] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchTimeoutRef = useRef(null);
+  const searchContainerRef = useRef(null);
 
   const languages = [
     { code: 'az', label: 'AZ' },
@@ -92,6 +100,64 @@ const Header = () => {
     { path: "/elaqe", label: "Əlaqə" },
     { path: "/faq", label: "FAQ" },
   ];
+
+  // Handle search
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (localSearchValue.trim()) {
+      setIsSearching(true);
+      searchTimeoutRef.current = setTimeout(async () => {
+        try {
+          const response = await axios.post('https://atfplatform.tw1.ru/api/global-search', {
+            q: localSearchValue.trim()
+          });
+          setSearchResults(response.data.results);
+        } catch (error) {
+          console.error('Search error:', error);
+          setSearchResults(null);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 500);
+    } else {
+      setSearchResults(null);
+      setIsSearching(false);
+    }
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [localSearchValue]);
+
+  // Handle click outside search results
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+        setSearchResults(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Handle navigation
+  const handleResultClick = (type, item) => {
+    setSearchResults(null);
+    setLocalSearchValue("");
+    setIsMobileMenuOpen(false);
+    
+    if (type === 'hs_codes') {
+      navigate('/hs-codes', { state: { searchQuery: item.code.toString() } });
+    } else if (type === 'approvals') {
+      navigate('/icazeler', { state: { searchQuery: item.title[language] } });
+    }
+  };
 
   return (
     <>
@@ -227,7 +293,7 @@ const Header = () => {
           {/* Mobile Menu */}
           {isMobileMenuOpen && (
             <div className="fixed inset-0 bg-white z-50 mt-[118px] md:hidden overflow-y-auto">
-              <div className="flex flex-col p-4">
+              <div className="px-[16px] py-[24px]">
                 {/* Auth Section */}
                 {user ? (
                   <div className="flex flex-col gap-4 mb-4">
@@ -276,17 +342,69 @@ const Header = () => {
                 )}
 
                 {/* Search Bar */}
-                <div className="mb-4">
+                <div className="mb-4" ref={searchContainerRef}>
                   <div className="relative">
                     <input
                       type="text"
                       placeholder="Ümumi axtarış"
-                      className="w-full px-4 py-3 border border-[#E7E7E7] rounded-lg outline-none focus:border-[#2E92A0] transition-colors"
+                      className="w-full px-4 py-3 pl-11 border border-[#E7E7E7] rounded-lg outline-none focus:border-[#2E92A0] transition-colors"
+                      value={localSearchValue}
+                      onChange={(e) => setLocalSearchValue(e.target.value)}
                     />
-                    <button className="absolute right-4 top-1/2 -translate-y-1/2">
-                      <LuSearch className="w-[24px] h-[24px] text-[#3F3F3F]" />
-                    </button>
+                    <LuSearch className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-[20px] h-[20px] ${isSearching ? 'text-[#2E92A0]' : 'text-[#A0A0A0]'}`} />
                   </div>
+
+                  <AnimatePresence>
+                    {searchResults && (
+                      <Motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute left-4 right-4 mt-2 bg-white rounded-[8px] shadow-lg max-h-[400px] overflow-y-auto border border-[#E7E7E7] z-50"
+                      >
+                        {(searchResults.hs_codes?.length > 0 || searchResults.approvals?.length > 0) ? (
+                          <>
+                            {searchResults.hs_codes?.length > 0 && (
+                              <div className="p-2">
+                                <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">HS Kodları</div>
+                                {searchResults.hs_codes.map((item) => (
+                                  <div
+                                    key={item.id}
+                                    onClick={() => handleResultClick('hs_codes', item)}
+                                    className="flex items-center px-3 py-2 hover:bg-[#F5F5F5] cursor-pointer rounded-[4px]"
+                                  >
+                                    <span className="text-[#2E92A0] font-medium mr-2">{item.code}</span>
+                                    <span className="text-[#3F3F3F] flex-1">{item.name[language]}</span>
+                                    <IoIosArrowForward className="text-[#3F3F3F] ml-2" />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {searchResults.approvals?.length > 0 && (
+                              <div className="p-2 border-t border-[#E7E7E7]">
+                                <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">İcazələr</div>
+                                {searchResults.approvals.map((item) => (
+                                  <div
+                                    key={item.id}
+                                    onClick={() => handleResultClick('approvals', item)}
+                                    className="flex items-center px-3 py-2 hover:bg-[#F5F5F5] cursor-pointer rounded-[4px]"
+                                  >
+                                    <span className="text-[#3F3F3F]">{item.title[language]}</span>
+                                    <IoIosArrowForward className="text-[#3F3F3F] ml-2" />
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="p-4 text-center text-[#3F3F3F]">
+                            Axtarışa uyğun nəticə tapılmadı
+                          </div>
+                        )}
+                      </Motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Navigation Links */}
@@ -315,14 +433,14 @@ const Header = () => {
       {/* Logout Confirmation Modal */}
       <AnimatePresence>
         {showLogoutModal && (
-          <motion.div 
+          <Motion.div 
             className="fixed inset-0 bg-[#0000003e] flex items-center justify-center z-[10001]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <motion.div 
+            <Motion.div 
               className="bg-white rounded-lg p-6 max-w-sm w-full mx-4"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -344,8 +462,8 @@ const Header = () => {
                   Bəli
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </Motion.div>
+          </Motion.div>
         )}
       </AnimatePresence>
     </>
