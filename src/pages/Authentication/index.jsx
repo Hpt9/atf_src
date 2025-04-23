@@ -593,6 +593,18 @@ const RegisterForm = ({ setLogin }) => {
           animationSpeed={20}
           showBorder={true}
           className="custom-class w-full"
+          onClick={ async () => {
+            const response = await axios.get('https://atfplatform.tw1.ru/auth/google/redirect', {
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+              },
+            });
+            if (response.data && response.data.url) {
+             window.location.href = response.data.url;
+            }
+          }}
         >
           Google ilə davam et
         </GradientText>
