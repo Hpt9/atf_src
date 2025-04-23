@@ -11,50 +11,78 @@ import PageTransition from "./components/PageTransition";
 import './App.css'
 import { Authentication } from "./pages/Authentication";
 import AdminChat from "./components/AdminChat";
+import ProfilePage from "./pages/ProfilePage";
 import { useState } from "react";
+import { Toaster } from 'react-hot-toast';
+
 function App() {
-  const [isChatOpen, setIsChatOpen] = useState(true);
+  const user = localStorage.getItem('user');
+  const [isChatOpen] = useState(true);
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<Layout />}>
-          <Route index key={"salam"} element={
-            <PageTransition>
-              <HomePage />
-            </PageTransition>
-          } />
-          <Route path="/hs-codes" element={
-            <PageTransition>
-              <HsCodesPage />
-            </PageTransition>
-          } />
-          <Route path="/icazeler" element={
-            <PageTransition>
-              <IcazelerPage />
-            </PageTransition>
-          } />
-          <Route path="/muracietler" element={
-            <PageTransition>
-              <MuracietlerPage />
-            </PageTransition>
-          } />
-          <Route path="/faq" element={
-            <PageTransition>
-              <FAQPage />
-            </PageTransition>
-          } />
-          <Route path="/elaqe" element={
-            <PageTransition>
-              <ElaqePage />
-            </PageTransition>
-          } />
-        </Route>
-        <Route path="/giris" element={<Authentication/>}></Route>
-        {isChatOpen && <Route path="/admin/chat" element={<AdminChat />}></Route>}
-      </Routes>
-    </AnimatePresence>
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#fff',
+            color: '#3F3F3F',
+          },
+          success: {
+            iconTheme: {
+              primary: '#2E92A0',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<Layout />}>
+            <Route index key={"salam"} element={
+              <PageTransition>
+                <HomePage />
+              </PageTransition>
+            } />
+            <Route path="/hs-codes" element={
+              <PageTransition>
+                <HsCodesPage />
+              </PageTransition>
+            } />
+            <Route path="/icazeler" element={
+              <PageTransition>
+                <IcazelerPage />
+              </PageTransition>
+            } />
+            <Route path="/muracietler" element={
+              <PageTransition>
+                <MuracietlerPage />
+              </PageTransition>
+            } />
+            <Route path="/faq" element={
+              <PageTransition>
+                <FAQPage />
+              </PageTransition>
+            } />
+            <Route path="/elaqe" element={
+              <PageTransition>
+                <ElaqePage />
+              </PageTransition>
+            } />
+           {user && <Route path="/profile" element={
+              <PageTransition>
+                <ProfilePage />
+              </PageTransition>
+            } />}
+          </Route>
+          <Route path='*' element={<div>Not Found</div>}></Route>
+          <Route path="/giris" element={<Authentication/>}></Route>
+          {isChatOpen && <Route path="/admin/chat" element={<AdminChat />}></Route>}
+        </Routes>
+      </AnimatePresence>
+    </>
   );
 }
 

@@ -1,17 +1,74 @@
 import { useState } from 'react';
+import toast from 'react-hot-toast';
+import axios from 'axios';
 
 const ElaqePage = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    name_surname: '',
     email: '',
     phone: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission here
     console.log(formData);
+    // Basic validation
+    if (!formData.name_surname.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.message.trim()) {
+      toast.error('Bütün sahələri doldurun');
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error('Düzgün e-poçt ünvanı daxil edin');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await axios.post(
+        'https://atfplatform.tw1.ru/api/send',
+        {
+          name_surname: formData.name_surname,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          }
+        }
+      );
+
+      console.log(response.data.success);
+
+      if (response.data.success === "Message sen successfully") {
+        toast.success('Mesajınız uğurla göndərildi');
+        
+        // Clear form after successful submission
+        setFormData({
+          name_surname: '',
+          email: '',
+          phone: '',
+          message: ''
+        });
+      } else {
+        throw new Error('Mesaj göndərilmədi');
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      toast.error(
+        error.response?.data?.message || 
+        error.message || 
+        'Mesaj göndərilmədi. Xahiş edirik yenidən cəhd edin'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -99,11 +156,12 @@ const ElaqePage = () => {
               <div>
                 <input
                   type="text"
-                  name="name"
+                  name="name_surname"
                   placeholder="Ad, Soyad"
-                  value={formData.name}
+                  value={formData.name_surname}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -114,6 +172,7 @@ const ElaqePage = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -124,6 +183,7 @@ const ElaqePage = () => {
                   value={formData.phone}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -134,13 +194,24 @@ const ElaqePage = () => {
                   onChange={handleChange}
                   rows="6"
                   className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F] resize-none"
+                  disabled={isSubmitting}
                 />
               </div>
               <button
                 type="submit"
-                className="w-full bg-[#2E92A0] text-white py-2 px-4 rounded-lg hover:bg-[#267A85] transition-colors cursor-pointer"
+                className={`w-full bg-[#2E92A0] text-white py-2 px-4 rounded-lg hover:bg-[#267A85] transition-colors ${
+                  isSubmitting ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'
+                }`}
+                disabled={isSubmitting}
               >
-                Göndər
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Göndərilir...
+                  </div>
+                ) : (
+                  'Göndər'
+                )}
               </button>
             </form>
           </div>

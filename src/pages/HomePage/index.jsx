@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import IMG from "../../assets/images/homepage_img.svg";
 import { CiSearch } from "react-icons/ci";
 import { FaRegFileAlt } from "react-icons/fa";
@@ -8,6 +8,8 @@ import { FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import useLanguageStore from "../../store/languageStore";
+import { IoIosArrowForward } from "react-icons/io";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -16,6 +18,67 @@ const HomePage = () => {
   const [services, setServices] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchTimeoutRef = useRef(null);
+  const searchContainerRef = useRef(null);
+
+  // Handle click outside search results
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+        setSearchResults(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Handle search
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (searchQuery.trim()) {
+      setIsSearching(true);
+      searchTimeoutRef.current = setTimeout(async () => {
+        try {
+          const response = await axios.post('https://atfplatform.tw1.ru/api/global-search', {
+            q: searchQuery.trim()
+          });
+          setSearchResults(response.data.results);
+        } catch (error) {
+          console.error('Search error:', error);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 500);
+    } else {
+      setSearchResults(null);
+      setIsSearching(false);
+    }
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery]);
+
+  // Handle navigation
+  const handleResultClick = (type, item) => {
+    setSearchResults(null);
+    setSearchQuery("");
+    
+    if (type === 'hs_codes') {
+      navigate('/hs-codes', { state: { searchQuery: item.code.toString() } });
+    } else if (type === 'approvals') {
+      navigate('/icazeler', { state: { searchQuery: item.title[language] } });
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,13 +147,69 @@ const HomePage = () => {
             <h1 className="text-[white] text-[24px] md:text-[48px] font-bold w-fit md:w-[698px] mb-[30px]">
               {data?.slider_title?.[language] || "Loading..."}
             </h1>
-            <div className="search_container w-[496px] hidden md:flex items-center gap-x-[8px] relative z-10 rounded-[8px] bg-white px-[16px] py-[12px]">
-              <CiSearch className="text-[rgba(160,160,160,1)] w-[16px] h-[16px]" />
-              <input
-                type="text"
-                placeholder="Axtarış..."
-                className="w-full outline-none text-[#2E92A0] placeholder:text-[rgba(160,160,160,1)] placeholder:text-[16px]"
-              />
+            <div ref={searchContainerRef} className="search_container w-[496px] hidden md:flex flex-col relative z-10">
+              <div className="w-full flex items-center gap-x-[8px] rounded-[8px] bg-white px-[16px] py-[12px]">
+                <CiSearch className={`w-[16px] h-[16px] ${isSearching ? 'text-[#2E92A0]' : 'text-[rgba(160,160,160,1)]'}`} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Axtarış..."
+                  className="w-full outline-none text-[#2E92A0] placeholder:text-[rgba(160,160,160,1)] placeholder:text-[16px]"
+                />
+              </div>
+              
+              <AnimatePresence>
+                {searchResults && (
+                  <Motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[8px] shadow-lg max-h-[400px] overflow-y-auto"
+                  >
+                    {(searchResults.hs_codes?.length > 0 || searchResults.approvals?.length > 0) ? (
+                      <>
+                        {searchResults.hs_codes?.length > 0 && (
+                          <div className="p-2">
+                            <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">HS Kodları</div>
+                            {searchResults.hs_codes.map((item) => (
+                              <div
+                                key={item.id}
+                                onClick={() => handleResultClick('hs_codes', item)}
+                                className="flex items-center px-3 py-2 hover:bg-[#F5F5F5] cursor-pointer rounded-[4px]"
+                              >
+                                <span className="text-[#2E92A0] font-medium mr-2">{item.code}</span>
+                                <span className="text-[#3F3F3F] flex-1">{item.name[language]}</span>
+                                <IoIosArrowForward className="text-[#3F3F3F] ml-2" />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {searchResults.approvals?.length > 0 && (
+                          <div className="p-2 border-t border-[#E7E7E7]">
+                            <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">İcazələr</div>
+                            {searchResults.approvals.map((item) => (
+                              <div
+                                key={item.id}
+                                onClick={() => handleResultClick('approvals', item)}
+                                className="flex items-center px-3 py-2 hover:bg-[#F5F5F5] cursor-pointer rounded-[4px]"
+                              >
+                                <span className="text-[#3F3F3F]">{item.title[language]}</span>
+                                <IoIosArrowForward className="text-[#3F3F3F] ml-2" />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="p-4 text-center text-[#3F3F3F]">
+                        Axtarışa uyğun nəticə tapılmadı
+                      </div>
+                    )}
+                  </Motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>

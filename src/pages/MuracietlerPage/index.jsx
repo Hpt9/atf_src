@@ -3,18 +3,21 @@ import { useSearchBar } from "../../context/SearchBarContext";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { motion, AnimatePresence } from "framer-motion";
-import HSCodeStep from './components/HSCodeStep';
-import PermissionsStep from './components/PermissionsStep';
-import FormStep from './components/FormStep';
-import SuccessStep from './components/SuccessStep';
-import { modalOverlayAnimation, modalContentAnimation } from './components/shared/animations';
+import HSCodeStep from "./components/HSCodeStep";
+import PermissionsStep from "./components/PermissionsStep";
+import FormStep from "./components/FormStep";
+import SuccessStep from "./components/SuccessStep";
+import {
+  modalOverlayAnimation,
+  modalContentAnimation,
+} from "./components/shared/animations";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import useLanguageStore from "../../store/languageStore";
 
 const MuracietlerPage = () => {
   const navigate = useNavigate();
-  if(localStorage.getItem("token") === null){
+  if (localStorage.getItem("token") === null) {
     navigate("/giris?type=login");
   }
   const { setSearchBar } = useSearchBar();
@@ -23,50 +26,54 @@ const MuracietlerPage = () => {
   const [sortDirection, setSortDirection] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  
+
   const [applications, setApplications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     setIsLoading(true);
-    axios.get('https://atfplatform.tw1.ru/api/applications', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    }).then((response) => {
-      if (response.data && Array.isArray(response.data)) {
-        setApplications(response.data);
-      } else {
-        setApplications([]);
-      }
-      setError(null);
-    }).catch((error) => {
-      if (error.response && error.response.status === 404) {
-        // Handle empty data case
-        setApplications([]);
+    axios
+      .get("https://atfplatform.tw1.ru/api/applications", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((response) => {
+        if (response.data && Array.isArray(response.data)) {
+          setApplications(response.data);
+        } else {
+          setApplications([]);
+        }
         setError(null);
-      } else {
-        setError("Məlumatları yükləmək mümkün olmadı");
-        console.error("Error loading applications:", error);
-      }
-    }).finally(() => {
-      setIsLoading(false);
-    });
+      })
+      .catch((error) => {
+        if (error.response && error.response.status === 404) {
+          // Handle empty data case
+          setApplications([]);
+          setError(null);
+        } else {
+          setError("Məlumatları yükləmək mümkün olmadı");
+          console.error("Error loading applications:", error);
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   // Filter applications based on search query
   const filteredApplications = applications.filter(
     (app) =>
-    app.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    app.description.toLowerCase().includes(searchQuery.toLowerCase())
+      app.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Sort applications
   const sortedApplications = [...filteredApplications].sort((a, b) => {
     const aValue = a[sortField];
     const bValue = b[sortField];
-    
+
     if (sortDirection === "asc") {
       return aValue > bValue ? 1 : -1;
     } else {
@@ -98,16 +105,16 @@ const MuracietlerPage = () => {
     const pageNumbers = [];
     let startPage = Math.max(1, currentPage - 2);
     let endPage = Math.min(totalPages, startPage + 4);
-    
+
     // Adjust start page if we're near the end
     if (endPage - startPage < 4) {
       startPage = Math.max(1, endPage - 4);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(i);
     }
-    
+
     return pageNumbers;
   };
 
@@ -174,7 +181,7 @@ const MuracietlerPage = () => {
             </svg>
           </button>
         </div>
-        <motion.button 
+        <motion.button
           className="ml-2 md:ml-4 px-4 py-2 bg-[#2E92A0] text-white rounded-lg flex items-center justify-between w-[50%]"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -199,7 +206,7 @@ const MuracietlerPage = () => {
         </motion.button>
       </div>
     );
-    
+
     // Clean up when component unmounts
     return () => setSearchBar(null);
   }, [setSearchBar, searchQuery]);
@@ -207,16 +214,16 @@ const MuracietlerPage = () => {
   // Animation variants for table rows
   const tableVariants = {
     hidden: { opacity: 0 },
-    visible: { 
+    visible: {
       opacity: 1,
-      transition: { 
+      transition: {
         staggerChildren: 0.05,
         delayChildren: 0.1,
       },
     },
-    exit: { 
+    exit: {
       opacity: 0,
-      transition: { 
+      transition: {
         staggerChildren: 0.05,
         staggerDirection: -1,
       },
@@ -225,16 +232,16 @@ const MuracietlerPage = () => {
 
   const rowVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { 
-        type: "spring", 
-        stiffness: 300, 
+      transition: {
+        type: "spring",
+        stiffness: 300,
         damping: 24,
       },
     },
-    exit: { 
+    exit: {
       opacity: 0,
       y: -20,
       transition: { duration: 0.2 },
@@ -246,7 +253,7 @@ const MuracietlerPage = () => {
   const prevPageRef = useRef(currentPage);
   const newContentRef = useRef(null);
   const prevContentRef = useRef(null);
-  
+
   // Update height immediately when page changes
   useEffect(() => {
     if (prevPageRef.current !== currentPage) {
@@ -254,7 +261,7 @@ const MuracietlerPage = () => {
       if (newContentRef.current) {
         prevContentRef.current = newContentRef.current.offsetHeight;
       }
-      
+
       // Instead of using a fixed estimated height, use the previous height as a starting point
       if (prevContentRef.current) {
         setContentHeight(prevContentRef.current);
@@ -262,9 +269,9 @@ const MuracietlerPage = () => {
         // Only use this fallback for the first render
         setContentHeight("auto");
       }
-      
+
       prevPageRef.current = currentPage;
-      
+
       // Schedule a measurement after render
       requestAnimationFrame(() => {
         if (newContentRef.current) {
@@ -293,12 +300,19 @@ const MuracietlerPage = () => {
     setModalStep(1);
     setSelectedHsCode("");
     setIsSuccess(false);
-    setFormData({name: "",surname: "",productName: "",invoiceValue: "",quantity: "",legalPersonName: "",});
+    setFormData({
+      name: "",
+      surname: "",
+      productName: "",
+      invoiceValue: "",
+      quantity: "",
+      legalPersonName: "",
+    });
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({...prev, [name]: value}));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
   const handleFormSubmit = () => {
     setIsSuccess(true);
@@ -405,7 +419,7 @@ const MuracietlerPage = () => {
                   ) : (
                     <>
                       {modalStep === 1 ? (
-                        <HSCodeStep 
+                        <HSCodeStep
                           key="step1"
                           selectedHsCode={selectedHsCode}
                           setSelectedHsCode={setSelectedHsCode}
@@ -414,17 +428,19 @@ const MuracietlerPage = () => {
                           custom={direction}
                         />
                       ) : modalStep === 2 ? (
-                        <PermissionsStep 
+                        <PermissionsStep
                           key="step2"
                           selectedHsCode={selectedHsCode}
-                          setModalStep={(step) => step < 2 ? goToPrevStep(step) : goToNextStep(step)}
+                          setModalStep={(step) =>
+                            step < 2 ? goToPrevStep(step) : goToNextStep(step)
+                          }
                           closeModal={closeModal}
                           selectedPermissions={selectedPermissions}
                           setSelectedPermissions={setSelectedPermissions}
                           custom={direction}
                         />
                       ) : (
-                        <FormStep 
+                        <FormStep
                           key="step3"
                           formData={formData}
                           handleInputChange={handleInputChange}
@@ -447,7 +463,7 @@ const MuracietlerPage = () => {
           {/* Table Header */}
           <div className="p-[16px] flex justify-between items-center border-b border-[#E7E7E7] bg-white">
             <div className="flex items-center gap-x-[8px]">
-              <div 
+              <div
                 className="w-[64px] md:w-[150px] flex items-center cursor-pointer"
                 onClick={() => handleSort("code")}
               >
@@ -459,7 +475,7 @@ const MuracietlerPage = () => {
                     <IoIosArrowDown className="ml-1 text-[#3F3F3F]" />
                   ))}
               </div>
-              <div 
+              <div
                 className="w-[75px] md:w-[150px] flex items-center gap-x-[8px] cursor-pointer"
                 onClick={() => handleSort("date")}
               >
@@ -474,7 +490,7 @@ const MuracietlerPage = () => {
               Yüklə
             </p>
           </div>
-          
+
           {/* Improved animated container */}
           <motion.div
             style={{ height: contentHeight }}
@@ -497,30 +513,34 @@ const MuracietlerPage = () => {
                 }}
               >
                 {applications.length === 0 ? (
-                  <motion.div 
+                  <motion.div
                     className="p-[16px] text-center text-[#3F3F3F] flex flex-col items-center justify-center space-y-4"
                     variants={rowVariants}
                   >
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M9 12H15M12 9V15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#A0A0A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <svg
+                      width="64"
+                      height="64"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      onClick={() => toogleMuracietModal()}
+                      className="hover:cursor-pointer hover:scale-105 transition-all duration-200 group"
+                    >
+                      <path
+                        d="M9 12H15M12 9V15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                        stroke="#A0A0A0"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="group-hover:stroke-[#2E92A0] transition-all duration-200"
+                      />
                     </svg>
                     <p>Hazırda heç bir müraciətiniz yoxdur</p>
-                    <motion.button 
-                      className="px-4 py-2 bg-[#2E92A0] text-white rounded-lg flex items-center gap-2"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => toogleMuracietModal()}
-                    >
-                      <span>Yeni müraciət et</span>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 4V20M20 12H4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </motion.button>
                   </motion.div>
                 ) : currentItems.length > 0 ? (
                   currentItems.map((app) => (
-                    <motion.div 
-                      key={app.id} 
+                    <motion.div
+                      key={app.id}
                       className="p-[16px] flex justify-between items-center border-t border-[#E7E7E7] hover:bg-[#F5F5F5]"
                       variants={rowVariants}
                     >
@@ -571,7 +591,7 @@ const MuracietlerPage = () => {
                     </motion.div>
                   ))
                 ) : (
-                  <motion.div 
+                  <motion.div
                     className="p-[16px] text-center text-[#3F3F3F]"
                     variants={rowVariants}
                   >
@@ -581,13 +601,13 @@ const MuracietlerPage = () => {
               </motion.div>
             </AnimatePresence>
           </motion.div>
-          
+
           {/* Pagination */}
           {applications.length > 0 && filteredApplications.length > 0 && (
             <div className="pagination flex items-center justify-between p-4 border-t border-[#E7E7E7] bg-white">
               <div className="w-full justify-center flex items-center gap-2">
-                <motion.button 
-                  onClick={prevPage} 
+                <motion.button
+                  onClick={prevPage}
                   disabled={currentPage === 1}
                   className={`px-[16px] py-[3px] border border-[#E7E7E7] bg-[#FAFAFA] flex items-center justify-center rounded ${
                     currentPage === 1
@@ -599,13 +619,13 @@ const MuracietlerPage = () => {
                 >
                   Geri
                 </motion.button>
-                
+
                 {getPageNumbers().map((number) => (
                   <motion.button
                     key={number}
                     onClick={() => setCurrentPage(number)}
                     className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer ${
-                      currentPage === number 
+                      currentPage === number
                         ? "bg-[#2E92A0] text-white"
                         : "text-[#3F3F3F] border border-[#E7E7E7] hover:bg-[#E7E7E7]"
                     }`}
@@ -615,9 +635,9 @@ const MuracietlerPage = () => {
                     {number}
                   </motion.button>
                 ))}
-                
-                <motion.button 
-                  onClick={nextPage} 
+
+                <motion.button
+                  onClick={nextPage}
                   disabled={currentPage === totalPages}
                   className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
                     currentPage === totalPages
@@ -638,4 +658,4 @@ const MuracietlerPage = () => {
   );
 };
 
-export default MuracietlerPage; 
+export default MuracietlerPage;

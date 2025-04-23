@@ -139,7 +139,10 @@ const Header = () => {
 
               {user ? (
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
+                  <div 
+                    className="flex items-center gap-2 hover:cursor-pointer"
+                    onClick={() => navigate("/profile")}
+                  >
                     <IoPersonCircleOutline size={24} className="text-[#2E92A0]" />
                     <span className="text-[#3F3F3F]">{user.name} {user.surname}</span>
                   </div>
@@ -228,7 +231,13 @@ const Header = () => {
                 {/* Auth Section */}
                 {user ? (
                   <div className="flex flex-col gap-4 mb-4">
-                    <div className="flex items-center gap-2 p-2">
+                    <div 
+                      className="flex items-center gap-2 p-2 hover:cursor-pointer"
+                      onClick={() => {
+                        navigate("/profile");
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
                       <IoPersonCircleOutline size={24} className="text-[#2E92A0]" />
                       <div className="flex flex-col">
                         <span className="text-[#3F3F3F] font-medium">{user.name} {user.surname}</span>

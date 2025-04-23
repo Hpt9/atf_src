@@ -1,11 +1,11 @@
-import AdminChat from '../components/AdminChat';
+// import AdminChat from '../components/AdminChat';
 
-// In your router configuration
-{
-  path: "/admin/chat",
-  element: (
-    <PrivateRoute>
-      <AdminChat />
-    </PrivateRoute>
-  ),
-} 
+// // In your router configuration
+// {
+//   path: "/admin/chat",
+//   element: (
+//     <PrivateRoute>
+//       <AdminChat />
+//     </PrivateRoute>
+//   ),
+// } 

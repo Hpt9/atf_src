@@ -9,21 +9,37 @@ import { motion, AnimatePresence } from "framer-motion";
 import Pusher from "pusher-js";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const ChatBot = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
 
+  // Update authentication state when user changes
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsAuthenticated(!!token && !!user);
+    
+    // If user logs out while chat is open, close it
+    if (!token || !user) {
+      setIsOpen(false);
+      setMessages([]);
+    }
+  }, [user]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleChatClick = () => {
-    if (!isAuthenticated) {
+    const token = localStorage.getItem("token");
+    if (!token || !user) {
+      setIsAuthenticated(false);
       navigate("/giris?type=login");
       return;
     }
@@ -31,7 +47,11 @@ const ChatBot = () => {
   };
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setIsOpen(false);
+      setMessages([]);
+      return;
+    }
 
     // Real-time updates with Pusher
     const pusher = new Pusher("6801d180c935c080fb57", {
@@ -44,7 +64,7 @@ const ChatBot = () => {
         id: data.id || Date.now(),
         text: data.message,
         sender: data.username,
-        isUser: data.username === localStorage.getItem("username"),
+        isUser: data.username === user?.name,
         time: new Date().toLocaleTimeString()
       }]);
     });
@@ -53,7 +73,7 @@ const ChatBot = () => {
       channel.unbind_all();
       channel.unsubscribe();
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -96,17 +116,19 @@ const ChatBot = () => {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!message.trim() || !isAuthenticated) return;
+    const token = localStorage.getItem("token");
+    if (!message.trim() || !token || !user) {
+      setIsAuthenticated(false);
+      navigate("/giris?type=login");
+      return;
+    }
 
     try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const token = localStorage.getItem("token");
-
       const response = await axios.post(
         "https://atfplatform.tw1.ru/api/messages",
         {
-          name: user?.name || "Unknown",
-          id: user?.id || "Unknown",
+          name: user.name || "Unknown",
+          id: user.id || "Unknown",
           message: message
         },
         {
@@ -117,12 +139,11 @@ const ChatBot = () => {
       );
 
       if (response.data) {
-        setMessage(""); // Clear the input field after successful send
-        // Add the sent message to the messages state
+        setMessage("");
         setMessages(prevMessages => [...prevMessages, {
           id: Date.now(),
           text: message,
-          sender: user?.name || "Unknown",
+          sender: user.name || "Unknown",
           isUser: true,
           time: new Date().toLocaleTimeString()
         }]);
@@ -130,6 +151,8 @@ const ChatBot = () => {
     } catch (error) {
       if (error.response?.status === 401) {
         setIsAuthenticated(false);
+        setIsOpen(false);
+        setMessages([]);
         localStorage.removeItem("token");
         navigate("/giris?type=login");
       }
