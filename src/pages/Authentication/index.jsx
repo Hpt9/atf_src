@@ -408,7 +408,23 @@ const RegisterForm = ({ setLogin }) => {
   const handleGoogleSuccess = (credentialResponse) => {
     const token = credentialResponse.credential;
     const decoded = jwtDecode(token);
-    console.log("Google user info:", decoded);
+    //console.log(decoded);
+    const registerData = {
+      name: decoded.given_name,
+      email: decoded.email,
+      surname: decoded.family_name,
+      id: decoded.sub,
+    }
+    console.log(registerData);
+    axios.post("https://atfplatform.tw1.ru/api/auth/google", {
+      registerData
+    })
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   };
 
   const handleGoogleError = () => {
