@@ -69,6 +69,52 @@ const LoginForm = ({ setLogin }) => {
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const handleGoogleSuccess = (credentialResponse) => {
+    const token = credentialResponse.credential;
+    const decoded = jwtDecode(token);
+    
+    axios.post("https://atfplatform.tw1.ru/api/auth/google", {
+      name: decoded.given_name,
+      email: decoded.email,
+      surname: decoded.family_name,
+      google_id: decoded.sub
+    })
+    .then((res) => {
+      handleAuthSuccess(res.data);
+    })
+    .catch((err) => {
+      // If we have user data in the error response, treat it as success
+      if (err.response && err.response.data && err.response.data.token && err.response.data.user) {
+        handleAuthSuccess(err.response.data);
+      } else {
+        toast.error('Xəta baş verdi');
+      }
+    });
+  };
+
+  const handleGoogleError = () => {
+    console.log('Google Sign-In Failed');
+    toast.error('Google ilə daxil olmaq alınmadı');
+  };
+
+  // Helper function to handle successful auth (both from success and error paths)
+  const handleAuthSuccess = (data) => {
+    // Log in the user with the received data
+    login(data.user, data.token);
+    
+    // Show the phone number missing message if no phone
+    if (!data.user.phone) {
+      toast.error('Telefon nömrəniz qeyd olunmayıb', {
+        duration: 3000,
+      });
+    }
+    
+    // Navigate to home
+    setTimeout(() => {
+      navigate("/");
+    }, 1000);
+  };
+
   function handleLogin() {
     setError(false);
     setErrorMessage("");
@@ -196,6 +242,19 @@ const LoginForm = ({ setLogin }) => {
           Google ilə davam et
         </GradientText>
       </form>
+
+      <div className="w-full flex justify-center">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          useOneTap
+          theme="filled_black"
+          shape="pill"
+          size="large"
+          text="continue_with"
+          locale="az"
+        />
+      </div>
     </motion.div>
   );
 };
@@ -408,28 +467,47 @@ const RegisterForm = ({ setLogin }) => {
   const handleGoogleSuccess = (credentialResponse) => {
     const token = credentialResponse.credential;
     const decoded = jwtDecode(token);
-    //console.log(decoded);
-    const registerData = {
+    
+    axios.post("https://atfplatform.tw1.ru/api/auth/google", {
       name: decoded.given_name,
       email: decoded.email,
       surname: decoded.family_name,
-      id: decoded.sub,
-    }
-    console.log(registerData);
-    axios.post("https://atfplatform.tw1.ru/api/auth/google", {
-      registerData
+      google_id: decoded.sub
     })
     .then((res) => {
-      console.log(res);
+      handleAuthSuccess(res.data);
     })
     .catch((err) => {
-      console.log(err);
+      // If we have user data in the error response, treat it as success
+      if (err.response && err.response.data && err.response.data.token && err.response.data.user) {
+        handleAuthSuccess(err.response.data);
+      } else {
+        toast.error('Xəta baş verdi');
+      }
     });
   };
 
   const handleGoogleError = () => {
     console.log('Google Sign-In Failed');
     toast.error('Google ilə daxil olmaq alınmadı');
+  };
+
+  // Helper function to handle successful auth (both from success and error paths)
+  const handleAuthSuccess = (data) => {
+    // Log in the user with the received data
+    login(data.user, data.token);
+    
+    // Show the phone number missing message if no phone
+    if (!data.user.phone) {
+      toast.error('Telefon nömrəniz qeyd olunmayıb', {
+        duration: 3000,
+      });
+    }
+    
+    // Navigate to home
+    setTimeout(() => {
+      navigate("/");
+    }, 1000);
   };
 
   return (

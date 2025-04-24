@@ -118,8 +118,13 @@ const ProfilePage = () => {
         }));
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Xəta baş verdi';
-      toast.error(errorMessage);
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else if (error.response?.status === 422) {
+        toast.error('Məlumatlar düzgün deyil');
+      } else {
+        // toast.error('Xəta baş verdi');
+      }
     } finally {
       setLoading(false);
     }

@@ -14,9 +14,9 @@ import AdminChat from "./components/AdminChat";
 import ProfilePage from "./pages/ProfilePage";
 import { useState } from "react";
 import { Toaster } from 'react-hot-toast';
+import { RouteGuard } from './components/RouteGuard';
 
 function App() {
-  const user = localStorage.getItem('user');
   const [isChatOpen] = useState(true);
   const location = useLocation();
 
@@ -71,11 +71,11 @@ function App() {
                 <ElaqePage />
               </PageTransition>
             } />
-           {user && <Route path="/profile" element={
-              <PageTransition>
-                <ProfilePage />
-              </PageTransition>
-            } />}
+            <Route path="/profile" element={
+
+                  <ProfilePage />
+               
+            } />
           </Route>
           <Route path='*' element={<div>Not Found</div>}></Route>
           <Route path="/giris" element={<Authentication/>}></Route>
