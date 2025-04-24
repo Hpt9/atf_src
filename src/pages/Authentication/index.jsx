@@ -9,6 +9,8 @@ import { GradientText } from "../../components/shared/GradientText/GradientText"
 import { useAuth } from "../../context/AuthContext";
 import toast, { Toaster } from 'react-hot-toast';
 import axios from "axios";
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from "jwt-decode";
 
 export const Authentication = () => {
   const [searchParams] = useSearchParams();
@@ -189,6 +191,7 @@ const LoginForm = ({ setLogin }) => {
           animationSpeed={20}
           showBorder={true}
           className="custom-class w-full"
+          onClick={() => {console.log("clicked")}}
         >
           Google ilə davam et
         </GradientText>
@@ -402,6 +405,17 @@ const RegisterForm = ({ setLogin }) => {
       });
   };
 
+  const handleGoogleSuccess = (credentialResponse) => {
+    const token = credentialResponse.credential;
+    const decoded = jwtDecode(token);
+    console.log("Google user info:", decoded);
+  };
+
+  const handleGoogleError = () => {
+    console.log('Google Sign-In Failed');
+    toast.error('Google ilə daxil olmaq alınmadı');
+  };
+
   return (
     <motion.div
       className="w-full space-y-8 absolute"
@@ -593,22 +607,24 @@ const RegisterForm = ({ setLogin }) => {
           animationSpeed={20}
           showBorder={true}
           className="custom-class w-full"
-          onClick={ async () => {
-            const response = await axios.get('https://atfplatform.tw1.ru/auth/google/redirect', {
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-              },
-            });
-            if (response.data && response.data.url) {
-             window.location.href = response.data.url;
-            }
-          }}
+          onClick={() => {console.log("clicked")}}
         >
           Google ilə davam et
         </GradientText>
       </form>
+
+      <div className="w-full flex justify-center">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          useOneTap
+          theme="filled_black"
+          shape="pill"
+          size="large"
+          text="continue_with"
+          locale="az"
+        />
+      </div>
 
       {/* Loading Overlay */}
       {isLoading && (
