@@ -2,7 +2,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { slideAnimation } from './shared/animations';
 
-const SuccessStep = ({ closeModal, custom, approvalPdfs = [] }) => {
+const SuccessStep = ({ closeModal, custom, approvalPdfs = [], refreshApplications }) => {
+  const handleClose = () => {
+    closeModal();
+    // Refresh the applications list after modal is closed
+    refreshApplications();
+  };
+
   return (
     <motion.div
       initial="initial"
@@ -89,7 +95,7 @@ const SuccessStep = ({ closeModal, custom, approvalPdfs = [] }) => {
       )}
 
       <button
-        onClick={closeModal}
+        onClick={handleClose}
         className="w-full py-2 px-4 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors"
       >
         Bağla

@@ -232,7 +232,7 @@ const LoginForm = ({ setLogin }) => {
           Daxil ol
         </button>
 
-        <GradientText
+        {/* <GradientText
           colors={["#4286F5", "#34A853", "#F9BB04", "#E94134"]}
           animationSpeed={20}
           showBorder={true}
@@ -240,7 +240,7 @@ const LoginForm = ({ setLogin }) => {
           onClick={() => {console.log("clicked")}}
         >
           Google ilə davam et
-        </GradientText>
+        </GradientText> */}
       </form>
 
       <div className="w-full flex justify-center">
@@ -696,7 +696,7 @@ const RegisterForm = ({ setLogin }) => {
           )}
         </button>
 
-        <GradientText
+        {/* <GradientText
           colors={["#4286F5", "#34A853", "#F9BB04", "#E94134"]}
           animationSpeed={20}
           showBorder={true}
@@ -704,7 +704,7 @@ const RegisterForm = ({ setLogin }) => {
           onClick={() => {console.log("clicked")}}
         >
           Google ilə davam et
-        </GradientText>
+        </GradientText> */}
       </form>
 
       <div className="w-full flex justify-center">

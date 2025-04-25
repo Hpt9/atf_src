@@ -28,35 +28,35 @@ const MuracietlerPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const fetchApplications = async () => {
     setIsLoading(true);
-    axios
-      .get("https://atfplatform.tw1.ru/api/requests", {
+    try {
+      const response = await axios.get("https://atfplatform.tw1.ru/api/requests", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-      })
-      .then((response) => {
-        if (response.data && Array.isArray(response.data)) {
-          setApplications(response.data);
-        } else {
-          setApplications([]);
-        }
-        setError(null);
-      })
-      .catch((error) => {
-        if (error.response && error.response.status === 404) {
-          // Handle empty data case
-          setApplications([]);
-          setError(null);
-        } else {
-          setError("Məlumatları yükləmək mümkün olmadı");
-          console.error("Error loading applications:", error);
-        }
-      })
-      .finally(() => {
-        setIsLoading(false);
       });
+      if (response.data && Array.isArray(response.data)) {
+        setApplications(response.data);
+      } else {
+        setApplications([]);
+      }
+      setError(null);
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        setApplications([]);
+        setError(null);
+      } else {
+        setError("Məlumatları yükləmək mümkün olmadı");
+        console.error("Error loading applications:", error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchApplications();
   }, []);
 
   // Filter applications based on search query
@@ -392,6 +392,7 @@ const MuracietlerPage = () => {
                       closeModal={closeModal} 
                       custom={direction}
                       approvalPdfs={approvalPdfs}
+                      refreshApplications={fetchApplications}
                     />
                   ) : (
                     <>
@@ -414,6 +415,7 @@ const MuracietlerPage = () => {
                           closeModal={closeModal}
                           custom={direction}
                           setApprovalPdfs={setApprovalPdfs}
+                          refreshApplications={fetchApplications}
                         />
                       )}
                     </>

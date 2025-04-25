@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom }) => {
+const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, refreshApplications }) => {
   const { token } = useAuth();
   const [approvals, setApprovals] = useState([]);
   const [selectedApprovals, setSelectedApprovals] = useState([]);
@@ -13,6 +13,46 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom }) =
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [approvalPdfs, setApprovalPdfs] = useState([]);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const downloadPdf = async (url, filename) => {
+    try {
+      // Convert the full URL to use local proxy
+      const pdfPath = url.split('atfplatform.tw1.ru/storage/')[1];
+      const proxyUrl = `/storage/${pdfPath}`;
+      
+      const response = await axios({
+        url: proxyUrl,
+        method: 'GET',
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', filename || 'document.pdf'); 
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast.error('PDF yükləmək mümkün olmadı');
+    }
+  };
+
+  const downloadAllPdfs = async (pdfs) => {
+    for (const approval of pdfs) {
+      for (const [index, pdf] of approval.pdfs.entries()) {
+        const filename = `${approval.title}_${index + 1}.pdf`;
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Add 1 second delay between downloads
+        await downloadPdf(pdf.url, filename);
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchApprovals = async () => {
@@ -94,6 +134,17 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom }) =
       setApprovalPdfs(selectedPdfs);
       setModalStep(3); // Go to success step with PDFs
       setIsSuccess(true); // Set success state to true
+
+      // Start downloading PDFs after a short delay
+      setTimeout(() => {
+        downloadAllPdfs(selectedPdfs);
+      }, 1000);
+
+      // Refresh the applications list after successful submission
+      setTimeout(() => {
+        refreshApplications();
+      }, 2000); // Wait 2 seconds after success to refresh the list
+
     } catch (error) {
       console.error('Error submitting request:', error);
       if (error.response?.data?.message) {
