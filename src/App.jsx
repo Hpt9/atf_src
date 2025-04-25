@@ -58,7 +58,9 @@ function App() {
             } />
             <Route path="/muracietler" element={
               <PageTransition>
-                <MuracietlerPage />
+                <RouteGuard>
+                  <MuracietlerPage />
+                </RouteGuard>
               </PageTransition>
             } />
             <Route path="/faq" element={

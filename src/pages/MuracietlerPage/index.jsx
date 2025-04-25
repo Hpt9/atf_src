@@ -17,9 +17,6 @@ import useLanguageStore from "../../store/languageStore";
 
 const MuracietlerPage = () => {
   const navigate = useNavigate();
-  if (localStorage.getItem("token") === null) {
-    navigate("/giris?type=login");
-  }
   const { setSearchBar } = useSearchBar();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState("date");
@@ -34,7 +31,7 @@ const MuracietlerPage = () => {
   useEffect(() => {
     setIsLoading(true);
     axios
-      .get("https://atfplatform.tw1.ru/api/applications", {
+      .get("https://atfplatform.tw1.ru/api/requests", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -281,41 +278,18 @@ const MuracietlerPage = () => {
     }
   }, [currentPage]);
 
-  // Add new state for modal steps
+  // Add new state for approval PDFs
   const [modalStep, setModalStep] = useState(1);
   const [selectedHsCode, setSelectedHsCode] = useState("");
-
-  const [selectedPermissions, setSelectedPermissions] = useState([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    surname: "",
-    productName: "",
-    invoiceValue: "",
-    quantity: "",
-    legalPersonName: "",
-  });
   const [isSuccess, setIsSuccess] = useState(false);
+  const [approvalPdfs, setApprovalPdfs] = useState([]);
+
   const closeModal = () => {
     setIsMuracietModalOpen(false);
     setModalStep(1);
     setSelectedHsCode("");
     setIsSuccess(false);
-    setFormData({
-      name: "",
-      surname: "",
-      productName: "",
-      invoiceValue: "",
-      quantity: "",
-      legalPersonName: "",
-    });
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-  const handleFormSubmit = () => {
-    setIsSuccess(true);
+    setApprovalPdfs([]);
   };
 
   // Add direction state to track navigation direction
@@ -374,9 +348,9 @@ const MuracietlerPage = () => {
             >
               {/* Modal Header */}
               <div className="flex items-center justify-between p-[16px] border-b border-[#E7E7E7]">
-                {modalStep === 3 && (
+                {modalStep === 2 && (
                   <button
-                    onClick={() => setModalStep(2)}
+                    onClick={() => setModalStep(1)}
                     className="w-[32px] h-[32px] flex items-center justify-center rounded-full hover:bg-[#F5F5F5]"
                   >
                     <svg
@@ -399,14 +373,12 @@ const MuracietlerPage = () => {
                 {!isSuccess && (
                   <h2
                     className={`text-[18px] font-medium text-[#3F3F3F] ${
-                      modalStep === 3 ? "flex-1 text-right" : ""
+                      modalStep === 2 ? "flex-1 text-right" : ""
                     }`}
                   >
                     {modalStep === 1
                       ? "HS Kodu"
-                      : modalStep === 2
-                      ? "İcazələr"
-                      : "Seçilmiş icazələrə uyğun formu doldurun və təsdiq edin"}
+                      : "İcazələr"}
                   </h2>
                 )}
               </div>
@@ -414,8 +386,13 @@ const MuracietlerPage = () => {
               {/* Modal Content */}
               <div className="p-[16px] space-y-4 overflow-hidden">
                 <AnimatePresence mode="wait" initial={false} custom={direction}>
-                  {isSuccess ? (
-                    <SuccessStep key="success" closeModal={closeModal} />
+                  {modalStep === 3 ? (
+                    <SuccessStep 
+                      key="success" 
+                      closeModal={closeModal} 
+                      custom={direction}
+                      approvalPdfs={approvalPdfs}
+                    />
                   ) : (
                     <>
                       {modalStep === 1 ? (
@@ -427,7 +404,7 @@ const MuracietlerPage = () => {
                           setModalStep={goToNextStep}
                           custom={direction}
                         />
-                      ) : modalStep === 2 ? (
+                      ) : (
                         <PermissionsStep
                           key="step2"
                           selectedHsCode={selectedHsCode}
@@ -435,19 +412,8 @@ const MuracietlerPage = () => {
                             step < 2 ? goToPrevStep(step) : goToNextStep(step)
                           }
                           closeModal={closeModal}
-                          selectedPermissions={selectedPermissions}
-                          setSelectedPermissions={setSelectedPermissions}
                           custom={direction}
-                        />
-                      ) : (
-                        <FormStep
-                          key="step3"
-                          formData={formData}
-                          handleInputChange={handleInputChange}
-                          closeModal={closeModal}
-                          handleFormSubmit={handleFormSubmit}
-                          setModalStep={goToPrevStep}
-                          custom={direction}
+                          setApprovalPdfs={setApprovalPdfs}
                         />
                       )}
                     </>

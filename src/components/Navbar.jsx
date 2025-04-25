@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useSearchBar } from '../context/SearchBarContext'
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 const Navbar = () => {
   const location = useLocation();
@@ -15,6 +16,11 @@ const Navbar = () => {
     e.preventDefault();
     if (!user) {
       setShowLoginModal(true);
+    } else if (!user.phone) {
+      toast.error('Zəhmət olmasa, telefon nömrənizi əlavə edin', {
+        duration: 3000,
+      });
+      navigate('/profile');
     } else {
       navigate('/muracietler');
     }
@@ -149,35 +155,29 @@ const Navbar = () => {
         </nav>
       </header>
 
-      {/* Login Confirmation Modal */}
+      {/* Login Modal */}
       <AnimatePresence>
         {showLoginModal && (
-          <motion.div 
-            className="fixed inset-0 bg-[#0000003e] flex items-center justify-center z-[10001]"
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-[#0000003c] bg-opacity-50 z-50 flex items-center justify-center"
           >
-            <motion.div 
-              className="bg-white rounded-lg p-6 max-w-sm w-full mx-4"
-              initial={{ scale: 0.9, opacity: 0 }}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.15, delay: 0.1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4"
             >
-              <h3 className="text-lg font-semibold text-[#3F3F3F] mb-4">
-                Müraciətlər səhifəsinə baxmaq üçün daxil olmalısınız. Daxil olmaq istəyirsiniz?
-              </h3>
-              <div className="flex gap-4 justify-end">
+              <h2 className="text-xl font-semibold text-[#3F3F3F] mb-4">Daxil olun</h2>
+              <p className="text-[#3F3F3F] mb-6">Müraciətlər bölməsinə daxil olmaq üçün hesabınıza giriş etməlisiniz.</p>
+              <div className="flex justify-end gap-4">
                 <button
-                  onClick={() => {
-                    setShowLoginModal(false);
-                    navigate('/');
-                  }}
+                  onClick={() => setShowLoginModal(false)}
                   className="px-4 py-2 text-[#3F3F3F] hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  Xeyr
+                  Ləğv et
                 </button>
                 <button
                   onClick={() => {
@@ -186,7 +186,7 @@ const Navbar = () => {
                   }}
                   className="px-4 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors"
                 >
-                  Bəli
+                  Daxil ol
                 </button>
               </div>
             </motion.div>

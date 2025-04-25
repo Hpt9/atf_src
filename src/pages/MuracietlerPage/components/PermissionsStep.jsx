@@ -1,26 +1,122 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { slideAnimation } from './shared/animations';
+import axios from 'axios';
+import { useAuth } from '../../../context/AuthContext';
+import toast from 'react-hot-toast';
 
-const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, selectedPermissions, setSelectedPermissions, custom }) => {
-  const handlePermissionChange = (permission) => {
-    setSelectedPermissions(prev => {
-      if (prev.includes(permission)) {
-        return prev.filter(p => p !== permission);
+const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom }) => {
+  const { token } = useAuth();
+  const [approvals, setApprovals] = useState([]);
+  const [selectedApprovals, setSelectedApprovals] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [approvalPdfs, setApprovalPdfs] = useState([]);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  useEffect(() => {
+    const fetchApprovals = async () => {
+      try {
+        const response = await axios.post(
+          'https://atfplatform.tw1.ru/api/code-categories-documents',
+          { hs_code: parseInt(selectedHsCode, 10) },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        setApprovals(response.data.approvals || []);
+      } catch (error) {
+        console.error('Error fetching approvals:', error);
+        toast.error('İcazələri yükləmək mümkün olmadı');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchApprovals();
+  }, [selectedHsCode, token]);
+
+  const handleApprovalChange = (approvalId) => {
+    if (isSubmitting) return; // Prevent changes while submitting
+    setSelectedApprovals(prev => {
+      if (prev.includes(approvalId)) {
+        return prev.filter(id => id !== approvalId);
       } else {
-        return [...prev, permission];
+        return [...prev, approvalId];
       }
     });
   };
 
-  const handleNext = () => {
-    if (selectedPermissions.length === 0) return;
-    setModalStep(3);
+  const handleNext = async () => {
+    if (selectedApprovals.length === 0 || isSubmitting) return;
+
+    const finalData = {
+      hs_code: parseInt(selectedHsCode, 10),
+      approval_ids: selectedApprovals
+    };
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await axios.post(
+        'https://atfplatform.tw1.ru/api/code-categories-downloads',
+        finalData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      console.log('Success Response:', response.data);
+      
+      // Get PDFs for selected approvals
+      const selectedPdfs = approvals
+        .filter(approval => selectedApprovals.includes(approval.id))
+        .map(approval => ({
+          title: approval.title,
+          pdfs: approval.pdfs.map(pdf => ({
+            ...pdf,
+            url: `https://atfplatform.tw1.ru/storage/${pdf.slug}`
+          }))
+        }));
+      
+      // Log URLs in a clear format
+      console.log('Selected Approvals with URLs:');
+      selectedPdfs.forEach(approval => {
+        console.log(`\nApproval: ${approval.title}`);
+        approval.pdfs.forEach((pdf, index) => {
+          console.log(`PDF ${index + 1}: ${pdf.url}`);
+        });
+      });
+      
+      setApprovalPdfs(selectedPdfs);
+      setModalStep(3); // Go to success step with PDFs
+      setIsSuccess(true); // Set success state to true
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Müraciət göndərilmədi. Xahiş edirik yenidən cəhd edin.');
+      }
+      setIsSubmitting(false);
+    }
   };
 
   const handleBack = () => {
+    if (isSubmitting) return; // Prevent navigation while submitting
     setModalStep(1);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <div className="w-8 h-8 border-4 border-[#2E92A0] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -33,7 +129,10 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, selectedPer
       <div className="flex items-center gap-4 mb-4">
         <button
           onClick={handleBack}
-          className="w-[32px] h-[32px] flex items-center justify-center rounded-full hover:bg-[#F5F5F5]"
+          disabled={isSubmitting}
+          className={`w-[32px] h-[32px] flex items-center justify-center rounded-full ${
+            isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#F5F5F5]'
+          }`}
         >
           <svg
             width="24"
@@ -56,47 +155,60 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, selectedPer
         </h2>
       </div>
 
-      <div className="text-[14px] text-[#3F3F3F] mb-6">
-        Lorem ipsum is simply dummy text of the printing and
-        typesetting industry. Lorem ipsum has been the
-        industry's standard dummy text ever since the 1500s,
-        when an unknown printer took a galley of type and
-        scrambled it to make a type specimen book. It has
-        survived not only five centuries, but also the leap into
-        electronic typesetting, remaining essentially unchanged.
-      </div>
-
-      <div className="space-y-3">
-        {['İcazə 1', 'İcazə 2', 'İcazə 3', 'İcazə 4'].map((permission) => (
-          <label key={permission} className="flex items-center gap-2 cursor-pointer">
+      <div className="space-y-4">
+        {approvals.map((approval) => (
+          <div key={approval.id} className="flex items-center gap-2">
             <input
               type="checkbox"
-              checked={selectedPermissions.includes(permission)}
-              onChange={() => handlePermissionChange(permission)}
-              className="w-5 h-5 rounded border-[#E7E7E7] text-[#2E92A0] focus:ring-[#2E92A0]"
+              id={`approval-${approval.id}`}
+              checked={selectedApprovals.includes(approval.id)}
+              onChange={() => handleApprovalChange(approval.id)}
+              disabled={isSubmitting}
+              className={`w-4 h-4 text-[#2E92A0] border-[#E7E7E7] rounded focus:ring-[#2E92A0] ${
+                isSubmitting ? 'cursor-not-allowed opacity-50' : ''
+              }`}
             />
-            <span className="text-[#3F3F3F]">{permission}</span>
-          </label>
+            <label
+              htmlFor={`approval-${approval.id}`}
+              className={`text-[#3F3F3F] ${
+                isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+              }`}
+            >
+              {approval.title}
+            </label>
+          </div>
         ))}
       </div>
 
-      <div className="flex flex-col gap-2 mt-6">
+      <div className="flex flex-col gap-2 mt-4">
         <button
           onClick={closeModal}
-          className="w-full py-2 px-4 bg-white border border-[#E7E7E7] text-[#3F3F3F] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+          disabled={isSubmitting}
+          className={`w-full py-2 px-4 bg-white border border-[#E7E7E7] text-[#3F3F3F] rounded-lg ${
+            isSubmitting
+              ? 'opacity-50 cursor-not-allowed'
+              : 'hover:bg-[#F5F5F5] transition-colors'
+          }`}
         >
           Ləğv et
         </button>
         <button
           onClick={handleNext}
-          className={`w-full py-2 px-4 rounded-lg transition-colors ${
-            selectedPermissions.length === 0
+          disabled={selectedApprovals.length === 0 || isSubmitting}
+          className={`w-full py-2 px-4 rounded-lg transition-colors relative ${
+            selectedApprovals.length === 0 || isSubmitting
               ? 'bg-gray-300 cursor-not-allowed text-white'
               : 'bg-[#2E92A0] text-white hover:bg-[#267A85]'
           }`}
-          disabled={selectedPermissions.length === 0}
         >
-          Növbəti
+          {isSubmitting ? (
+            <div className="flex items-center justify-center">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              Göndərilir...
+            </div>
+          ) : (
+            'Növbəti'
+          )}
         </button>
       </div>
     </motion.div>

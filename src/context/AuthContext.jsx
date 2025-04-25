@@ -6,16 +6,54 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // const checkToken = async (storedToken) => {
+  //   try {
+  //     const response = await axios.get('https://atfplatform.tw1.ru/api/user', {
+  //       headers: {
+  //         'Authorization': `Bearer ${storedToken}`
+  //       }
+  //     });
+      
+  //     if (response.data) {
+  //       // Update user data from the server
+  //       setUser(response.data);
+  //       localStorage.setItem('user', JSON.stringify(response.data));
+  //       setToken(storedToken);
+  //       return true;
+  //     }
+  //     return false;
+  //   } catch (error) {
+  //     // Only clear data if we get a 401 (Unauthorized) error
+  //     if (error.response && error.response.status === 401) {
+  //       console.error('Token is invalid');
+  //       localStorage.removeItem('token');
+  //       localStorage.removeItem('user');
+  //       setUser(null);
+  //       setToken(null);
+  //     }
+  //     return false;
+  //   }
+  // };
 
   useEffect(() => {
-    // Check for stored user data on component mount
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
-    
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setToken(storedToken);
-    }
+    const initializeAuth = async () => {
+      const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      
+      if (storedToken && storedUser) {
+        // Set the stored data immediately
+        setUser(JSON.parse(storedUser));
+        setToken(storedToken);
+        
+        // Then validate the token in the background
+        //await checkToken(storedToken);
+      }
+      setIsLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const login = (userData, token) => {
@@ -39,12 +77,16 @@ export const AuthProvider = ({ children }) => {
     }).catch((error) => {
       // Even if the API call fails, we should still clear the local state
       console.log(error);
-      // setUser(null);
-      // setToken(null);
-      // localStorage.removeItem('user');
-      // localStorage.removeItem('token');
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
     });
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout }}>
