@@ -16,9 +16,11 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
 
   const downloadPdf = async (url, filename) => {
     try {
-      // Use the full URL directly instead of relying on proxy
+      // Convert the full URL to a relative path that will use the proxy
+      const relativePath = url.replace('https://atfplatform.tw1.ru', '');
+      
       const response = await axios({
-        url: url, // Use the full URL directly
+        url: relativePath,
         method: 'GET',
         responseType: 'blob',
         headers: {
@@ -115,7 +117,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
           title: approval.title,
           pdfs: approval.pdfs.map(pdf => ({
             ...pdf,
-            url: `https://atfplatform.tw1.ru/storage/${pdf.slug}`
+            url: `/storage/${pdf.slug}`
           }))
         }));
       
@@ -263,4 +265,4 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
   );
 };
 
-export default PermissionsStep; 
+export default PermissionsStep;
