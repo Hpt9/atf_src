@@ -16,12 +16,9 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
 
   const downloadPdf = async (url, filename) => {
     try {
-      // Convert the full URL to use local proxy
-      const pdfPath = url.split('atfplatform.tw1.ru/storage/')[1];
-      const proxyUrl = `/storage/${pdfPath}`;
-      
+      // Use the full URL directly instead of relying on proxy
       const response = await axios({
-        url: proxyUrl,
+        url: url, // Use the full URL directly
         method: 'GET',
         responseType: 'blob',
         headers: {
