@@ -16,11 +16,18 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
 
   const downloadPdf = async (url, filename) => {
     try {
-      // Convert the full URL to a relative path that will use the proxy
-      const relativePath = url.replace('https://atfplatform.tw1.ru', '');
+      // Check if we're in development or production
+      const baseUrl = import.meta.env.PROD 
+        ? 'https://atfplatform.tw1.ru' 
+        : '';
+      
+      // If the URL is already absolute, use it as is, otherwise prepend the base URL
+      const fullUrl = url.startsWith('http') 
+        ? url 
+        : `${baseUrl}${url}`;
       
       const response = await axios({
-        url: relativePath,
+        url: fullUrl,
         method: 'GET',
         responseType: 'blob',
         headers: {
