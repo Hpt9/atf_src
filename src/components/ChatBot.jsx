@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 
 // Initialize Pusher and Echo with proper configuration
@@ -198,24 +198,16 @@ export default function ChatWidget({ userId }) {
     <div className="fixed md:bottom-6 md:right-6 z-[10000]">
       <AnimatePresence mode="wait">
         {!open ? (
-          <motion.button
+          <button
             key="chat-button"
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 100 }}
-            transition={{ duration: 0.3 }}
             onClick={() => handleChatToggle(true)}
             className="w-[60px] h-[60px] rounded-full flex items-center justify-center shadow-lg fixed bottom-6 right-6 bg-[#2E92A0] hover:bg-[#2e93a089] hover:scale-105 transition-all duration-200 hover:cursor-pointer"
           >
             💬
-          </motion.button>
+          </button>
         ) : (
-          <motion.div 
+          <div 
             key="chat-window"
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 100 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
             className="bg-white md:rounded-[16px] w-full md:w-[400px] shadow-xl fixed inset-0 md:inset-auto md:fixed md:bottom-6 md:right-6 flex flex-col h-screen md:h-[70vh] overflow-hidden" 
             style={{ height: window.innerWidth >= 768 ? '70vh' : 'calc(100vh)' }}
           >
@@ -306,7 +298,7 @@ export default function ChatWidget({ userId }) {
                 </form>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

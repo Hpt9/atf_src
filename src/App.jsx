@@ -10,14 +10,13 @@ import ElaqePage from "./pages/ElaqePage";
 import PageTransition from "./components/PageTransition";
 import './App.css'
 import { Authentication } from "./pages/Authentication";
-import AdminChat from "./components/AdminChat";
 import ProfilePage from "./pages/ProfilePage";
-import { useState } from "react";
+import AdminChatPage from "./pages/AdminChatPage";
 import { Toaster } from 'react-hot-toast';
 import { RouteGuard } from './components/RouteGuard';
+import AdminRouteGuard from './components/AdminRouteGuard';
 
 function App() {
-  const [isChatOpen] = useState(true);
   const location = useLocation();
 
   return (
@@ -74,15 +73,16 @@ function App() {
               </PageTransition>
             } />
             <Route path="/profile" element={
-
                   <ProfilePage />
-               
             } />
-            
           </Route>
           <Route path='*' element={<div>Not Found</div>}></Route>
           <Route path="/giris" element={<Authentication/>}></Route>
-          {isChatOpen && <Route path="/admin/chat" element={<AdminChat />}></Route>}
+          <Route path="/admin/chat" element={
+            <AdminRouteGuard>
+              <AdminChatPage />
+            </AdminRouteGuard>
+          }></Route>
         </Routes>
       </AnimatePresence>
     </>
