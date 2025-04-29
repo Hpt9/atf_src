@@ -60,11 +60,15 @@ const MuracietlerPage = () => {
   }, []);
 
   // Filter applications based on search query
-  const filteredApplications = applications.filter(
-    (app) =>
-      app.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredApplications = applications.filter((app) => {
+    if (!searchQuery.trim()) return true;
+    
+    // Convert both the code and search query to strings for comparison
+    const appCode = String(app.code);
+    const query = searchQuery.trim();
+    
+    return appCode.includes(query);
+  });
 
   // Sort applications
   const sortedApplications = [...filteredApplications].sort((a, b) => {

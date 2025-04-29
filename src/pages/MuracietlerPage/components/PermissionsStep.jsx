@@ -232,7 +232,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
               }`}
             >
               {approval.title}
-            </label>
+          </label>
           </div>
         ))}
       </div>
@@ -272,4 +272,4 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
   );
 };
 
-export default PermissionsStep;
+export default PermissionsStep; 

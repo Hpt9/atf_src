@@ -78,6 +78,7 @@ function App() {
                   <ProfilePage />
                
             } />
+            
           </Route>
           <Route path='*' element={<div>Not Found</div>}></Route>
           <Route path="/giris" element={<Authentication/>}></Route>

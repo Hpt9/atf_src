@@ -4,24 +4,12 @@ import { IoArrowBack } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import useLanguageStore from "../../store/languageStore";
-
-// Create a custom axios instance for search
-const searchApi = axios.create();
-
-// Add response interceptor to handle 404 silently
-searchApi.interceptors.response.use(
-  response => response,
-  error => {
-    if (error.response?.status === 404) {
-      return Promise.resolve({ data: [] }); // Return empty array for 404
-    }
-    return Promise.reject(error);
-  }
-);
+import { useAuth } from "../../context/AuthContext";
 
 const IcazelerPage = () => {
   const { setSearchBar } = useSearchBar();
   const { language } = useLanguageStore();
+  const { token } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCard, setSelectedCard] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,68 +20,115 @@ const IcazelerPage = () => {
     total: 0,
     per_page: 12,
     current_page: 1,
-    last_page: 1
+    last_page: 1,
+    prev_page_url: null,
+    next_page_url: null,
+    links: [
+      { label: '1', active: true }
+    ]
   });
 
-  // Fetch approvals data with search
-  const fetchApprovals = async (page, query = "") => {
+  // Fetch all approvals
+  const fetchAllApprovals = async (page) => {
     try {
       setLoading(true);
-      let response;
-      
-      if (query.trim()) {
-        // Use search API when there's a query
-        response = await searchApi.post('https://atfplatform.tw1.ru/api/approval-search', {
-          q: query
-        });
-        // For search results, format the response to match the expected structure
+      const response = await axios.get(`https://atfplatform.tw1.ru/api/approvals?page=${page}`);
+      // Handle array response from API
         setApprovalsData({
           data: response.data,
           total: response.data.length,
           per_page: response.data.length,
           current_page: 1,
-          last_page: 1
-        });
-      } else {
-        // Use regular API when no search query
-        response = await axios.get(`https://atfplatform.tw1.ru/api/approvals?page=${page}`);
-        setApprovalsData(response.data);
-      }
+        last_page: 1,
+        prev_page_url: null,
+        next_page_url: null,
+        links: [
+          { label: '1', active: true }
+        ]
+      });
       setError(null);
     } catch (err) {
-      if (!err.response || err.response.status !== 404) {
         console.error("Error fetching approvals:", err);
         setError("Məlumatları yükləyərkən xəta baş verdi");
-      }
       setApprovalsData({
         data: [],
         total: 0,
         per_page: 12,
         current_page: 1,
-        last_page: 1
+        last_page: 1,
+        prev_page_url: null,
+        next_page_url: null,
+        links: []
       });
     } finally {
       setLoading(false);
     }
   };
 
-  // Debounce search
+  // Search approvals
+  const searchApprovals = async (query) => {
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        'https://atfplatform.tw1.ru/api/approval-search',
+        { q: query }
+      );
+      setApprovalsData({
+        data: response.data,
+        total: response.data.length,
+        per_page: response.data.length,
+        current_page: 1,
+        last_page: 1,
+        prev_page_url: null,
+        next_page_url: null,
+        links: [
+          { label: '1', active: true }
+        ]
+      });
+      setError(null);
+    } catch (err) {
+      console.error("Error searching approvals:", err);
+      setError("Axtarış zamanı xəta baş verdi");
+      setApprovalsData({
+        data: [],
+        total: 0,
+        per_page: 12,
+        current_page: 1,
+        last_page: 1,
+        prev_page_url: null,
+        next_page_url: null,
+        links: []
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial load - fetch all approvals
   useEffect(() => {
+    if (token) {
+      fetchAllApprovals(1);
+    }
+  }, [token]);
+
+  // Handle search with debounce
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      fetchAllApprovals(currentPage);
+      return;
+    }
+
     const timeoutId = setTimeout(() => {
-      if (searchQuery.trim().length >= 1) {
-        fetchApprovals(1, searchQuery);
-      } else if (searchQuery.trim().length === 0) {
-        fetchApprovals(1);
-      }
-    }, 300); // Reduced debounce time for better responsiveness
+      searchApprovals(searchQuery);
+    }, 300);
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
-  // Fetch data when page changes (only if no search query)
+  // Handle page changes (only for non-search results)
   useEffect(() => {
     if (!searchQuery.trim()) {
-      fetchApprovals(currentPage);
+      fetchAllApprovals(currentPage);
     }
   }, [currentPage]);
 
@@ -101,11 +136,6 @@ const IcazelerPage = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
-
-  // Change page
-  const paginate = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
 
   // Update search placeholder based on language
   const getSearchPlaceholder = () => {
@@ -282,7 +312,7 @@ const IcazelerPage = () => {
                   {approvalsData.last_page > 1 && (
                     <div className="flex justify-center items-center gap-2 mt-8">
                       <motion.button
-                        onClick={() => paginate(currentPage - 1)}
+                        onClick={() => setCurrentPage(currentPage - 1)}
                         disabled={!approvalsData.prev_page_url}
                         className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
                           !approvalsData.prev_page_url
@@ -298,7 +328,7 @@ const IcazelerPage = () => {
                       {approvalsData.links.slice(1, -1).map((link, index) => (
                         <motion.button
                           key={index}
-                          onClick={() => paginate(Number(link.label))}
+                          onClick={() => setCurrentPage(Number(link.label))}
                           className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer ${
                             link.active
                               ? "bg-[#2E92A0] text-white"
@@ -312,7 +342,7 @@ const IcazelerPage = () => {
                       ))}
 
                       <motion.button
-                        onClick={() => paginate(currentPage + 1)}
+                        onClick={() => setCurrentPage(currentPage + 1)}
                         disabled={!approvalsData.next_page_url}
                         className={`px-[16px] py-[3px] bg-[#FAFAFA] border border-[#E7E7E7] flex items-center justify-center rounded ${
                           !approvalsData.next_page_url
