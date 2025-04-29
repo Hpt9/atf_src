@@ -6,7 +6,7 @@ const AdminChat = () => {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef(null);
-  const adminUsername = "ADMIN"; // Special username for admin
+  const adminUsername = "Admin"; // Special username for admin
 
   useEffect(() => {
     // Initial messages load

@@ -12,8 +12,15 @@ export const AdminRouteGuard = ({ children }) => {
     );
   }
 
-  // Check if user is logged in and has admin role
-  if (!user || !user.is_admin) {
+  // Check if user is logged in
+  if (!user) {
+    return <Navigate to="/giris" />;
+  }
+  
+  // Check if the username is 'Admin'
+  const isAdmin = user.name === 'Admin';
+  
+  if (!isAdmin) {
     return <Navigate to="/" />;
   }
 

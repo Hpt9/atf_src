@@ -65,7 +65,7 @@ const AdminChatInterface = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch('https://atfplatform.tw1.ru/api/admin/chat/users', {
+        const response = await fetch('https://atfplatform.tw1.ru/api/support/users', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
@@ -76,7 +76,21 @@ const AdminChatInterface = () => {
         }
         
         const data = await response.json();
-        setUsers(data.users || []);
+        
+        if (data.status === 'success' && Array.isArray(data.users)) {
+          // Transform the user data to include additional properties we need
+          const formattedUsers = data.users.map(user => ({
+            ...user,
+            lastMessage: null,  // Will be populated when messages are loaded
+            unreadCount: 0,     // Will be updated when new messages arrive
+            isOnline: onlineUsers.includes(user.id)
+          }));
+          
+          setUsers(formattedUsers);
+        } else {
+          throw new Error('Invalid response format');
+        }
+        
         setLoading(false);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -85,13 +99,16 @@ const AdminChatInterface = () => {
     };
     
     fetchUsers();
-  }, []);
+  }, [onlineUsers]);
 
   // Handle new message from websocket
   const handleNewMessage = (message) => {
     // Update messages if current chat is open
     if (selectedUser && message.user_id === selectedUser.id) {
-      setMessages(prev => [...prev, message]);
+      setMessages(prev => [...prev, {
+        ...message,
+        isAdmin: message.type === "response" || message.support_id === 1
+      }]);
     }
     
     // Update the users list with new message info
@@ -115,7 +132,7 @@ const AdminChatInterface = () => {
     setLoading(true);
     
     try {
-      const response = await fetch(`https://atfplatform.tw1.ru/api/admin/chat/messages/${user.id}`, {
+      const response = await fetch(`https://atfplatform.tw1.ru/api/messages/${user.id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
@@ -126,7 +143,18 @@ const AdminChatInterface = () => {
       }
       
       const data = await response.json();
-      setMessages(data.messages || []);
+      
+      if (data.status === 'success' && Array.isArray(data.messages)) {
+        // Transform the messages to ensure they have the right format for our UI
+        const formattedMessages = data.messages.map(msg => ({
+          ...msg,
+          isAdmin: msg.type === "response" || msg.support_id === 1
+        }));
+        
+        setMessages(formattedMessages);
+      } else {
+        setMessages([]);
+      }
       
       // Reset unread count for selected user
       setUsers(prev => 
@@ -136,6 +164,7 @@ const AdminChatInterface = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching messages:', error);
+      setMessages([]);
       setLoading(false);
     }
   };
@@ -148,16 +177,19 @@ const AdminChatInterface = () => {
     const tempMessage = {
       id: Date.now().toString(),
       message: messageText,
-      user_id: null, // null user_id indicates admin message
+      user_id: null,
+      support_id: 1,
       created_at: new Date().toISOString(),
-      isAdmin: true,
+      updated_at: new Date().toISOString(),
+      type: "response",
+      isAdmin: true
     };
     
     // Add to messages immediately (optimistic update)
     setMessages(prev => [...prev, tempMessage]);
     
     try {
-      const response = await fetch('https://atfplatform.tw1.ru/api/admin/chat/messages/send', {
+      const response = await fetch('https://atfplatform.tw1.ru/api/messages/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -166,6 +198,7 @@ const AdminChatInterface = () => {
         body: JSON.stringify({
           user_id: selectedUser.id,
           message: messageText,
+          type: "response"
         }),
       });
       
@@ -176,20 +209,27 @@ const AdminChatInterface = () => {
       const data = await response.json();
       
       // Update the temp message with the real one
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === tempMessage.id ? data.message : msg
-        )
-      );
-      
-      // Update user's last message
-      setUsers(prev => 
-        prev.map(user => 
-          user.id === selectedUser.id 
-            ? { ...user, lastMessage: data.message } 
-            : user
-        )
-      );
+      if (data.status === 'success' && data.message) {
+        const serverMessage = {
+          ...data.message,
+          isAdmin: true
+        };
+        
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === tempMessage.id ? serverMessage : msg
+          )
+        );
+        
+        // Update user's last message
+        setUsers(prev => 
+          prev.map(user => 
+            user.id === selectedUser.id 
+              ? { ...user, lastMessage: serverMessage } 
+              : user
+          )
+        );
+      }
       
     } catch (error) {
       console.error('Error sending message:', error);
