@@ -7,27 +7,24 @@ import { useAuth } from "../context/AuthContext";
 // Initialize Pusher and Echo
 window.Pusher = Pusher;
 
-// Create Echo instance with proper configuration
+// Create Echo instance with simplified configuration
 const createEchoInstance = () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    console.error('No authentication token found');
+    return null;
+  }
+
   return new Echo({
     broadcaster: 'pusher',
     key: '6801d180c935c080fb57',
     cluster: 'eu',
-    forceTLS: true,
-    encrypted: true,
     authEndpoint: 'https://atfplatform.tw1.ru/api/broadcasting/auth',
     auth: {
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'X-Requested-With': 'XMLHttpRequest',
-        'Origin': window.location.origin
-      },
-    },
-    enabledTransports: ['ws', 'wss'],
-    disableStats: true
+        'Authorization': `Bearer ${token}`
+      }
+    }
   });
 };
 
@@ -138,21 +135,6 @@ const AdminChat = () => {
       channel.listen('pusher:subscription_error', (error) => {
         console.error('❌ Subscription error:', error);
         setConnectionState('error');
-        setTimeout(() => {
-          if (echoInstance) {
-            console.log('🔄 Attempting to reconnect...');
-            echoInstance.connect();
-          }
-        }, 5000);
-      });
-
-      // Connection state change listener
-      echoInstance.connector.pusher.connection.bind('state_change', (states) => {
-        console.log('🔄 Connection state changed:', {
-          previous: states.previous,
-          current: states.current
-        });
-        setConnectionState(states.current);
       });
 
       // Listen for new messages
@@ -160,25 +142,22 @@ const AdminChat = () => {
         console.log('📨 Received message event:', e);
         if (e?.message) {
           setMessages(prev => {
-            console.log('Current messages:', prev);
             const exists = prev.some(msg => 
               msg.id === e.message.id || 
-              (msg.text === e.message.message && 
-               msg.sender === e.message.username && 
-               !msg.id)
+              (msg.message === e.message.message && 
+               msg.username === e.message.username)
             );
             
             if (!exists) {
               console.log('📩 Adding new message to state:', e.message);
               return [...prev, {
                 id: e.message.id || Date.now(),
-                text: e.message.message,
-                sender: e.message.username,
-                isSupport: e.message.role === "1",
-                time: new Date(e.message.created_at || Date.now()).toLocaleTimeString()
+                message: e.message.message,
+                username: e.message.username,
+                type: e.message.role === 'support' ? 'response' : 'request',
+                created_at: e.message.created_at || new Date().toISOString()
               }];
             }
-            console.log('🔄 Message already exists, skipping:', e.message);
             return prev;
           });
           messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -190,6 +169,7 @@ const AdminChat = () => {
       setConnectionState('error');
     }
 
+    // Cleanup function
     return () => {
       if (channelRef.current) {
         console.log('🔌 Cleaning up channel subscription:', `chat.${selectedUserId}`);
@@ -199,7 +179,7 @@ const AdminChat = () => {
         }
       }
     };
-  }, [token, user, selectedUserId, isSupport]);
+  }, [user?.id, echoInstance, selectedUserId]);
 
   // Auto-refresh messages when selected user changes
   useEffect(() => {
