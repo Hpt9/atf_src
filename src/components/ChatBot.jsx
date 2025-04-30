@@ -26,11 +26,8 @@ const createEchoInstance = () => {
         'Origin': window.location.origin
       },
     },
-    wsHost: 'atfplatform.tw1.ru',
-    wsPort: 6001,
-    wssPort: 6001,
-    disableStats: true,
-    enabledTransports: ['ws', 'wss']
+    enabledTransports: ['ws', 'wss'],
+    disableStats: true
   });
 };
 

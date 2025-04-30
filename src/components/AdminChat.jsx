@@ -26,11 +26,8 @@ const createEchoInstance = () => {
         'Origin': window.location.origin
       },
     },
-    wsHost: 'atfplatform.tw1.ru',
-    wsPort: 6001,
-    wssPort: 6001,
-    disableStats: true,
-    enabledTransports: ['ws', 'wss']
+    enabledTransports: ['ws', 'wss'],
+    disableStats: true
   });
 };
 
@@ -177,7 +174,7 @@ const AdminChat = () => {
                 id: e.message.id || Date.now(),
                 text: e.message.message,
                 sender: e.message.username,
-                isSupport: e.message.username === "Admin" || e.message.role === "support",
+                isSupport: e.message.role === "1",
                 time: new Date(e.message.created_at || Date.now()).toLocaleTimeString()
               }];
             }
