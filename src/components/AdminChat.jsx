@@ -20,15 +20,17 @@ const createEchoInstance = () => {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'X-Requested-With': 'XMLHttpRequest'
+        'X-Requested-With': 'XMLHttpRequest',
+        'Origin': window.location.origin
       },
     },
-    enabledTransports: ['ws', 'wss'],
+    wsHost: 'atfplatform.tw1.ru',
+    wsPort: 6001,
+    wssPort: 6001,
     disableStats: true,
-    wsHost: 'ws.pusher.com',
-    wsPort: 443,
-    wssPort: 443
+    enabledTransports: ['ws', 'wss']
   });
 };
 
@@ -116,23 +118,32 @@ const AdminChat = () => {
 
   // Setup real-time updates
   useEffect(() => {
-    if (!user?.id || !echoInstance || !selectedUserId) return;
+    if (!user?.id || !echoInstance || !selectedUserId) {
+      console.log('🔄 Skipping real-time setup:', { 
+        hasUserId: !!user?.id, 
+        hasEcho: !!echoInstance, 
+        selectedUserId 
+      });
+      return;
+    }
 
     try {
+      console.log('🔌 Attempting to connect to channel:', `chat.${selectedUserId}`);
       const channel = echoInstance.private(`chat.${selectedUserId}`);
       channelRef.current = channel;
 
       // Connection state listeners
       channel.listen('pusher:subscription_succeeded', () => {
-        console.log('Successfully subscribed to channel');
+        console.log('✅ Successfully subscribed to channel:', `chat.${selectedUserId}`);
         setConnectionState('connected');
       });
 
       channel.listen('pusher:subscription_error', (error) => {
-        console.error('Subscription error:', error);
+        console.error('❌ Subscription error:', error);
         setConnectionState('error');
         setTimeout(() => {
           if (echoInstance) {
+            console.log('🔄 Attempting to reconnect...');
             echoInstance.connect();
           }
         }, 5000);
@@ -140,15 +151,19 @@ const AdminChat = () => {
 
       // Connection state change listener
       echoInstance.connector.pusher.connection.bind('state_change', (states) => {
-        console.log('Connection state changed:', states.current);
+        console.log('🔄 Connection state changed:', {
+          previous: states.previous,
+          current: states.current
+        });
         setConnectionState(states.current);
       });
 
       // Listen for new messages
       channel.listen('.new.message', (e) => {
-        console.log('Received message:', e);
+        console.log('📨 Received message event:', e);
         if (e?.message) {
           setMessages(prev => {
+            console.log('Current messages:', prev);
             const exists = prev.some(msg => 
               msg.id === e.message.id || 
               (msg.text === e.message.message && 
@@ -157,6 +172,7 @@ const AdminChat = () => {
             );
             
             if (!exists) {
+              console.log('📩 Adding new message to state:', e.message);
               return [...prev, {
                 id: e.message.id || Date.now(),
                 text: e.message.message,
@@ -165,6 +181,7 @@ const AdminChat = () => {
                 time: new Date(e.message.created_at || Date.now()).toLocaleTimeString()
               }];
             }
+            console.log('🔄 Message already exists, skipping:', e.message);
             return prev;
           });
           messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -172,12 +189,13 @@ const AdminChat = () => {
       });
 
     } catch (error) {
-      console.error('Error setting up real-time connection:', error);
+      console.error('❌ Error setting up real-time connection:', error);
       setConnectionState('error');
     }
 
     return () => {
       if (channelRef.current) {
+        console.log('🔌 Cleaning up channel subscription:', `chat.${selectedUserId}`);
         channelRef.current.stopListening('.new.message');
         if (echoInstance) {
           echoInstance.leave(`chat.${selectedUserId}`);
@@ -189,6 +207,7 @@ const AdminChat = () => {
   // Auto-refresh messages when selected user changes
   useEffect(() => {
     if (selectedUserId) {
+      console.log('👤 Selected user changed, refreshing messages for:', selectedUserId);
       refreshMessages();
     }
   }, [selectedUserId]);
@@ -223,11 +242,14 @@ const AdminChat = () => {
       time: new Date().toLocaleTimeString()
     };
 
+    console.log('📤 Sending message:', newMessage);
+
     // Optimistically add message to UI
     setMessages(prev => [...prev, newMessage]);
     setMessage(''); // Clear input immediately
 
     try {
+      console.log('🚀 Making API request to send message...');
       const response = await fetch("https://atfplatform.tw1.ru/api/messages/send", {
         method: "POST",
         headers: { 
@@ -240,13 +262,17 @@ const AdminChat = () => {
         }),
       });
 
+      const data = await response.json();
+      console.log('✅ API response:', data);
+
       if (!response.ok) {
+        console.error('❌ Failed to send message:', data);
         // If sending failed, remove the optimistically added message
         setMessages(prev => prev.filter(msg => msg.id !== newMessage.id));
         throw new Error('Failed to send message');
       }
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("❌ Error sending message:", error);
     }
   };
 

@@ -15,22 +15,22 @@ const createEchoInstance = () => {
     cluster: 'eu',
     forceTLS: true,
     encrypted: true,
-    authEndpoint: import.meta.env.PROD 
-      ? 'https://atfplatform.tw1.ru/broadcasting/auth'
-      : 'https://atfplatform.tw1.ru/broadcasting/auth',
+    authEndpoint: 'https://atfplatform.tw1.ru/broadcasting/auth',
     auth: {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'X-Requested-With': 'XMLHttpRequest'
+        'X-Requested-With': 'XMLHttpRequest',
+        'Origin': window.location.origin
       },
     },
-    enabledTransports: ['ws', 'wss'],
+    wsHost: 'atfplatform.tw1.ru',
+    wsPort: 6001,
+    wssPort: 6001,
     disableStats: true,
-    wsHost: 'ws.pusher.com',
-    wsPort: 443,
-    wssPort: 443
+    enabledTransports: ['ws', 'wss']
   });
 };
 
@@ -144,26 +144,30 @@ export default function ChatWidget() {
   // Setup real-time updates
   useEffect(() => {
     if (!userId || !echoInstance) {
-      console.log('Skipping real-time setup:', { userId, hasEcho: !!echoInstance });
+      console.log('🔄 Skipping real-time setup:', { 
+        hasUserId: !!userId, 
+        hasEcho: !!echoInstance 
+      });
       return;
     }
 
     try {
-      // Subscribe to the user's private channel
+      console.log('🔌 Attempting to connect to channel:', `chat.${userId}`);
       const channel = echoInstance.private(`chat.${userId}`);
       channelRef.current = channel;
 
       // Connection state listeners
       channel.listen('pusher:subscription_succeeded', () => {
-        console.log('Successfully subscribed to channel');
+        console.log('✅ Successfully subscribed to channel:', `chat.${userId}`);
         setConnectionState('connected');
       });
 
       channel.listen('pusher:subscription_error', (error) => {
-        console.error('Subscription error:', error);
+        console.error('❌ Subscription error:', error);
         setConnectionState('error');
         setTimeout(() => {
           if (echoInstance) {
+            console.log('🔄 Attempting to reconnect...');
             echoInstance.connect();
           }
         }, 5000);
@@ -171,15 +175,19 @@ export default function ChatWidget() {
 
       // Connection state change listener
       echoInstance.connector.pusher.connection.bind('state_change', (states) => {
-        console.log('Connection state changed:', states.current);
+        console.log('🔄 Connection state changed:', {
+          previous: states.previous,
+          current: states.current
+        });
         setConnectionState(states.current);
       });
 
       // Listen for new messages
       channel.listen('.new.message', (e) => {
-        console.log('Received message:', e);
+        console.log('📨 Received message event:', e);
         if (e?.message) {
           setMessages(prev => {
+            console.log('Current messages:', prev);
             const exists = prev.some(msg => 
               msg.id === e.message.id || 
               (msg.message === e.message.message && 
@@ -188,6 +196,7 @@ export default function ChatWidget() {
             );
             
             if (!exists) {
+              console.log('📩 Adding new message to state:', e.message);
               const newMsg = {
                 id: e.message.id || Date.now(),
                 message: e.message.message,
@@ -197,6 +206,7 @@ export default function ChatWidget() {
               };
               return [...prev, newMsg];
             }
+            console.log('🔄 Message already exists, skipping:', e.message);
             return prev;
           });
           bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -204,13 +214,13 @@ export default function ChatWidget() {
       });
 
     } catch (error) {
-      console.error('Error setting up real-time connection:', error);
+      console.error('❌ Error setting up real-time connection:', error);
       setConnectionState('error');
     }
 
-    // Cleanup
     return () => {
       if (channelRef.current) {
+        console.log('🔌 Cleaning up channel subscription:', `chat.${userId}`);
         channelRef.current.stopListening('.new.message');
         if (echoInstance) {
           echoInstance.leave(`chat.${userId}`);
@@ -242,11 +252,14 @@ export default function ChatWidget() {
       username: JSON.parse(localStorage.getItem('user')).name
     };
 
+    console.log('📤 Sending message:', newMessage);
+
     // Optimistically add message to UI
     setMessages(prev => [...prev, newMessage]);
     setMessage(""); // Clear input immediately
 
     try {
+      console.log('🚀 Making API request to send message...');
       const res = await fetch(`https://atfplatform.tw1.ru/api/messages/send-by-user`, {
         method: 'POST',
         headers: {
@@ -254,18 +267,22 @@ export default function ChatWidget() {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          support_id: 1, // Assuming support_id is 1 for the main support account
+          support_id: 1,
           message: newMessage.message
         }),
       });
 
+      const data = await res.json();
+      console.log('✅ API response:', data);
+
       if (!res.ok) {
+        console.error('❌ Failed to send message:', data);
         // If sending failed, remove the optimistically added message
         setMessages(prev => prev.filter(msg => msg !== newMessage));
         throw new Error('Failed to send message');
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('❌ Error sending message:', error);
       // If sending failed, remove the optimistically added message
       setMessages(prev => prev.filter(msg => msg !== newMessage));
     }
