@@ -15,7 +15,7 @@ const createEchoInstance = () => {
     cluster: 'eu',
     forceTLS: true,
     encrypted: true,
-    authEndpoint: 'https://atfplatform.tw1.ru/broadcasting/auth',
+    authEndpoint: 'https://atfplatform.tw1.ru/api/broadcasting/auth',
     auth: {
       headers: {
         'Accept': 'application/json',
