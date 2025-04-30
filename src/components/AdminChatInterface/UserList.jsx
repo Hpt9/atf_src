@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const UserList = ({ users, selectedUser, onSelectUser, onlineUsers }) => {
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Filter users based on search term
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter users based on search term and exclude admin users
+  const filteredUsers = users
+    .filter(user => user.name.toLowerCase() !== 'admin') // Skip admin users
+    .filter(user => user.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div className="h-full flex flex-col border-r border-[#E7E7E7]">

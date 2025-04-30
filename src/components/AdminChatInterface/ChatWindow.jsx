@@ -53,25 +53,32 @@ const ChatWindow = ({ selectedUser, messages, onSendMessage }) => {
             <p className="text-gray-500">Hələ mesaj yoxdur. Söhbətə başlamaq üçün bir mesaj göndər.</p>
           </div>
         ) : (
-          messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.isAdmin ? 'justify-end' : 'justify-start'}`}
-            >
+          messages.map((msg) => {
+            // Determine if message is from admin/support (response) or user (request)
+            // Using both the type field and the isAdmin flag set in the parent component
+            const isAdminMessage = msg.type === "response" || msg.isAdmin;
+            
+            return (
               <div
-                className={`max-w-[70%] rounded-lg p-3 ${
-                  msg.isAdmin
-                    ? 'bg-[#2E92A0] text-white'
-                    : 'bg-white text-[#3F3F3F]'
-                }`}
+                key={msg.id}
+                className={`flex ${isAdminMessage ? 'justify-end' : 'justify-start'}`}
               >
-                <div>{msg.message}</div>
-                <div className="text-xs mt-1 opacity-70 text-right">
-                  {new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                {/* Message bubble with conditional styling */}
+                <div
+                  className={`max-w-[70%] rounded-lg p-3 ${
+                    isAdminMessage
+                      ? 'bg-[#2E92A0] text-white'
+                      : 'bg-white text-[#3F3F3F]'
+                  }`}
+                >
+                  <div>{msg.message}</div>
+                  <div className="text-xs mt-1 opacity-70 text-right">
+                    {new Date(msg.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </div>

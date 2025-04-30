@@ -105,9 +105,12 @@ const AdminChatInterface = () => {
   const handleNewMessage = (message) => {
     // Update messages if current chat is open
     if (selectedUser && message.user_id === selectedUser.id) {
+      // Determine if this is an admin/support message by its type
+      const isAdminMessage = message.type === "response";
+      
       setMessages(prev => [...prev, {
         ...message,
-        isAdmin: message.type === "response" || message.support_id === 1
+        isAdmin: isAdminMessage
       }]);
     }
     
@@ -145,11 +148,16 @@ const AdminChatInterface = () => {
       const data = await response.json();
       
       if (data.status === 'success' && Array.isArray(data.messages)) {
-        // Transform the messages to ensure they have the right format for our UI
-        const formattedMessages = data.messages.map(msg => ({
-          ...msg,
-          isAdmin: msg.type === "response" || msg.support_id === 1
-        }));
+        // Process each message to determine its type
+        const formattedMessages = data.messages.map(msg => {
+          // Determine if this is an admin/support message by its type
+          const isAdminMessage = msg.type === "response";
+          
+          return {
+            ...msg,
+            isAdmin: isAdminMessage
+          };
+        });
         
         setMessages(formattedMessages);
       } else {
@@ -182,7 +190,7 @@ const AdminChatInterface = () => {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       type: "response",
-      isAdmin: true
+      isAdmin: true // Admin message (response type)
     };
     
     // Add to messages immediately (optimistic update)
@@ -198,7 +206,7 @@ const AdminChatInterface = () => {
         body: JSON.stringify({
           user_id: selectedUser.id,
           message: messageText,
-          type: "response"
+          type: "response" // Explicitly set type as response
         }),
       });
       
@@ -212,7 +220,7 @@ const AdminChatInterface = () => {
       if (data.status === 'success' && data.message) {
         const serverMessage = {
           ...data.message,
-          isAdmin: true
+          isAdmin: true // Always mark admin messages (responses)
         };
         
         setMessages(prev => 

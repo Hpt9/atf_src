@@ -4,7 +4,7 @@ import Pusher from "pusher-js";
 import { AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 
-// Initialize Pusher and Echo with proper configuration
+// Initialize Pusher and Echo
 window.Pusher = Pusher;
 
 // Create Echo instance with proper configuration
@@ -15,10 +15,13 @@ const createEchoInstance = () => {
     cluster: 'eu',
     forceTLS: true,
     encrypted: true,
-    authEndpoint: 'https://atfplatform.tw1.ru/broadcasting/auth',
+    authEndpoint: import.meta.env.PROD 
+      ? 'https://atfplatform.tw1.ru/broadcasting/auth'
+      : 'https://atfplatform.tw1.ru/broadcasting/auth',
     auth: {
       headers: {
         Accept: 'application/json',
+        'Access-Control-Allow-Origin': '*',
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     },
@@ -27,77 +30,119 @@ const createEchoInstance = () => {
 
 let echoInstance = null;
 
-export default function ChatWidget({ userId }) {
+export default function ChatWidget() {
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
   const [open, setOpen] = useState(false);
-  const [loadingOld, setLoadingOld] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState(null);
   const bottomRef = useRef(null);
   const channelRef = useRef(null);
 
-  // Check if user is logged in
+  // Check if user is logged in and set userId
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    setIsLoggedIn(!!token && !!user);
+    const userStr = localStorage.getItem('user');
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        console.log('User logged in:', user);
+        setIsLoggedIn(true);
+        setUserId(user.id);
+        
+        // Initialize Echo instance here after we have the user data
+        if (!echoInstance) {
+          echoInstance = createEchoInstance();
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    } else {
+      console.log('No user logged in');
+      setIsLoggedIn(false);
+      setUserId(null);
+    }
   }, []);
 
-  // Initialize Echo instance
-  useEffect(() => {
-    if (!userId) return;
+  // Load messages when chat is opened
+  const fetchMessages = async () => {
+    if (!userId || !isLoggedIn) {
+      console.log('Cannot fetch messages - no user ID or not logged in');
+      return;
+    }
 
-    // Create new Echo instance with current token
-    echoInstance = createEchoInstance();
-
-    // Cleanup on unmount
-    return () => {
-      if (echoInstance) {
-        echoInstance.disconnect();
-        echoInstance = null;
-      }
-    };
-  }, [userId]);
-
-  const fetchOldMessages = async () => {
-    if (loadingOld) return;
-    
-    setLoadingOld(true);
+    console.log('Fetching messages for user:', userId);
+    setIsLoading(true);
     try {
-      const res = await fetch('https://atfplatform.tw1.ru/api/messages-by-user/1', {
+      const res = await fetch(`${import.meta.env.PROD ? 'https://atfplatform.tw1.ru' : 'https://atfplatform.tw1.ru'}/api/messages/${userId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Accept: 'application/json',
+          'Access-Control-Allow-Origin': '*'
         },
       });
+      console.log('Messages response:', res.status);
       const data = await res.json();
-      if (data.status === "success" && Array.isArray(data.messages)) {
-        setMessages(prevMessages => {
-          const oldMessages = data.messages.filter(
-            oldMsg => !prevMessages.some(msg => msg.id === oldMsg.id)
-          );
-          return [...oldMessages, ...prevMessages];
-        });
-    }
+      console.log('Messages data:', data);
+      
+      if (data.status === 'success' && Array.isArray(data.messages)) {
+        const formattedMessages = data.messages.map(msg => ({
+          id: msg.id,
+          message: msg.message,
+          type: msg.type || (msg.user_id === userId ? 'request' : 'response'),
+          created_at: msg.created_at,
+          username: msg.username || (msg.type === 'response' ? 'Support' : JSON.parse(localStorage.getItem('user')).name)
+        }));
+        setMessages(formattedMessages);
+        // Scroll to bottom after messages load
+        setTimeout(() => {
+          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      } else {
+        console.error('Unexpected messages data format:', data);
+      }
     } catch (error) {
-      console.error('Error fetching old messages:', error);
+      console.error('Error fetching messages:', error);
     } finally {
-      setLoadingOld(false);
+      setIsLoading(false);
     }
   };
 
+  // Load messages when chat is opened or user ID changes
+  useEffect(() => {
+    console.log('Load messages effect triggered:', { open, isLoggedIn, userId });
+    
+    if (!open || !isLoggedIn || !userId) {
+      console.log('Skipping message load because:', { open, isLoggedIn, userId });
+      return;
+    }
+
+    fetchMessages();
+  }, [open, isLoggedIn, userId]);
+
   const handleChatToggle = (newOpenState) => {
-    if (!isLoggedIn) return;
+    console.log('Chat toggle:', newOpenState);
+    if (!isLoggedIn) {
+      console.log('Chat toggle ignored - user not logged in');
+      return;
+    }
     setOpen(newOpenState);
+    if (newOpenState && userId) {
+      // Fetch messages when opening the chat and we have a user ID
+      fetchMessages();
+    }
   };
 
   const sendMessage = async () => {
-    if (!message.trim() || !isLoggedIn) return;
+    if (!message.trim() || !isLoggedIn || !userId) return;
     
     const newMessage = {
       message: message.trim(),
-      user_id: JSON.parse(localStorage.getItem('user')).id,
+      user_id: userId,
       created_at: new Date().toISOString(),
-      type: 'request' // Only for UI, won't be sent to API
+      type: 'request',
+      username: JSON.parse(localStorage.getItem('user')).name
     };
 
     // Optimistically add message to UI
@@ -112,15 +157,15 @@ export default function ChatWidget({ userId }) {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          support_id: 1,
-          message: newMessage.message,
+          support_id: 1, // Assuming support_id is 1 for the main support account
+          message: newMessage.message
         }),
       });
 
-      const data = await res.json();
-      if (data.status !== "success") {
+      if (!res.ok) {
         // If sending failed, remove the optimistically added message
         setMessages(prev => prev.filter(msg => msg !== newMessage));
+        throw new Error('Failed to send message');
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -129,17 +174,20 @@ export default function ChatWidget({ userId }) {
     }
   };
 
-  // Setup real-time updates with Pusher
+  // Setup real-time updates
   useEffect(() => {
-    if (!userId || !echoInstance) return;
+    if (!userId || !echoInstance) {
+      console.log('Skipping real-time setup:', { userId, hasEcho: !!echoInstance });
+      return;
+    }
 
     try {
-      // Subscribe to the private channel
-      const channel = echoInstance.private(`chat.${userId}`);
+      // Subscribe to the user's private channel
+      const channel = echoInstance.private(`chat.user.${userId}`);
       channelRef.current = channel;
 
       // Listen for new messages
-      channel.listen('.MessageSent', (e) => {
+      channel.listen('.new.message', (e) => {
         console.log('Received message:', e);
         if (e?.message) {
           setMessages(prev => {
@@ -147,12 +195,19 @@ export default function ChatWidget({ userId }) {
             const exists = prev.some(msg => 
               msg.id === e.message.id || 
               (msg.message === e.message.message && 
-               msg.user_id === e.message.user_id && 
+               msg.username === e.message.username && 
                !msg.id)
             );
             
             if (!exists) {
-              return [...prev, e.message];
+              const newMsg = {
+                id: e.message.id || Date.now(),
+                message: e.message.message,
+                username: e.message.username,
+                type: e.message.role === 'support' ? 'response' : 'request',
+                created_at: e.message.created_at || new Date().toISOString()
+              };
+              return [...prev, newMsg];
             }
             return prev;
           });
@@ -176,18 +231,13 @@ export default function ChatWidget({ userId }) {
     // Cleanup
     return () => {
       if (channelRef.current) {
-        channelRef.current.stopListening('.MessageSent');
+        channelRef.current.stopListening('.new.message');
         if (echoInstance) {
-          echoInstance.leave(`chat.${userId}`);
+          echoInstance.leave(`chat.user.${userId}`);
         }
       }
     };
   }, [userId, echoInstance]);
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
 
   // If user is not logged in, don't render the chat widget
   if (!isLoggedIn) {
@@ -224,25 +274,13 @@ export default function ChatWidget({ userId }) {
 
             {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto px-4 space-y-4 bg-white">
-              {/* Load Previous Messages Button */}
-              <div className="sticky top-0 pt-2 pb-2 z-10 bg-white">
-                <button
-                  onClick={fetchOldMessages}
-                  disabled={loadingOld}
-                  className="w-full py-2 px-4 text-sm text-[#2E92A0] bg-white border border-[#2E92A0] rounded-lg hover:bg-[#2E92A0] hover:text-white transition-colors duration-200 disabled:opacity-50"
-                >
-                  {loadingOld ? (
-                    <div className="flex items-center justify-center">
-                      <div className="w-4 h-4 border-2 border-[#2E92A0] border-t-transparent rounded-full animate-spin mr-2"></div>
-                      Yüklənir...
-                    </div>
-                  ) : (
-                    "Köhnə mesajları yüklə"
-                  )}
-                </button>
-              </div>
-
-              {messages.length === 0 ? (
+              {isLoading ? (
+                <div className="h-full flex items-center justify-center">
+                  <div className="flex items-center justify-center">
+                    <div className="w-8 h-8 border-4 border-[#2E92A0] border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                </div>
+              ) : messages.length === 0 ? (
                 <div className="h-fit flex items-center justify-center">
                   <span className="text-gray-400">Hələ heç bir mesaj yoxdur</span>
                 </div>
@@ -262,7 +300,7 @@ export default function ChatWidget({ userId }) {
                       {msg.message}
                       <div className="text-xs mt-1 opacity-70">
                         {new Date(msg.created_at).toLocaleTimeString()}
-                    </div>
+                      </div>
                     </span>
                   </div>
                 ))

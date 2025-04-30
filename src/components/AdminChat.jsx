@@ -1,24 +1,101 @@
 import React, { useState, useEffect, useRef } from "react";
 import { IoSend } from "react-icons/io5";
+import Echo from "laravel-echo";
 import Pusher from "pusher-js";
+import { useAuth } from "../context/AuthContext";
+
+// Initialize Pusher and Echo
+window.Pusher = Pusher;
+
+// Create Echo instance with proper configuration
+const createEchoInstance = () => {
+  return new Echo({
+    broadcaster: 'pusher',
+    key: '6801d180c935c080fb57',
+    cluster: 'eu',
+    forceTLS: true,
+    encrypted: true,
+    authEndpoint: 'https://atfplatform.tw1.ru/broadcasting/auth',
+    auth: {
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    },
+  });
+};
+
+let echoInstance = null;
 
 const AdminChat = () => {
+  const { user, token } = useAuth();
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [users, setUsers] = useState([]);
   const messagesEndRef = useRef(null);
-  const adminUsername = "Admin"; // Special username for admin
+  const channelRef = useRef(null);
+  const isSupport = user?.name === "Admin" || user?.role === "support";
+
+  // Initialize Echo instance
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Create new Echo instance with current token
+    echoInstance = createEchoInstance();
+
+    // Cleanup on unmount
+    return () => {
+      if (echoInstance) {
+        echoInstance.disconnect();
+        echoInstance = null;
+      }
+    };
+  }, [user?.id]);
+
+  // Fetch users list for support
+  useEffect(() => {
+    if (!isSupport) return;
+
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("https://atfplatform.tw1.ru/api/support/users", {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        setUsers(data);
+        // Select first user by default if none selected
+        if (!selectedUserId && data.length > 0) {
+          setSelectedUserId(data[0].id);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, [isSupport, token]);
 
   useEffect(() => {
     // Initial messages load
     const fetchMessages = async () => {
       try {
-        const response = await fetch("https://atfplatform.tw1.ru/api/messages");
+        const userId = isSupport ? selectedUserId : user.id;
+        if (!userId) return;
+
+        const response = await fetch(`https://atfplatform.tw1.ru/api/messages/${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         const data = await response.json();
         setMessages(data.map(msg => ({
           id: msg.id || Date.now(),
           text: msg.message,
           sender: msg.username,
-          isAdmin: msg.username === adminUsername,
+          isSupport: msg.username === "Admin" || msg.role === "support",
           time: new Date(msg.created_at || Date.now()).toLocaleTimeString()
         })));
       } catch (error) {
@@ -28,51 +105,112 @@ const AdminChat = () => {
 
     fetchMessages();
 
-    // Real-time updates
-    const pusher = new Pusher("6801d180c935c080fb57", {
-      cluster: "eu",
-    });
+    // Setup real-time updates
+    if (!user?.id || !echoInstance) return;
 
-    const channel = pusher.subscribe("realtime");
-    channel.bind("message", function (data) {
-      setMessages(prevMessages => [...prevMessages, {
-        id: data.id || Date.now(),
-        text: data.message,
-        sender: data.username,
-        isAdmin: data.username === adminUsername,
-        time: new Date().toLocaleTimeString()
-      }]);
-    });
+    try {
+      // Subscribe to the appropriate channel based on user role
+      const userId = isSupport ? selectedUserId : user.id;
+      if (!userId) return;
 
+      const channel = echoInstance.private(`chat.user.${userId}`);
+      channelRef.current = channel;
+
+      // Listen for new messages
+      channel.listen('.new.message', (e) => {
+        console.log('Received message:', e);
+        if (e?.message) {
+          setMessages(prev => {
+            // Check if message already exists
+            const exists = prev.some(msg => 
+              msg.id === e.message.id || 
+              (msg.text === e.message.message && 
+               msg.sender === e.message.username && 
+               !msg.id)
+            );
+            
+            if (!exists) {
+              return [...prev, {
+                id: e.message.id || Date.now(),
+                text: e.message.message,
+                sender: e.message.username,
+                isSupport: e.message.username === "Admin" || e.message.role === "support",
+                time: new Date(e.message.created_at || Date.now()).toLocaleTimeString()
+              }];
+            }
+            return prev;
+          });
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+
+      // Listen for connection states
+      channel.listen('pusher:subscription_succeeded', () => {
+        console.log('Successfully subscribed to channel');
+      });
+
+      channel.listen('pusher:subscription_error', (error) => {
+        console.error('Subscription error:', error);
+      });
+
+    } catch (error) {
+      console.error('Error setting up real-time connection:', error);
+    }
+
+    // Cleanup
     return () => {
-      channel.unbind_all();
-      channel.unsubscribe();
+      if (channelRef.current) {
+        channelRef.current.stopListening('.new.message');
+        if (echoInstance) {
+          const userId = isSupport ? selectedUserId : user.id;
+          if (userId) {
+            echoInstance.leave(`chat.user.${userId}`);
+          }
+        }
+      }
     };
-  }, []);
+  }, [token, user, selectedUserId, isSupport]);
 
-  const sendAdminResponse = async (e) => {
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const sendResponse = async (e) => {
     e.preventDefault();
     
     if (!message.trim()) return;
 
+    const newMessage = {
+      id: Date.now(),
+      text: message.trim(),
+      sender: user.name,
+      isSupport: isSupport,
+      time: new Date().toLocaleTimeString()
+    };
+
+    // Optimistically add message to UI
+    setMessages(prev => [...prev, newMessage]);
+    setMessage(''); // Clear input immediately
+
     try {
-      const response = await fetch("https://atfplatform.tw1.ru/api/messages", {
+      const response = await fetch("https://atfplatform.tw1.ru/api/messages/send", {
         method: "POST",
         headers: { 
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
-          username: adminUsername,
-          message,
-          isAdmin: true // Add this flag to identify admin messages
+          user_id: selectedUserId,
+          message: newMessage.text
         }),
       });
 
       if (!response.ok) {
+        // If sending failed, remove the optimistically added message
+        setMessages(prev => prev.filter(msg => msg.id !== newMessage.id));
         throw new Error('Failed to send message');
       }
-      
-      setMessage('');
     } catch (error) {
       console.error("Error sending message:", error);
     }
@@ -81,51 +219,75 @@ const AdminChat = () => {
   return (
     <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
       <h1 className="text-[32px] font-semibold text-[#2E92A0] mb-8">
-        Admin Chat Interface
+        Support Chat Interface
       </h1>
       
-      {/* Messages Display */}
-      <div className="border border-[#E7E7E7] rounded-lg bg-white overflow-hidden">
-        <div className="h-[600px] overflow-y-auto p-4 space-y-4">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`mb-4 ${msg.isAdmin ? 'text-right' : 'text-left'}`}
-            >
-              <div className="inline-block max-w-[70%]">
-                <div className="text-sm text-[#3F3F3F] mb-1">
-                  {msg.sender} - {msg.time}
-                </div>
-                <div className={`p-3 rounded-lg ${
-                  msg.isAdmin 
-                    ? 'bg-[#95C901] text-white' 
-                    : 'bg-[#F5F5F5] text-[#3F3F3F]'
-                }`}>
-                  {msg.text}
+      <div className="flex gap-4">
+        {/* Users list for support */}
+        {isSupport && (
+          <div className="w-64 border border-[#E7E7E7] rounded-lg bg-white overflow-hidden">
+            <div className="p-4 border-b border-[#E7E7E7]">
+              <h2 className="font-semibold">Users</h2>
+            </div>
+            <div className="h-[600px] overflow-y-auto">
+              {users.map(user => (
+                <button
+                  key={user.id}
+                  onClick={() => setSelectedUserId(user.id)}
+                  className={`w-full p-4 text-left hover:bg-[#F5F5F5] ${
+                    selectedUserId === user.id ? 'bg-[#F5F5F5]' : ''
+                  }`}
+                >
+                  {user.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Messages Display */}
+        <div className="flex-1 border border-[#E7E7E7] rounded-lg bg-white overflow-hidden">
+          <div className="h-[600px] overflow-y-auto p-4 space-y-4">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`mb-4 ${msg.isSupport ? 'text-right' : 'text-left'}`}
+              >
+                <div className="inline-block max-w-[70%]">
+                  <div className="text-sm text-[#3F3F3F] mb-1">
+                    {msg.sender} - {msg.time}
+                  </div>
+                  <div className={`p-3 rounded-lg ${
+                    msg.isSupport 
+                      ? 'bg-[#95C901] text-white' 
+                      : 'bg-[#F5F5F5] text-[#3F3F3F]'
+                  }`}>
+                    {msg.text}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
 
-        {/* Message Input */}
-        <div className="p-4 border-t border-[#E7E7E7]">
-          <form onSubmit={sendAdminResponse} className="flex gap-2">
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Cavabınızı yazın..."
-              className="flex-1 px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0]"
-            />
-            <button 
-              type="submit"
-              className="bg-[#2E92A0] text-white px-6 py-2 rounded-lg hover:bg-[#267A85] transition-colors"
-            >
-              <IoSend />
-            </button>
-          </form>
+          {/* Message Input */}
+          <div className="p-4 border-t border-[#E7E7E7]">
+            <form onSubmit={sendResponse} className="flex gap-2">
+              <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Cavabınızı yazın..."
+                className="flex-1 px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0]"
+              />
+              <button 
+                type="submit"
+                className="bg-[#2E92A0] text-white px-6 py-2 rounded-lg hover:bg-[#267A85] transition-colors"
+              >
+                <IoSend />
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
