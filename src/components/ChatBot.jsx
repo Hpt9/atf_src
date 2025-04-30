@@ -20,11 +20,17 @@ const createEchoInstance = () => {
       : 'https://atfplatform.tw1.ru/broadcasting/auth',
     auth: {
       headers: {
-        Accept: 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'X-Requested-With': 'XMLHttpRequest'
       },
     },
+    enabledTransports: ['ws', 'wss'],
+    disableStats: true,
+    wsHost: 'ws.pusher.com',
+    wsPort: 443,
+    wssPort: 443
   });
 };
 
@@ -37,6 +43,7 @@ export default function ChatWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [connectionState, setConnectionState] = useState('disconnected');
   const bottomRef = useRef(null);
   const channelRef = useRef(null);
 
@@ -65,8 +72,8 @@ export default function ChatWidget() {
     }
   }, []);
 
-  // Load messages when chat is opened
-  const fetchMessages = async () => {
+  // Refresh messages function
+  const refreshMessages = async () => {
     if (!userId || !isLoggedIn) {
       console.log('Cannot fetch messages - no user ID or not logged in');
       return;
@@ -75,7 +82,7 @@ export default function ChatWidget() {
     console.log('Fetching messages for user:', userId);
     setIsLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.PROD ? 'https://atfplatform.tw1.ru' : 'https://atfplatform.tw1.ru'}/api/messages/${userId}`, {
+      const res = await fetch(`${import.meta.env.PROD ? 'https://atfplatform.tw1.ru' : 'https://atfplatform.tw1.ru'}/api/messages/1`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           Accept: 'application/json',
@@ -118,7 +125,7 @@ export default function ChatWidget() {
       return;
     }
 
-    fetchMessages();
+    refreshMessages();
   }, [open, isLoggedIn, userId]);
 
   const handleChatToggle = (newOpenState) => {
@@ -130,9 +137,99 @@ export default function ChatWidget() {
     setOpen(newOpenState);
     if (newOpenState && userId) {
       // Fetch messages when opening the chat and we have a user ID
-      fetchMessages();
+      refreshMessages();
     }
   };
+
+  // Setup real-time updates
+  useEffect(() => {
+    if (!userId || !echoInstance) {
+      console.log('Skipping real-time setup:', { userId, hasEcho: !!echoInstance });
+      return;
+    }
+
+    try {
+      // Subscribe to the user's private channel
+      const channel = echoInstance.private(`chat.${userId}`);
+      channelRef.current = channel;
+
+      // Connection state listeners
+      channel.listen('pusher:subscription_succeeded', () => {
+        console.log('Successfully subscribed to channel');
+        setConnectionState('connected');
+      });
+
+      channel.listen('pusher:subscription_error', (error) => {
+        console.error('Subscription error:', error);
+        setConnectionState('error');
+        setTimeout(() => {
+          if (echoInstance) {
+            echoInstance.connect();
+          }
+        }, 5000);
+      });
+
+      // Connection state change listener
+      echoInstance.connector.pusher.connection.bind('state_change', (states) => {
+        console.log('Connection state changed:', states.current);
+        setConnectionState(states.current);
+      });
+
+      // Listen for new messages
+      channel.listen('.new.message', (e) => {
+        console.log('Received message:', e);
+        if (e?.message) {
+          setMessages(prev => {
+            const exists = prev.some(msg => 
+              msg.id === e.message.id || 
+              (msg.message === e.message.message && 
+               msg.username === e.message.username && 
+               !msg.id)
+            );
+            
+            if (!exists) {
+              const newMsg = {
+                id: e.message.id || Date.now(),
+                message: e.message.message,
+                username: e.message.username,
+                type: e.message.role === 'support' ? 'response' : 'request',
+                created_at: e.message.created_at || new Date().toISOString()
+              };
+              return [...prev, newMsg];
+            }
+            return prev;
+          });
+          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+
+    } catch (error) {
+      console.error('Error setting up real-time connection:', error);
+      setConnectionState('error');
+    }
+
+    // Cleanup
+    return () => {
+      if (channelRef.current) {
+        channelRef.current.stopListening('.new.message');
+        if (echoInstance) {
+          echoInstance.leave(`chat.${userId}`);
+        }
+      }
+    };
+  }, [userId, echoInstance]);
+
+  // Auto-reconnect logic
+  useEffect(() => {
+    const reconnectInterval = setInterval(() => {
+      if (connectionState === 'error' && echoInstance) {
+        console.log('Attempting to reconnect...');
+        echoInstance.connect();
+      }
+    }, 10000);
+
+    return () => clearInterval(reconnectInterval);
+  }, [connectionState]);
 
   const sendMessage = async () => {
     if (!message.trim() || !isLoggedIn || !userId) return;
@@ -174,71 +271,6 @@ export default function ChatWidget() {
     }
   };
 
-  // Setup real-time updates
-  useEffect(() => {
-    if (!userId || !echoInstance) {
-      console.log('Skipping real-time setup:', { userId, hasEcho: !!echoInstance });
-      return;
-    }
-
-    try {
-      // Subscribe to the user's private channel
-      const channel = echoInstance.private(`chat.user.${userId}`);
-      channelRef.current = channel;
-
-      // Listen for new messages
-      channel.listen('.new.message', (e) => {
-        console.log('Received message:', e);
-        if (e?.message) {
-          setMessages(prev => {
-            // Check if message already exists
-            const exists = prev.some(msg => 
-              msg.id === e.message.id || 
-              (msg.message === e.message.message && 
-               msg.username === e.message.username && 
-               !msg.id)
-            );
-            
-            if (!exists) {
-              const newMsg = {
-                id: e.message.id || Date.now(),
-                message: e.message.message,
-                username: e.message.username,
-                type: e.message.role === 'support' ? 'response' : 'request',
-                created_at: e.message.created_at || new Date().toISOString()
-              };
-              return [...prev, newMsg];
-            }
-            return prev;
-          });
-          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-        }
-      });
-
-      // Listen for connection states
-      channel.listen('pusher:subscription_succeeded', () => {
-        console.log('Successfully subscribed to channel');
-      });
-
-      channel.listen('pusher:subscription_error', (error) => {
-        console.error('Subscription error:', error);
-      });
-
-    } catch (error) {
-      console.error('Error setting up real-time connection:', error);
-    }
-
-    // Cleanup
-    return () => {
-      if (channelRef.current) {
-        channelRef.current.stopListening('.new.message');
-        if (echoInstance) {
-          echoInstance.leave(`chat.user.${userId}`);
-        }
-      }
-    };
-  }, [userId, echoInstance]);
-
   // If user is not logged in, don't render the chat widget
   if (!isLoggedIn) {
     return null;
@@ -263,13 +295,35 @@ export default function ChatWidget() {
           >
             {/* Chat Header */}
             <div className="flex-none flex justify-between items-center px-4 py-5 bg-white relative">
-              <h2 className="text-[18px] w-full font-medium text-[#111] text-center">Dəstək xidməti</h2>
-              <button
-                onClick={() => handleChatToggle(false)}
-                className="p-[5px] border border-[#E7E7E7] bg-[#FAFAFA] flex items-center justify-center rounded-[8px] hover:bg-gray-100 absolute top-3 right-4 hover:scale-105 transition-all duration-200 hover:cursor-pointer"
-              >
-                <IoClose size={32} className="text-[#111]" />
-              </button>
+              <div className="flex items-center gap-2">
+                <h2 className="text-[18px] w-full font-medium text-[#111] text-center">Dəstək xidməti</h2>
+                <div className="connection-status">
+                  {connectionState === 'connected' && (
+                    <span className="text-green-500 text-xs">Connected</span>
+                  )}
+                  {connectionState === 'connecting' && (
+                    <span className="text-yellow-500 text-xs">Connecting...</span>
+                  )}
+                  {connectionState === 'error' && (
+                    <span className="text-red-500 text-xs">Connection Error</span>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={refreshMessages}
+                  className="px-2 py-1 bg-[#2E92A0] text-white text-xs rounded-lg hover:bg-[#267A85] transition-colors"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Refreshing...' : 'Refresh'}
+                </button>
+                <button
+                  onClick={() => handleChatToggle(false)}
+                  className="p-[5px] border border-[#E7E7E7] bg-[#FAFAFA] flex items-center justify-center rounded-[8px] hover:bg-gray-100 hover:scale-105 transition-all duration-200 hover:cursor-pointer"
+                >
+                  <IoClose size={32} className="text-[#111]" />
+                </button>
+              </div>
             </div>
 
             {/* Chat Messages */}

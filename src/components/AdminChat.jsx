@@ -18,10 +18,17 @@ const createEchoInstance = () => {
     authEndpoint: 'https://atfplatform.tw1.ru/broadcasting/auth',
     auth: {
       headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'X-Requested-With': 'XMLHttpRequest'
       },
     },
+    enabledTransports: ['ws', 'wss'],
+    disableStats: true,
+    wsHost: 'ws.pusher.com',
+    wsPort: 443,
+    wssPort: 443
   });
 };
 
@@ -33,6 +40,8 @@ const AdminChat = () => {
   const [message, setMessage] = useState("");
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [users, setUsers] = useState([]);
+  const [connectionState, setConnectionState] = useState('disconnected');
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const channelRef = useRef(null);
   const isSupport = user?.name === "Admin" || user?.role === "support";
@@ -78,50 +87,68 @@ const AdminChat = () => {
     fetchUsers();
   }, [isSupport, token]);
 
-  useEffect(() => {
-    // Initial messages load
-    const fetchMessages = async () => {
-      try {
-        const userId = isSupport ? selectedUserId : user.id;
-        if (!userId) return;
-
-        const response = await fetch(`https://atfplatform.tw1.ru/api/messages/${userId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await response.json();
-        setMessages(data.map(msg => ({
+  // Refresh messages function
+  const refreshMessages = async () => {
+    if (!selectedUserId) return;
+    setIsLoading(true);
+    try {
+      const response = await fetch(`https://atfplatform.tw1.ru/api/messages/${selectedUserId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.status === 'success' && Array.isArray(data.messages)) {
+        setMessages(data.messages.map(msg => ({
           id: msg.id || Date.now(),
           text: msg.message,
           sender: msg.username,
           isSupport: msg.username === "Admin" || msg.role === "support",
           time: new Date(msg.created_at || Date.now()).toLocaleTimeString()
         })));
-      } catch (error) {
-        console.error("Error fetching messages:", error);
       }
-    };
+    } catch (error) {
+      console.error("Error refreshing messages:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    fetchMessages();
-
-    // Setup real-time updates
-    if (!user?.id || !echoInstance) return;
+  // Setup real-time updates
+  useEffect(() => {
+    if (!user?.id || !echoInstance || !selectedUserId) return;
 
     try {
-      // Subscribe to the appropriate channel based on user role
-      const userId = isSupport ? selectedUserId : user.id;
-      if (!userId) return;
-
-      const channel = echoInstance.private(`chat.user.${userId}`);
+      const channel = echoInstance.private(`chat.${selectedUserId}`);
       channelRef.current = channel;
+
+      // Connection state listeners
+      channel.listen('pusher:subscription_succeeded', () => {
+        console.log('Successfully subscribed to channel');
+        setConnectionState('connected');
+      });
+
+      channel.listen('pusher:subscription_error', (error) => {
+        console.error('Subscription error:', error);
+        setConnectionState('error');
+        setTimeout(() => {
+          if (echoInstance) {
+            echoInstance.connect();
+          }
+        }, 5000);
+      });
+
+      // Connection state change listener
+      echoInstance.connector.pusher.connection.bind('state_change', (states) => {
+        console.log('Connection state changed:', states.current);
+        setConnectionState(states.current);
+      });
 
       // Listen for new messages
       channel.listen('.new.message', (e) => {
         console.log('Received message:', e);
         if (e?.message) {
           setMessages(prev => {
-            // Check if message already exists
             const exists = prev.some(msg => 
               msg.id === e.message.id || 
               (msg.text === e.message.message && 
@@ -144,32 +171,39 @@ const AdminChat = () => {
         }
       });
 
-      // Listen for connection states
-      channel.listen('pusher:subscription_succeeded', () => {
-        console.log('Successfully subscribed to channel');
-      });
-
-      channel.listen('pusher:subscription_error', (error) => {
-        console.error('Subscription error:', error);
-      });
-
     } catch (error) {
       console.error('Error setting up real-time connection:', error);
+      setConnectionState('error');
     }
 
-    // Cleanup
     return () => {
       if (channelRef.current) {
         channelRef.current.stopListening('.new.message');
         if (echoInstance) {
-          const userId = isSupport ? selectedUserId : user.id;
-          if (userId) {
-            echoInstance.leave(`chat.user.${userId}`);
-          }
+          echoInstance.leave(`chat.${selectedUserId}`);
         }
       }
     };
   }, [token, user, selectedUserId, isSupport]);
+
+  // Auto-refresh messages when selected user changes
+  useEffect(() => {
+    if (selectedUserId) {
+      refreshMessages();
+    }
+  }, [selectedUserId]);
+
+  // Auto-reconnect logic
+  useEffect(() => {
+    const reconnectInterval = setInterval(() => {
+      if (connectionState === 'error' && echoInstance) {
+        console.log('Attempting to reconnect...');
+        echoInstance.connect();
+      }
+    }, 10000);
+
+    return () => clearInterval(reconnectInterval);
+  }, [connectionState]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -179,7 +213,7 @@ const AdminChat = () => {
   const sendResponse = async (e) => {
     e.preventDefault();
     
-    if (!message.trim()) return;
+    if (!message.trim() || !selectedUserId) return;
 
     const newMessage = {
       id: Date.now(),
@@ -218,9 +252,31 @@ const AdminChat = () => {
 
   return (
     <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
-      <h1 className="text-[32px] font-semibold text-[#2E92A0] mb-8">
-        Support Chat Interface
-      </h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-[32px] font-semibold text-[#2E92A0]">
+          Support Chat Interface
+        </h1>
+        <div className="flex items-center gap-4">
+          <div className="connection-status">
+            {connectionState === 'connected' && (
+              <span className="text-green-500">Connected</span>
+            )}
+            {connectionState === 'connecting' && (
+              <span className="text-yellow-500">Connecting...</span>
+            )}
+            {connectionState === 'error' && (
+              <span className="text-red-500">Connection Error</span>
+            )}
+          </div>
+          <button 
+            onClick={refreshMessages}
+            className="px-4 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Refreshing...' : 'Refresh Messages'}
+          </button>
+        </div>
+      </div>
       
       <div className="flex gap-4">
         {/* Users list for support */}
