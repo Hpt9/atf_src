@@ -1,35 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
 import { AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
-
-// Initialize Pusher and Echo
-window.Pusher = Pusher;
-
-// Create Echo instance with simplified configuration
-const createEchoInstance = () => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    console.error('No authentication token found');
-    return null;
-  }
-
-  return new Echo({
-    broadcaster: 'pusher',
-    key: '6801d180c935c080fb57',
-    cluster: 'eu',
-    authEndpoint: 'https://atfplatform.tw1.ru/api/broadcasting/auth',
-    auth: {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-      }
-    }
-  });
-};
-
-let echoInstance = null;
 
 export default function ChatWidget() {
   const [messages, setMessages] = useState([]);
@@ -38,9 +9,7 @@ export default function ChatWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState(null);
-  const [connectionState, setConnectionState] = useState('disconnected');
   const bottomRef = useRef(null);
-  const channelRef = useRef(null);
 
   // Check if user is logged in and set userId
   useEffect(() => {
@@ -52,11 +21,6 @@ export default function ChatWidget() {
         console.log('User logged in:', user);
         setIsLoggedIn(true);
         setUserId(user.id);
-        
-        // Initialize Echo instance here after we have the user data
-        if (!echoInstance) {
-          echoInstance = createEchoInstance();
-        }
       } catch (error) {
         console.error('Error parsing user data:', error);
       }
@@ -134,126 +98,9 @@ export default function ChatWidget() {
     setOpen(newOpenState);
     if (newOpenState && userId) {
       console.log('📡 Opening chat for user:', userId);
-      // Fetch messages when opening the chat and we have a user ID
       refreshMessages();
-    } else {
-      console.log('🔌 Closing chat for user:', userId);
     }
   };
-
-  // Setup real-time updates
-  useEffect(() => {
-    if (!userId || !echoInstance) {
-      console.log('🚫 Cannot setup channel:', { 
-        hasUserId: !!userId, 
-        hasEcho: !!echoInstance 
-      });
-      return;
-    }
-
-    try {
-      console.log('🔄 Creating private channel for user:', userId);
-      console.log('Channel name:', `chat.${userId}`);
-      
-      const channel = echoInstance.private(`chat.${userId}`);
-      channelRef.current = channel;
-
-      // Connection state listeners
-      channel.subscribed(() => {
-        console.log('✅ Channel Status: Successfully subscribed to channel:', `chat.${userId}`);
-        setConnectionState('connected');
-      });
-
-      channel.error((error) => {
-        console.error('❌ Channel Status: Subscription error:', error);
-        setConnectionState('error');
-      });
-
-      // Listen for Pusher connection states
-      echoInstance.connector.pusher.connection.bind('connecting', () => {
-        console.log('🔄 Pusher Status: Connecting...');
-        setConnectionState('connecting');
-      });
-
-      echoInstance.connector.pusher.connection.bind('connected', () => {
-        console.log('✅ Pusher Status: Connected');
-        setConnectionState('connected');
-      });
-
-      echoInstance.connector.pusher.connection.bind('disconnected', () => {
-        console.log('🔌 Pusher Status: Disconnected');
-        setConnectionState('disconnected');
-      });
-
-      echoInstance.connector.pusher.connection.bind('error', (error) => {
-        console.error('❌ Pusher Status: Connection error:', error);
-        setConnectionState('error');
-      });
-
-      // Listen for new messages
-      channel.listen('.chat.message', (e) => {
-        console.log('📨 Channel Event: Received message:', e);
-        if (e?.message) {
-          setMessages(prev => {
-            const exists = prev.some(msg => 
-              msg.id === e.message.id || 
-              (msg.message === e.message.message && 
-               msg.username === e.message.username)
-            );
-            
-            if (!exists) {
-              console.log('📩 Adding new message to state:', e.message);
-              return [...prev, {
-                id: e.message.id || Date.now(),
-                message: e.message.message,
-                username: e.message.username,
-                type: e.message.role === 'support' ? 'response' : 'request',
-                created_at: e.message.created_at || new Date().toISOString()
-              }];
-            }
-            return prev;
-          });
-          bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-        }
-      });
-
-    } catch (error) {
-      console.error('❌ Error setting up real-time connection:', error);
-      setConnectionState('error');
-    }
-
-    // Cleanup function
-    return () => {
-      if (channelRef.current) {
-        console.log('🧹 Cleaning up channel:', `chat.${userId}`);
-        channelRef.current.stopListening('.chat.message');
-        if (echoInstance) {
-          echoInstance.leave(`chat.${userId}`);
-        }
-      }
-    };
-  }, [userId, echoInstance]);
-
-  // Auto-reconnect logic
-  useEffect(() => {
-    let reconnectInterval;
-    
-    if (connectionState === 'error' || connectionState === 'disconnected') {
-      console.log('🔄 Setting up reconnection interval...');
-      reconnectInterval = setInterval(() => {
-        if (echoInstance) {
-          console.log('🔄 Attempting to reconnect...');
-          echoInstance.connector.pusher.connect();
-        }
-      }, 5000); // Try every 5 seconds
-    }
-
-    return () => {
-      if (reconnectInterval) {
-        clearInterval(reconnectInterval);
-      }
-    };
-  }, [connectionState]);
 
   const sendMessage = async () => {
     if (!message.trim() || !isLoggedIn || !userId) return;
@@ -328,17 +175,6 @@ export default function ChatWidget() {
             <div className="flex-none flex justify-between items-center px-4 py-5 bg-white relative">
               <div className="flex items-center gap-2">
                 <h2 className="text-[18px] w-full font-medium text-[#111] text-center">Dəstək xidməti</h2>
-                <div className="connection-status">
-                  {connectionState === 'connected' && (
-                    <span className="text-green-500 text-xs">Connected</span>
-                  )}
-                  {connectionState === 'connecting' && (
-                    <span className="text-yellow-500 text-xs">Connecting...</span>
-                  )}
-                  {connectionState === 'error' && (
-                    <span className="text-red-500 text-xs">Connection Error</span>
-                  )}
-                </div>
               </div>
               <div className="flex items-center gap-2">
                 <button 

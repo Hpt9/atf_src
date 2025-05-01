@@ -1,36 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { IoSend } from "react-icons/io5";
-import Echo from "laravel-echo";
-import Pusher from "pusher-js";
 import { useAuth } from "../context/AuthContext";
-
-// Initialize Pusher and Echo
-window.Pusher = Pusher;
-
-// Create Echo instance with simplified configuration
-const createEchoInstance = () => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    console.error('No authentication token found');
-    return null;
-  }
-
-  return new Echo({
-    broadcaster: 'pusher',
-    key: '6801d180c935c080fb57',
-    cluster: 'eu',
-    authEndpoint: 'https://atfplatform.tw1.ru/api/broadcasting/auth',
-    auth: {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    }
-  });
-};
-
-let echoInstance = null;
 
 const AdminChat = () => {
   const { user, token } = useAuth();
@@ -38,27 +8,9 @@ const AdminChat = () => {
   const [message, setMessage] = useState("");
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [users, setUsers] = useState([]);
-  const [connectionState, setConnectionState] = useState('disconnected');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
-  const channelRef = useRef(null);
   const isSupport = user?.name === "Admin" || user?.role === "support";
-
-  // Initialize Echo instance
-  useEffect(() => {
-    if (!user?.id) return;
-
-    // Create new Echo instance with current token
-    echoInstance = createEchoInstance();
-
-    // Cleanup on unmount
-    return () => {
-      if (echoInstance) {
-        echoInstance.disconnect();
-        echoInstance = null;
-      }
-    };
-  }, [user?.id]);
 
   // Fetch users list for support
   useEffect(() => {
@@ -83,7 +35,7 @@ const AdminChat = () => {
     };
 
     fetchUsers();
-  }, [isSupport, token]);
+  }, [isSupport, token, selectedUserId]);
 
   // Refresh messages function
   const refreshMessages = async () => {
@@ -105,83 +57,12 @@ const AdminChat = () => {
           time: new Date(msg.created_at || Date.now()).toLocaleTimeString()
         })));
       }
-      } catch (error) {
+    } catch (error) {
       console.error("Error refreshing messages:", error);
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Setup real-time updates
-  useEffect(() => {
-    if (!user?.id || !echoInstance || !selectedUserId) {
-      console.log('🔄 Skipping real-time setup:', { 
-        hasUserId: !!user?.id, 
-        hasEcho: !!echoInstance, 
-        selectedUserId 
-      });
-      return;
-    }
-
-    try {
-      console.log('🔌 Attempting to connect to channel:', `chat.${selectedUserId}`);
-      const channel = echoInstance.private(`chat.${selectedUserId}`);
-      channelRef.current = channel;
-
-      // Connection state listeners
-      channel.listen('pusher:subscription_succeeded', () => {
-        console.log('✅ Successfully subscribed to channel:', `chat.${selectedUserId}`);
-        setConnectionState('connected');
-      });
-
-      channel.listen('pusher:subscription_error', (error) => {
-        console.error('❌ Subscription error:', error);
-        setConnectionState('error');
-      });
-
-      // Listen for new messages
-      channel.listen('.new.message', (e) => {
-        console.log('📨 Received message event:', e);
-        if (e?.message) {
-          setMessages(prev => {
-            const exists = prev.some(msg => 
-              msg.id === e.message.id || 
-              (msg.message === e.message.message && 
-               msg.username === e.message.username)
-            );
-            
-            if (!exists) {
-              console.log('📩 Adding new message to state:', e.message);
-              return [...prev, {
-                id: e.message.id || Date.now(),
-                message: e.message.message,
-                username: e.message.username,
-                type: e.message.role === 'support' ? 'response' : 'request',
-                created_at: e.message.created_at || new Date().toISOString()
-              }];
-            }
-            return prev;
-          });
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }
-      });
-
-    } catch (error) {
-      console.error('❌ Error setting up real-time connection:', error);
-      setConnectionState('error');
-    }
-
-    // Cleanup function
-    return () => {
-      if (channelRef.current) {
-        console.log('🔌 Cleaning up channel subscription:', `chat.${selectedUserId}`);
-        channelRef.current.stopListening('.new.message');
-        if (echoInstance) {
-          echoInstance.leave(`chat.${selectedUserId}`);
-        }
-      }
-    };
-  }, [user?.id, echoInstance, selectedUserId]);
 
   // Auto-refresh messages when selected user changes
   useEffect(() => {
@@ -190,18 +71,6 @@ const AdminChat = () => {
       refreshMessages();
     }
   }, [selectedUserId]);
-
-  // Auto-reconnect logic
-  useEffect(() => {
-    const reconnectInterval = setInterval(() => {
-      if (connectionState === 'error' && echoInstance) {
-        console.log('Attempting to reconnect...');
-        echoInstance.connect();
-      }
-    }, 10000);
-
-    return () => clearInterval(reconnectInterval);
-  }, [connectionState]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -260,19 +129,8 @@ const AdminChat = () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-[32px] font-semibold text-[#2E92A0]">
           Support Chat Interface
-      </h1>
+        </h1>
         <div className="flex items-center gap-4">
-          <div className="connection-status">
-            {connectionState === 'connected' && (
-              <span className="text-green-500">Connected</span>
-            )}
-            {connectionState === 'connecting' && (
-              <span className="text-yellow-500">Connecting...</span>
-            )}
-            {connectionState === 'error' && (
-              <span className="text-red-500">Connection Error</span>
-            )}
-          </div>
           <button 
             onClick={refreshMessages}
             className="px-4 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors"
@@ -306,48 +164,48 @@ const AdminChat = () => {
           </div>
         )}
       
-      {/* Messages Display */}
+        {/* Messages Display */}
         <div className="flex-1 border border-[#E7E7E7] rounded-lg bg-white overflow-hidden">
-        <div className="h-[600px] overflow-y-auto p-4 space-y-4">
-          {messages.map((msg) => (
-            <div
-              key={msg.id}
+          <div className="h-[600px] overflow-y-auto p-4 space-y-4">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
                 className={`mb-4 ${msg.isSupport ? 'text-right' : 'text-left'}`}
-            >
-              <div className="inline-block max-w-[70%]">
-                <div className="text-sm text-[#3F3F3F] mb-1">
-                  {msg.sender} - {msg.time}
-                </div>
-                <div className={`p-3 rounded-lg ${
+              >
+                <div className="inline-block max-w-[70%]">
+                  <div className="text-sm text-[#3F3F3F] mb-1">
+                    {msg.sender} - {msg.time}
+                  </div>
+                  <div className={`p-3 rounded-lg ${
                     msg.isSupport 
-                    ? 'bg-[#95C901] text-white' 
-                    : 'bg-[#F5F5F5] text-[#3F3F3F]'
-                }`}>
-                  {msg.text}
+                      ? 'bg-[#95C901] text-white' 
+                      : 'bg-[#F5F5F5] text-[#3F3F3F]'
+                  }`}>
+                    {msg.text}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
 
-        {/* Message Input */}
-        <div className="p-4 border-t border-[#E7E7E7]">
+          {/* Message Input */}
+          <div className="p-4 border-t border-[#E7E7E7]">
             <form onSubmit={sendResponse} className="flex gap-2">
-            <input
-              type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Cavabınızı yazın..."
-              className="flex-1 px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0]"
-            />
-            <button 
-              type="submit"
-              className="bg-[#2E92A0] text-white px-6 py-2 rounded-lg hover:bg-[#267A85] transition-colors"
-            >
-              <IoSend />
-            </button>
-          </form>
+              <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Cavabınızı yazın..."
+                className="flex-1 px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0]"
+              />
+              <button 
+                type="submit"
+                className="bg-[#2E92A0] text-white px-6 py-2 rounded-lg hover:bg-[#267A85] transition-colors"
+              >
+                <IoSend />
+              </button>
+            </form>
           </div>
         </div>
       </div>
