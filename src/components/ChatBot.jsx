@@ -22,7 +22,8 @@ const createEchoInstance = () => {
     authEndpoint: 'https://atfplatform.tw1.ru/api/broadcasting/auth',
     auth: {
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json',
       }
     }
   });
@@ -76,11 +77,13 @@ export default function ChatWidget() {
     console.log('Fetching messages for user:', userId);
     setIsLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.PROD ? 'https://atfplatform.tw1.ru' : 'https://atfplatform.tw1.ru'}/api/messages/1`, {
+      const res = await fetch('https://atfplatform.tw1.ru/api/messages/1', {
+        method: 'GET',
+        credentials: 'include',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
           Accept: 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          'Content-Type': 'application/json'
         },
       });
       console.log('Messages response:', res.status);
