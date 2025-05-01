@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { IoSend, IoAttach } from 'react-icons/io5';
 
-const ChatWindow = ({ selectedUser, messages, onSendMessage }) => {
+const ChatWindow = ({ selectedUser, messages, onSendMessage, connectionState }) => {
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef(null);
 
@@ -34,15 +34,28 @@ const ChatWindow = ({ selectedUser, messages, onSendMessage }) => {
   return (
     <div className="h-full flex flex-col">
       {/* Chat header */}
-      <div className="p-4 bg-[#F5F5F5] border-b border-[#E7E7E7] flex items-center">
-        <div className="w-10 h-10 rounded-full bg-[#2E92A0] flex items-center justify-center text-white font-medium">
-          {selectedUser.name.charAt(0).toUpperCase()}
+      <div className="p-4 bg-[#F5F5F5] border-b border-[#E7E7E7] flex items-center justify-between">
+        <div className="flex items-center">
+          <div className="w-10 h-10 rounded-full bg-[#2E92A0] flex items-center justify-center text-white font-medium">
+            {selectedUser.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="ml-3">
+            <h3 className="font-medium text-[#3F3F3F]">{selectedUser.name}</h3>
+          </div>
         </div>
-        <div className="ml-3">
-          <h3 className="font-medium text-[#3F3F3F]">{selectedUser.name}</h3>
-          <p className="text-xs text-gray-500">
-            {selectedUser.isOnline ? 'Online' : 'Offline'}
-          </p>
+        <div className="text-sm">
+          {connectionState === 'connected' && (
+            <span className="text-green-500">Connected</span>
+          )}
+          {connectionState === 'connecting' && (
+            <span className="text-yellow-500">Connecting...</span>
+          )}
+          {connectionState === 'disconnected' && (
+            <span className="text-yellow-500">Disconnected</span>
+          )}
+          {connectionState === 'error' && (
+            <span className="text-red-500">Connection Error</span>
+          )}
         </div>
       </div>
 
@@ -55,7 +68,6 @@ const ChatWindow = ({ selectedUser, messages, onSendMessage }) => {
         ) : (
           messages.map((msg) => {
             // Determine if message is from admin/support (response) or user (request)
-            // Using both the type field and the isAdmin flag set in the parent component
             const isAdminMessage = msg.type === "response" || msg.isAdmin;
             
             return (
@@ -98,10 +110,16 @@ const ChatWindow = ({ selectedUser, messages, onSendMessage }) => {
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Mesaj yazın..."
             className="flex-1 py-2 px-4 border border-[#E7E7E7] rounded-full focus:outline-none focus:border-[#2E92A0]"
+            disabled={connectionState !== 'connected'}
           />
           <button
             type="submit"
-            className="p-2 rounded-full bg-[#2E92A0] text-white hover:bg-[#267A85] transition-colors"
+            className={`p-2 rounded-full ${
+              connectionState === 'connected'
+                ? 'bg-[#2E92A0] text-white hover:bg-[#267A85]'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            } transition-colors`}
+            disabled={connectionState !== 'connected'}
           >
             <IoSend size={20} />
           </button>

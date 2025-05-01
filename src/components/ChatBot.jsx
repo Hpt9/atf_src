@@ -126,22 +126,25 @@ export default function ChatWidget() {
   }, [open, isLoggedIn, userId]);
 
   const handleChatToggle = (newOpenState) => {
-    console.log('Chat toggle:', newOpenState);
+    console.log('💬 Chat toggle:', newOpenState);
     if (!isLoggedIn) {
-      console.log('Chat toggle ignored - user not logged in');
+      console.log('🚫 Chat toggle ignored - user not logged in');
       return;
     }
     setOpen(newOpenState);
     if (newOpenState && userId) {
+      console.log('📡 Opening chat for user:', userId);
       // Fetch messages when opening the chat and we have a user ID
       refreshMessages();
+    } else {
+      console.log('🔌 Closing chat for user:', userId);
     }
   };
 
   // Setup real-time updates
   useEffect(() => {
     if (!userId || !echoInstance) {
-      console.log('🔄 Skipping real-time setup:', { 
+      console.log('🚫 Cannot setup channel:', { 
         hasUserId: !!userId, 
         hasEcho: !!echoInstance 
       });
@@ -149,24 +152,47 @@ export default function ChatWidget() {
     }
 
     try {
-      console.log('🔌 Attempting to connect to channel:', `chat.${userId}`);
+      console.log('🔄 Creating private channel for user:', userId);
+      console.log('Channel name:', `chat.${userId}`);
+      
       const channel = echoInstance.private(`chat.${userId}`);
       channelRef.current = channel;
 
       // Connection state listeners
-      channel.listen('pusher:subscription_succeeded', () => {
-        console.log('✅ Successfully subscribed to channel:', `chat.${userId}`);
+      channel.subscribed(() => {
+        console.log('✅ Channel Status: Successfully subscribed to channel:', `chat.${userId}`);
         setConnectionState('connected');
       });
 
-      channel.listen('pusher:subscription_error', (error) => {
-        console.error('❌ Subscription error:', error);
+      channel.error((error) => {
+        console.error('❌ Channel Status: Subscription error:', error);
+        setConnectionState('error');
+      });
+
+      // Listen for Pusher connection states
+      echoInstance.connector.pusher.connection.bind('connecting', () => {
+        console.log('🔄 Pusher Status: Connecting...');
+        setConnectionState('connecting');
+      });
+
+      echoInstance.connector.pusher.connection.bind('connected', () => {
+        console.log('✅ Pusher Status: Connected');
+        setConnectionState('connected');
+      });
+
+      echoInstance.connector.pusher.connection.bind('disconnected', () => {
+        console.log('🔌 Pusher Status: Disconnected');
+        setConnectionState('disconnected');
+      });
+
+      echoInstance.connector.pusher.connection.bind('error', (error) => {
+        console.error('❌ Pusher Status: Connection error:', error);
         setConnectionState('error');
       });
 
       // Listen for new messages
-      channel.listen('.new.message', (e) => {
-        console.log('📨 Received message event:', e);
+      channel.listen('.chat.message', (e) => {
+        console.log('📨 Channel Event: Received message:', e);
         if (e?.message) {
           setMessages(prev => {
             const exists = prev.some(msg => 
@@ -199,8 +225,8 @@ export default function ChatWidget() {
     // Cleanup function
     return () => {
       if (channelRef.current) {
-        console.log('🔌 Cleaning up channel subscription:', `chat.${userId}`);
-        channelRef.current.stopListening('.new.message');
+        console.log('🧹 Cleaning up channel:', `chat.${userId}`);
+        channelRef.current.stopListening('.chat.message');
         if (echoInstance) {
           echoInstance.leave(`chat.${userId}`);
         }
@@ -210,14 +236,23 @@ export default function ChatWidget() {
 
   // Auto-reconnect logic
   useEffect(() => {
-    const reconnectInterval = setInterval(() => {
-      if (connectionState === 'error' && echoInstance) {
-        console.log('Attempting to reconnect...');
-        echoInstance.connect();
-      }
-    }, 10000);
+    let reconnectInterval;
+    
+    if (connectionState === 'error' || connectionState === 'disconnected') {
+      console.log('🔄 Setting up reconnection interval...');
+      reconnectInterval = setInterval(() => {
+        if (echoInstance) {
+          console.log('🔄 Attempting to reconnect...');
+          echoInstance.connector.pusher.connect();
+        }
+      }, 5000); // Try every 5 seconds
+    }
 
-    return () => clearInterval(reconnectInterval);
+    return () => {
+      if (reconnectInterval) {
+        clearInterval(reconnectInterval);
+      }
+    };
   }, [connectionState]);
 
   const sendMessage = async () => {

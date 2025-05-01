@@ -12,7 +12,12 @@ const createEchoInstance = () => {
     cluster: 'eu',
     forceTLS: true,
     encrypted: true,
-    authEndpoint: 'https://atfplatform.tw1.ru/broadcasting/auth',
+    authEndpoint: 'https://atfplatform.tw1.ru/api/broadcasting/auth',
+    wsHost: 'atfplatform.tw1.ru',
+    wsPort: 443,
+    wssPort: 443,
+    disableStats: true,
+    enabledTransports: ['ws', 'wss'],
     auth: {
       headers: {
         Accept: 'application/json',
@@ -28,8 +33,8 @@ const AdminChatInterface = () => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [onlineUsers, setOnlineUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [connectionState, setConnectionState] = useState('disconnected');
 
   // Initialize Echo instance for realtime updates
   useEffect(() => {
@@ -38,18 +43,35 @@ const AdminChatInterface = () => {
     // Subscribe to the admin channel
     const adminChannel = echoInstance.private('admin.chat');
     
+    // Connection state listeners
+    adminChannel.subscribed(() => {
+      console.log('✅ Successfully subscribed to admin channel');
+      setConnectionState('connected');
+    }).error((error) => {
+      console.error('❌ Channel subscription error:', error);
+      setConnectionState('error');
+    });
+    
     // Listen for new messages
-    adminChannel.listen('.new.message', (data) => {
+    adminChannel.listen('.chat.message', (data) => {
+      console.log('📨 Received message:', data);
       handleNewMessage(data.message);
     });
-    
-    // Listen for online status updates
-    adminChannel.listen('.user.online', (data) => {
-      setOnlineUsers(prev => [...prev, data.userId]);
+
+    // Listen for connection events
+    echoInstance.connector.pusher.connection.bind('connected', () => {
+      console.log('✅ Pusher connected');
+      setConnectionState('connected');
     });
-    
-    adminChannel.listen('.user.offline', (data) => {
-      setOnlineUsers(prev => prev.filter(id => id !== data.userId));
+
+    echoInstance.connector.pusher.connection.bind('disconnected', () => {
+      console.log('❌ Pusher disconnected');
+      setConnectionState('disconnected');
+    });
+
+    echoInstance.connector.pusher.connection.bind('error', (error) => {
+      console.error('❌ Pusher connection error:', error);
+      setConnectionState('error');
     });
 
     // Cleanup on unmount
@@ -60,6 +82,27 @@ const AdminChatInterface = () => {
       }
     };
   }, []);
+
+  // Auto-reconnect logic
+  useEffect(() => {
+    let reconnectInterval;
+    
+    if (connectionState === 'error' || connectionState === 'disconnected') {
+      console.log('🔄 Setting up reconnection interval...');
+      reconnectInterval = setInterval(() => {
+        console.log('🔄 Attempting to reconnect...');
+        if (echoInstance) {
+          echoInstance.connector.pusher.connect();
+        }
+      }, 5000); // Try every 5 seconds
+    }
+
+    return () => {
+      if (reconnectInterval) {
+        clearInterval(reconnectInterval);
+      }
+    };
+  }, [connectionState]);
 
   // Fetch users with chat history
   useEffect(() => {
@@ -82,8 +125,7 @@ const AdminChatInterface = () => {
           const formattedUsers = data.users.map(user => ({
             ...user,
             lastMessage: null,  // Will be populated when messages are loaded
-            unreadCount: 0,     // Will be updated when new messages arrive
-            isOnline: onlineUsers.includes(user.id)
+            unreadCount: 0     // Will be updated when new messages arrive
           }));
           
           setUsers(formattedUsers);
@@ -99,7 +141,7 @@ const AdminChatInterface = () => {
     };
     
     fetchUsers();
-  }, [onlineUsers]);
+  }, []);
 
   // Handle new message from websocket
   const handleNewMessage = (message) => {
@@ -267,7 +309,6 @@ const AdminChatInterface = () => {
             users={users}
             selectedUser={selectedUser}
             onSelectUser={handleSelectUser}
-            onlineUsers={onlineUsers}
           />
         </div>
         
@@ -277,6 +318,7 @@ const AdminChatInterface = () => {
             selectedUser={selectedUser}
             messages={messages}
             onSendMessage={handleSendMessage}
+            connectionState={connectionState}
           />
         </div>
       </div>
