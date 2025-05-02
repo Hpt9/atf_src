@@ -57,7 +57,7 @@ const AdminChat = () => {
           time: new Date(msg.created_at || Date.now()).toLocaleTimeString()
         })));
       }
-    } catch (error) {
+      } catch (error) {
       console.error("Error refreshing messages:", error);
     } finally {
       setIsLoading(false);
@@ -129,7 +129,7 @@ const AdminChat = () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-[32px] font-semibold text-[#2E92A0]">
           Support Chat Interface
-        </h1>
+      </h1>
         <div className="flex items-center gap-4">
           <button 
             onClick={refreshMessages}
@@ -164,48 +164,48 @@ const AdminChat = () => {
           </div>
         )}
       
-        {/* Messages Display */}
+      {/* Messages Display */}
         <div className="flex-1 border border-[#E7E7E7] rounded-lg bg-white overflow-hidden">
-          <div className="h-[600px] overflow-y-auto p-4 space-y-4">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
+        <div className="h-[600px] overflow-y-auto p-4 space-y-4">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
                 className={`mb-4 ${msg.isSupport ? 'text-right' : 'text-left'}`}
-              >
-                <div className="inline-block max-w-[70%]">
-                  <div className="text-sm text-[#3F3F3F] mb-1">
-                    {msg.sender} - {msg.time}
-                  </div>
-                  <div className={`p-3 rounded-lg ${
+            >
+              <div className="inline-block max-w-[70%]">
+                <div className="text-sm text-[#3F3F3F] mb-1">
+                  {msg.sender} - {msg.time}
+                </div>
+                <div className={`p-3 rounded-lg ${
                     msg.isSupport 
-                      ? 'bg-[#95C901] text-white' 
-                      : 'bg-[#F5F5F5] text-[#3F3F3F]'
-                  }`}>
-                    {msg.text}
-                  </div>
+                    ? 'bg-[#95C901] text-white' 
+                    : 'bg-[#F5F5F5] text-[#3F3F3F]'
+                }`}>
+                  {msg.text}
                 </div>
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
 
-          {/* Message Input */}
-          <div className="p-4 border-t border-[#E7E7E7]">
+        {/* Message Input */}
+        <div className="p-4 border-t border-[#E7E7E7]">
             <form onSubmit={sendResponse} className="flex gap-2">
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Cavabınızı yazın..."
-                className="flex-1 px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0]"
-              />
-              <button 
-                type="submit"
-                className="bg-[#2E92A0] text-white px-6 py-2 rounded-lg hover:bg-[#267A85] transition-colors"
-              >
-                <IoSend />
-              </button>
-            </form>
+            <input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Cavabınızı yazın..."
+              className="flex-1 px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0]"
+            />
+            <button 
+              type="submit"
+              className="bg-[#2E92A0] text-white px-6 py-2 rounded-lg hover:bg-[#267A85] transition-colors"
+            >
+              <IoSend />
+            </button>
+          </form>
           </div>
         </div>
       </div>

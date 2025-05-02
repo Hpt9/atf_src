@@ -24,7 +24,7 @@ export const Authentication = () => {
       setLogin(true);
     }
   }, [searchParams]);
-
+  
   return (
     <div className="w-full overflow-hidden flex justify-center h-screen">
       <Toaster position="top-right" />

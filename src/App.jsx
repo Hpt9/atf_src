@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
 import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
 import HsCodesPage from "./pages/HsCodes";
@@ -18,7 +19,7 @@ import AdminRouteGuard from './components/AdminRouteGuard';
 
 function App() {
   const location = useLocation();
-
+  
   return (
     <>
       <Toaster

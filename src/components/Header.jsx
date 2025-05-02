@@ -80,10 +80,19 @@ const Header = () => {
     setShowLogoutModal(true);
   };
 
-  const handleLogout = () => {
-    setShowLogoutModal(false);
-    logout();
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      setShowLogoutModal(false);
+      await logout();
+      // Wait for state updates to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      navigate("/");
+      // Wait for navigation to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      window.location.reload();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const handleLanguageChange = (langCode) => {

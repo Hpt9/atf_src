@@ -174,7 +174,7 @@ export default function ChatWidget() {
             {/* Chat Header */}
             <div className="flex-none flex justify-between items-center px-4 py-5 bg-white relative">
               <div className="flex items-center gap-2">
-                <h2 className="text-[18px] w-full font-medium text-[#111] text-center">Dəstək xidməti</h2>
+              <h2 className="text-[18px] w-full font-medium text-[#111] text-center">Dəstək xidməti</h2>
               </div>
               <div className="flex items-center gap-2">
                 <button 
@@ -184,12 +184,12 @@ export default function ChatWidget() {
                 >
                   {isLoading ? 'Refreshing...' : 'Refresh'}
                 </button>
-                <button
+              <button
                   onClick={() => handleChatToggle(false)}
                   className="p-[5px] border border-[#E7E7E7] bg-[#FAFAFA] flex items-center justify-center rounded-[8px] hover:bg-gray-100 hover:scale-105 transition-all duration-200 hover:cursor-pointer"
-                >
-                  <IoClose size={32} className="text-[#111]" />
-                </button>
+              >
+                <IoClose size={32} className="text-[#111]" />
+              </button>
               </div>
             </div>
 
@@ -200,11 +200,11 @@ export default function ChatWidget() {
                   <div className="flex items-center justify-center">
                     <div className="w-8 h-8 border-4 border-[#2E92A0] border-t-transparent rounded-full animate-spin"></div>
                   </div>
-                </div>
+                      </div>
               ) : messages.length === 0 ? (
                 <div className="h-fit flex items-center justify-center">
                   <span className="text-gray-400">Hələ heç bir mesaj yoxdur</span>
-                </div>
+                    </div>
               ) : (
                 messages.map((msg) => (
                   <div
@@ -221,7 +221,7 @@ export default function ChatWidget() {
                       {msg.message}
                       <div className="text-xs mt-1 opacity-70">
                         {new Date(msg.created_at).toLocaleTimeString()}
-                      </div>
+                    </div>
                     </span>
                   </div>
                 ))
