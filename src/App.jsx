@@ -16,6 +16,7 @@ import AdminChatPage from "./pages/AdminChatPage";
 import { Toaster } from 'react-hot-toast';
 import { RouteGuard } from './components/RouteGuard';
 import AdminRouteGuard from './components/AdminRouteGuard';
+import { VerifyEmail } from "./pages/VerifEmail";
 
 function App() {
   const location = useLocation();
@@ -71,6 +72,11 @@ function App() {
             <Route path="/elaqe" element={
               <PageTransition>
                 <ElaqePage />
+              </PageTransition>
+            } />
+            <Route path="/verify-email" element={
+              <PageTransition>
+                <VerifyEmail/>
               </PageTransition>
             } />
             <Route path="/profile" element={
