@@ -547,6 +547,7 @@ const RegisterForm = ({ setLogin }) => {
         <div className="grid grid-cols-1 gap-4">
           <input
             type="text"
+            autoComplete="on"
             name="name"
             value={formData.name}
             onChange={handleChange}
