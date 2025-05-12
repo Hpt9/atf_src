@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchBar } from "../../context/SearchBarContext";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
-import { HiOutlineSwitchVertical } from "react-icons/hi";
 import { motion, AnimatePresence } from "framer-motion";
 import HSCodeStep from "./components/HSCodeStep";
 import PermissionsStep from "./components/PermissionsStep";
@@ -13,7 +12,7 @@ import {
 } from "./components/shared/animations";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import useLanguageStore from "../../store/languageStore";
+// import useLanguageStore from "../../store/languageStore";
 
 const MuracietlerPage = () => {
   const navigate = useNavigate();
@@ -27,7 +26,8 @@ const MuracietlerPage = () => {
   const [applications, setApplications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const [documentName, setDocumentName] = useState();
+  // console.log(documentName);
   const fetchApplications = async () => {
     setIsLoading(true);
     try {
@@ -51,6 +51,7 @@ const MuracietlerPage = () => {
         console.error("Error loading applications:", error);
       }
     } finally {
+      // console.log(applications);
       setIsLoading(false);
     }
   };
@@ -420,6 +421,7 @@ const MuracietlerPage = () => {
                           custom={direction}
                           setApprovalPdfs={setApprovalPdfs}
                           refreshApplications={fetchApplications}
+                          setDocumentName={setDocumentName}
                         />
                       )}
                     </>
@@ -449,18 +451,18 @@ const MuracietlerPage = () => {
               </div>
               <div
                 className="w-[75px] md:w-[150px] flex items-center gap-x-[8px] cursor-pointer"
-                onClick={() => handleSort("date")}
+                
               >
-                <p className="font-medium text-[#3F3F3F] text-[14px]">Tarix</p>
-                <HiOutlineSwitchVertical />
+                <p className="font-medium text-[#3F3F3F] text-[14px]">Sənəd</p>
+               
               </div>
               <div className="w-[50px] md:w-[150px] flex items-center ">
                 <p className="font-medium text-[#3F3F3F] text-[14px]">Qurum</p>
               </div>
             </div>
-            <p className="font-medium text-[#3F3F3F] text-[14px] w-[40px] md-[80px] text-center">
+            {/* <p className="font-medium text-[#3F3F3F] text-[14px] w-[40px] md-[80px] text-center">
               Yüklə
-            </p>
+            </p> */}
           </div>
 
           {/* Improved animated container */}
@@ -521,13 +523,13 @@ const MuracietlerPage = () => {
                           {app.code}
                         </p>
                         <p className="text-[#3F3F3F] text-[14px] w-[75px] md:w-[150px]">
-                          {app.date}
+                          {app.organization.az ? app.organization.az : "salam"}
                         </p>
                         <p className="text-[#3F3F3F] text-[14px] w-[55px] mobile-sm:w-[80px] xs:w-[100px] md:w-[150px]">
-                          {app.description}
+                          {app.document_name ? app.document_name : "salam"}
                         </p>
                       </div>
-                      <div className="w-[40px] md:w-[80px] flex justify-end">
+                      {/* <div className="w-[40px] md:w-[80px] flex justify-end">
                         <button className="text-[#2E92A0] hover:text-[#1E7A8A] transition-colors cursor-pointer">
                           <svg
                             width="24"
@@ -559,7 +561,7 @@ const MuracietlerPage = () => {
                             />
                           </svg>
                         </button>
-                      </div>
+                      </div> */}
                     </motion.div>
                   ))
                 ) : (

@@ -24,6 +24,35 @@ const HomePage = () => {
   const searchTimeoutRef = useRef(null);
   const searchContainerRef = useRef(null);
 
+  // Text translations
+  const texts = {
+    searchPlaceholder: {
+      en: "Search...",
+      ru: "Поиск...",
+      az: "Axtarış..."
+    },
+    noResults: {
+      en: "No matching results found",
+      ru: "Результаты не найдены",
+      az: "Axtarışa uyğun nəticə tapılmadı"
+    },
+    hsCodes: {
+      en: "HS Codes",
+      ru: "HS Коды",
+      az: "HS Kodları"
+    },
+    permits: {
+      en: "Permits",
+      ru: "Разрешения",
+      az: "İcazələr"
+    },
+    loadingError: {
+      en: "Failed to load content",
+      ru: "Не удалось загрузить контент",
+      az: "Məlumatları yükləmək mümkün olmadı"
+    }
+  };
+
   // Handle click outside search results
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -50,8 +79,9 @@ const HomePage = () => {
             q: searchQuery.trim()
           });
           setSearchResults(response.data.results);
-        } catch (error) {
-          console.error('Search error:', error);
+        } catch (_err) {
+          // Silently handle errors (404, etc.) by showing empty results
+          setSearchResults({ hs_codes: [], approvals: [] });
         } finally {
           setIsSearching(false);
         }
@@ -97,15 +127,15 @@ const HomePage = () => {
         }
         setError(null);
       } catch (err) {
-        console.error("Error fetching data:", err);
-        setError("Failed to load content");
+        // console.error("Error fetching data:", err);
+        setError(texts.loadingError[language] || texts.loadingError.az);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [language]);
 
   // Helper function to get icon component based on service type
   const getIconComponent = (serviceName) => {
@@ -154,7 +184,7 @@ const HomePage = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Axtarış..."
+                  placeholder={texts.searchPlaceholder[language] || texts.searchPlaceholder.az}
                   className="w-full outline-none text-[#2E92A0] placeholder:text-[rgba(160,160,160,1)] placeholder:text-[16px]"
                 />
               </div>
@@ -171,7 +201,7 @@ const HomePage = () => {
                       <>
                         {searchResults.hs_codes?.length > 0 && (
                           <div className="p-2">
-                            <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">HS Kodları</div>
+                            <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">{texts.hsCodes[language] || texts.hsCodes.az}</div>
                             {searchResults.hs_codes.map((item) => (
                               <div
                                 key={item.id}
@@ -188,7 +218,7 @@ const HomePage = () => {
                         
                         {searchResults.approvals?.length > 0 && (
                           <div className="p-2 border-t border-[#E7E7E7]">
-                            <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">İcazələr</div>
+                            <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">{texts.permits[language] || texts.permits.az}</div>
                             {searchResults.approvals.map((item) => (
                               <div
                                 key={item.id}
@@ -204,7 +234,7 @@ const HomePage = () => {
                       </>
                     ) : (
                       <div className="p-4 text-center text-[#3F3F3F]">
-                        Axtarışa uyğun nəticə tapılmadı
+                        {texts.noResults[language] || texts.noResults.az}
                       </div>
                     )}
                   </Motion.div>

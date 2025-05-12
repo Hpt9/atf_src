@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchBar } from "../../context/SearchBarContext";
 import { IoArrowBack } from "react-icons/io5";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import axios from "axios";
 import useLanguageStore from "../../store/languageStore";
 import { useAuth } from "../../context/AuthContext";
@@ -49,7 +49,17 @@ const IcazelerPage = () => {
       setError(null);
     } catch (err) {
         console.error("Error fetching approvals:", err);
-        setError("Məlumatları yükləyərkən xəta baş verdi");
+        // Handle 404 errors (Not Found) by just showing "No results" instead of error
+        if (err.response && err.response.status === 404) {
+          setError(null);
+        } else {
+          const errorMessage = {
+            en: "Error loading data",
+            ru: "Ошибка при загрузке данных",
+            az: "Məlumatları yükləyərkən xəta baş verdi"
+          };
+          setError(errorMessage[language] || errorMessage.az);
+        }
       setApprovalsData({
         data: [],
         total: 0,
@@ -87,8 +97,19 @@ const IcazelerPage = () => {
       });
       setError(null);
     } catch (err) {
-      console.error("Error searching approvals:", err);
-      setError("Axtarış zamanı xəta baş verdi");
+      // console.error("Error searching approvals:", err);
+      // Handle 404 errors (Not Found) by just showing "No results" instead of error
+      if (err.response && err.response.status === 404) {
+        setError(null);
+      } else {
+        const errorMessage = {
+          en: "Error during search",
+          ru: "Ошибка при поиске",
+          az: "Axtarış zamanı xəta baş verdi"
+        };
+        setError(errorMessage[language] || errorMessage.az);
+      }
+      // Always set empty data for any error
       setApprovalsData({
         data: [],
         total: 0,

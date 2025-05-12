@@ -5,17 +5,62 @@ import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { ImSpinner8 } from "react-icons/im";
+import useLanguageStore from "../../store/languageStore";
 
 export const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
   const redirectUrl = searchParams.get("redirect_url");
   const navigate = useNavigate();
   const [status, setStatus] = useState("verifying"); // verifying, success, error
+  const { language } = useLanguageStore();
+
+  const getText = {
+    verifying: {
+      en: "Verifying your email...",
+      ru: "Проверка вашей электронной почты...",
+      az: "Email təsdiqlənir..."
+    },
+    success: {
+      en: "Email successfully verified!",
+      ru: "Email успешно подтвержден!",
+      az: "Email uğurla təsdiqləndi!"
+    },
+    redirecting: {
+      en: "You will be automatically redirected to your profile page...",
+      ru: "Вы будете автоматически перенаправлены на страницу профиля...",
+      az: "Siz avtomatik olaraq profil səhifəsinə yönləndiriləcəksiniz..."
+    },
+    error: {
+      en: "Email verification failed",
+      ru: "Ошибка при подтверждении email",
+      az: "Təsdiqləmə zamanı xəta baş verdi"
+    },
+    tryAgain: {
+      en: "Try again",
+      ru: "Попробовать снова",
+      az: "Yenidən cəhd edin"
+    },
+    missingLink: {
+      en: "Missing verification link",
+      ru: "Отсутствует ссылка для подтверждения",
+      az: "Yönləndirmə linki tapılmadı"
+    },
+    verificationSuccess: {
+      en: "Email successfully verified",
+      ru: "Email успешно подтвержден",
+      az: "Email uğurla təsdiqləndi"
+    },
+    verificationFailed: {
+      en: "Verification failed",
+      ru: "Ошибка проверки",
+      az: "Təsdiqləmə zamanı xəta baş verdi"
+    }
+  };
 
   useEffect(() => {
     const verify = async () => {
       if (!redirectUrl) {
-        toast.error("Yönləndirmə linki tapılmadı.");
+        toast.error(getText.missingLink[language] || getText.missingLink.az);
         setStatus("error");
         return;
       }
@@ -28,19 +73,19 @@ export const VerifyEmail = () => {
             Accept: "application/json",
           },
         });
-        toast.success("Email uğurla təsdiqləndi.");
+        toast.success(getText.verificationSuccess[language] || getText.verificationSuccess.az);
         setStatus("success");
         // Redirect after showing success animation
         setTimeout(() => navigate("/profile"), 2000);
       } catch (err) {
         console.error(err);
-        toast.error("Təsdiqləmə zamanı xəta baş verdi.");
+        toast.error(getText.verificationFailed[language] || getText.verificationFailed.az);
         setStatus("error");
       }
     };
 
     verify();
-  }, [redirectUrl, navigate]);
+  }, [redirectUrl, navigate, language]);
 
   const renderStatus = () => {
     switch (status) {
@@ -62,7 +107,7 @@ export const VerifyEmail = () => {
               animate={{ opacity: 1 }}
               className="text-lg font-medium text-gray-700"
             >
-              Email təsdiqlənir...
+              {getText.verifying[language] || getText.verifying.az}
             </motion.p>
           </motion.div>
         );
@@ -86,7 +131,7 @@ export const VerifyEmail = () => {
               transition={{ delay: 0.2 }}
               className="text-lg font-medium text-gray-700"
             >
-              Email uğurla təsdiqləndi!
+              {getText.success[language] || getText.success.az}
             </motion.p>
             <motion.p
               initial={{ opacity: 0 }}
@@ -94,7 +139,7 @@ export const VerifyEmail = () => {
               transition={{ delay: 0.4 }}
               className="text-sm text-gray-500"
             >
-              Siz avtomatik olaraq profil səhifəsinə yönləndiriləcəksiniz...
+              {getText.redirecting[language] || getText.redirecting.az}
             </motion.p>
           </motion.div>
         );
@@ -118,7 +163,7 @@ export const VerifyEmail = () => {
               transition={{ delay: 0.2 }}
               className="text-lg font-medium text-gray-700"
             >
-              Təsdiqləmə zamanı xəta baş verdi
+              {getText.error[language] || getText.error.az}
             </motion.p>
             <motion.button
               initial={{ opacity: 0 }}
@@ -127,7 +172,7 @@ export const VerifyEmail = () => {
               onClick={() => window.location.reload()}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors"
             >
-              Yenidən cəhd edin
+              {getText.tryAgain[language] || getText.tryAgain.az}
             </motion.button>
           </motion.div>
         );

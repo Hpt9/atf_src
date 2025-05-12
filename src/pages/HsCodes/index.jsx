@@ -16,13 +16,18 @@ const HsCodesPage = () => {
   const [hsCodesData, setHsCodesData] = useState([]);
   const contentRef = useRef(null);
   const searchTimeoutRef = useRef(null);
+  const { language } = useSearchBar();
 
   useEffect(() => {
     setSearchBar(
       <div className="relative w-full md:w-[300px] px-[16px]">
         <input
           type="text"
-          placeholder="HS kodları üzrə axtarış..."
+          placeholder={
+            language === 'en' ? 'Search HS codes...' :
+            language === 'ru' ? 'Поиск HS кодов...' :
+            'HS kodları üzrə axtarış...'
+          }
           className="w-full px-4 py-2 pl-10 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -37,7 +42,7 @@ const HsCodesPage = () => {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [setSearchBar, searchQuery]);
+  }, [setSearchBar, searchQuery, language]);
 
   useEffect(() => {
     if (searchTimeoutRef.current) {
@@ -58,8 +63,21 @@ const HsCodesPage = () => {
       setLoading(true);
       const response = await axios.get('https://atfplatform.tw1.ru/api/code-categories');
       setHsCodesData(response.data);
-    } catch {
-      toast.error('Məlumatları yükləyərkən xəta baş verdi');
+    } catch (error) {
+      // Check if error is 404 (Not Found) or other data-related error
+      if (error.response && error.response.status === 404) {
+        // For 404 errors, just set empty data without showing error toast
+        setHsCodesData([]);
+      } else {
+        // For other errors, show the toast error message
+        const errorMessages = {
+          en: "Error loading data",
+          ru: "Ошибка при загрузке данных",
+          az: "Məlumatları yükləyərkən xəta baş verdi"
+        };
+        toast.error(errorMessages[language] || errorMessages.az);
+        setHsCodesData([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -90,8 +108,21 @@ const HsCodesPage = () => {
       expandMatchedItems(response.data);
       setExpandedGroups(newExpandedGroups);
       setHsCodesData(response.data);
-    } catch {
-      toast.error('Axtarış zamanı xəta baş verdi');
+    } catch (error) {
+      // Check if error is 404 (Not Found) or 422 (Unprocessable Content)
+      if (error.response && (error.response.status === 404 || error.response.status === 422)) {
+        // For 404 and 422 errors, just set empty data without showing error toast
+        setHsCodesData([]);
+      } else {
+        // For other errors, show the toast error message
+        const errorMessages = {
+          en: "Error during search",
+          ru: "Ошибка при поиске",
+          az: "Axtarış zamanı xəta baş verdi"
+        };
+        toast.error(errorMessages[language] || errorMessages.az);
+        setHsCodesData([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -194,10 +225,22 @@ const HsCodesPage = () => {
         <div className="bg-white border border-[#E7E7E7] rounded-[8px] overflow-hidden">
           <div className="p-[16px] flex justify-between items-center border-b border-[#E7E7E7]">
             <div className="flex items-center mobile:gap-x-[16px] lg:gap-x-[24px]">
-              <p className="font-medium text-[#3F3F3F] text-[14px] min-w-[100px]">Kod</p>
-              <p className="font-medium text-[#3F3F3F] text-[14px]">HS adı</p>
+              <p className="font-medium text-[#3F3F3F] text-[14px] min-w-[100px]">
+                {language === 'en' ? 'Code' : 
+                 language === 'ru' ? 'Код' : 
+                 'Kod'}
+              </p>
+              <p className="font-medium text-[#3F3F3F] text-[14px]">
+                {language === 'en' ? 'HS Name' : 
+                 language === 'ru' ? 'Наименование HS' : 
+                 'HS adı'}
+              </p>
             </div>
-            <p className="font-medium text-[#3F3F3F] text-[14px]">Əməliyyatlar</p>
+            <p className="font-medium text-[#3F3F3F] text-[14px]">
+              {language === 'en' ? 'Actions' : 
+               language === 'ru' ? 'Действия' : 
+               'Əməliyyatlar'}
+            </p>
           </div>
           
           <div ref={contentRef} className="max-h-[640px] overflow-y-auto">
@@ -268,7 +311,9 @@ const HsCodesPage = () => {
                   className="p-[16px] text-center text-[#3F3F3F]"
                   variants={rowVariants}
                 >
-                  Axtarışa uyğun nəticə tapılmadı
+                  {language === 'en' ? 'No matching results found' :
+                   language === 'ru' ? 'Результаты не найдены' :
+                   'Axtarışa uyğun nəticə tapılmadı'}
                 </Motion.div>
               )}
             </Motion.div>

@@ -44,7 +44,7 @@ const ElaqePage = () => {
         }
       );
 
-      console.log(response.data.success);
+      // console.log(response.data.success);
 
       if (response.data.success === "Message sen successfully") {
         toast.success('Mesajınız uğurla göndərildi');

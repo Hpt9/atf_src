@@ -35,12 +35,10 @@ const SuccessStep = ({ closeModal, custom, approvalPdfs = [], refreshApplication
           />
         </svg>
       </div>
-      <h3 className="text-[18px] font-medium text-[#3F3F3F] mb-2">
+      <h3 className="text-[18px] font-medium text-[#3F3F3F] my-2">
         Müraciətiniz qəbul edildi
       </h3>
-      <p className="text-[#A0A0A0] mb-6">
-        Müraciətiniz uğurla qeydə alındı. Aşağıdakı sənədləri yükləyə bilərsiniz.
-      </p>
+     
 
       {approvalPdfs.length > 0 && (
         <div className="w-full space-y-4 mb-6">

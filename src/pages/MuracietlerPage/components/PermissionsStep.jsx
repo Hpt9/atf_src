@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, refreshApplications }) => {
+const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, refreshApplications, setDocumentName }) => {
   const { token } = useAuth();
   const [approvals, setApprovals] = useState([]);
   const [selectedApprovals, setSelectedApprovals] = useState([]);
@@ -104,7 +104,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
     };
 
     setIsSubmitting(true);
-
+    setDocumentName(finalData.approval_ids);
     try {
       const response = await axios.post(
         'https://atfplatform.tw1.ru/api/code-categories-downloads',
@@ -162,10 +162,10 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
     }
   };
 
-  const handleBack = () => {
-    if (isSubmitting) return; // Prevent navigation while submitting
-    setModalStep(1);
-  };
+  // const handleBack = () => {
+  //   if (isSubmitting) return; // Prevent navigation while submitting
+  //   setModalStep(1);
+  // };
 
   if (isLoading) {
     return (
@@ -184,29 +184,6 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
       variants={slideAnimation}
     >
       <div className="flex items-center gap-4 mb-4">
-        <button
-          onClick={handleBack}
-          disabled={isSubmitting}
-          className={`w-[32px] h-[32px] flex items-center justify-center rounded-full ${
-            isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#F5F5F5]'
-          }`}
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M19 12H5M5 12L12 19M5 12L12 5"
-              stroke="#3F3F3F"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
         <h2 className="text-[18px] font-medium text-[#3F3F3F] flex-1">
           HS Kodu: {selectedHsCode}
         </h2>

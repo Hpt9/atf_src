@@ -29,18 +29,18 @@ const JivoChat = () => {
   };
 
   // Function to initialize Jivo with user data
-  const initializeJivoWithUser = () => {
-    if (window.jivo_api && user) {
-      // Set user token to load their specific chat history
-      window.jivo_api.setUserToken(user.id.toString());
-      // Set user info with only available properties
-      window.jivo_api.setUserInfo({
-        name: `${user.name} ${user.surname}`,
-        // Only include phone if it exists
-        ...(user.phone && { phone: user.phone })
-      });
-    }
-  };
+  // const initializeJivoWithUser = () => {
+  //   if (window.jivo_api && user) {
+  //     // Set user token to load their specific chat history
+  //     window.jivo_api.setUserToken(user.id.toString());
+  //     // Set user info with only available properties
+  //     window.jivo_api.setUserInfo({
+  //       name: `${user.name} ${user.surname}`,
+  //       // Only include phone if it exists
+  //       ...(user.phone && { phone: user.phone })
+  //     });
+  //   }
+  // };
 
   // Effect to handle user state changes
   useEffect(() => {
@@ -48,7 +48,7 @@ const JivoChat = () => {
       removeJivoElements();
     } else {
       // Initialize Jivo with user data when user logs in
-      initializeJivoWithUser();
+      // initializeJivoWithUser();
     }
   }, [user]); // This effect runs whenever user state changes
 
@@ -94,7 +94,7 @@ const JivoChat = () => {
         const checkJivoApi = setInterval(() => {
           if (window.jivo_api) {
             clearInterval(checkJivoApi);
-            initializeJivoWithUser();
+            // initializeJivoWithUser();
           }
         }, 100);
       };

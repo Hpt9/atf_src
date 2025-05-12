@@ -16,6 +16,20 @@ const FaqPage = () => {
   const itemsPerPage = 8;
   const totalPages = Math.ceil(faqData.length / itemsPerPage);
 
+  // Text translations
+  const texts = {
+    loading: {
+      en: "Loading FAQs...",
+      ru: "Загрузка часто задаваемых вопросов...",
+      az: "Suallar yüklənir..."
+    },
+    error: {
+      en: "Failed to load FAQ data",
+      ru: "Не удалось загрузить данные FAQ",
+      az: "Sual-cavab məlumatlarını yükləmək mümkün olmadı"
+    }
+  };
+
   // Get current items
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -81,13 +95,13 @@ const FaqPage = () => {
         setError(null);
       })
       .catch((err) => {
-        setError("Failed to load FAQ data");
+        setError(texts.error[language] || texts.error.az);
         console.error("Error fetching FAQs:", err);
       })
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, [language]);
 
   if (loading) {
     return (
