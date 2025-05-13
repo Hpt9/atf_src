@@ -12,16 +12,91 @@ import {
 } from "./components/shared/animations";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-// import useLanguageStore from "../../store/languageStore";
+import useLanguageStore from "../../store/languageStore";
 
 const MuracietlerPage = () => {
   const navigate = useNavigate();
   const { setSearchBar } = useSearchBar();
+  const { language } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState("date");
   const [sortDirection, setSortDirection] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  // Text translations
+  const texts = {
+    search: {
+      en: "Search",
+      ru: "Поиск",
+      az: "Axtar"
+    },
+    apply: {
+      en: "Apply",
+      ru: "Подать заявление",
+      az: "Müraciət et"
+    },
+    code: {
+      en: "Code",
+      ru: "Код",
+      az: "Kod"
+    },
+    document: {
+      en: "Document",
+      ru: "Документ",
+      az: "Sənəd"
+    },
+    organization: {
+      en: "Organization",
+      ru: "Организация",
+      az: "Qurum"
+    },
+    download: {
+      en: "Download",
+      ru: "Скачать",
+      az: "Yüklə"
+    },
+    hsCode: {
+      en: "HS Code",
+      ru: "HS Код",
+      az: "HS Kodu"
+    },
+    permissions: {
+      en: "Permissions",
+      ru: "Разрешения",
+      az: "İcazələr"
+    },
+    noApplications: {
+      en: "You don't have any applications at the moment",
+      ru: "В настоящее время у вас нет заявлений",
+      az: "Hazırda heç bir müraciətiniz yoxdur"
+    },
+    noResults: {
+      en: "No results matching your search",
+      ru: "Результаты не найдены",
+      az: "Axtarışa uyğun nəticə tapılmadı"
+    },
+    loadingError: {
+      en: "Failed to load data",
+      ru: "Не удалось загрузить данные",
+      az: "Məlumatları yükləmək mümkün olmadı"
+    },
+    previous: {
+      en: "Previous",
+      ru: "Назад",
+      az: "Geri"
+    },
+    next: {
+      en: "Next",
+      ru: "Вперед",
+      az: "İrəli"
+    },
+    hello: {
+      en: "hello",
+      ru: "привет",
+      az: "salam"
+    }
+  };
 
   const [applications, setApplications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -31,11 +106,14 @@ const MuracietlerPage = () => {
   const fetchApplications = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get("https://atfplatform.tw1.ru/api/requests", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await axios.get(
+        "https://atfplatform.tw1.ru/api/requests",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       if (response.data && Array.isArray(response.data)) {
         setApplications(response.data);
       } else {
@@ -47,7 +125,7 @@ const MuracietlerPage = () => {
         setApplications([]);
         setError(null);
       } else {
-        setError("Məlumatları yükləmək mümkün olmadı");
+        setError(texts.loadingError[language] || texts.loadingError.az);
         console.error("Error loading applications:", error);
       }
     } finally {
@@ -63,11 +141,11 @@ const MuracietlerPage = () => {
   // Filter applications based on search query
   const filteredApplications = applications.filter((app) => {
     if (!searchQuery.trim()) return true;
-    
+
     // Convert both the code and search query to strings for comparison
     const appCode = String(app.code);
     const query = searchQuery.trim();
-    
+
     return appCode.includes(query);
   });
 
@@ -90,6 +168,7 @@ const MuracietlerPage = () => {
     indexOfFirstItem,
     indexOfLastItem
   );
+  console.log(currentItems);
   const totalPages = Math.ceil(sortedApplications.length / itemsPerPage);
 
   // Handle sort
@@ -160,7 +239,7 @@ const MuracietlerPage = () => {
         <div className="relative w-[50%]">
           <input
             type="text"
-            placeholder="Axtar"
+            placeholder={texts.search[language] || texts.search.az}
             className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -189,7 +268,7 @@ const MuracietlerPage = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => toogleMuracietModal()}
         >
-          <span className="mr-2">Müraciət et</span>
+          <span className="mr-2">{texts.apply[language] || texts.apply.az}</span>
           <svg
             width="16"
             height="16"
@@ -211,7 +290,7 @@ const MuracietlerPage = () => {
 
     // Clean up when component unmounts
     return () => setSearchBar(null);
-  }, [setSearchBar, searchQuery]);
+  }, [setSearchBar, searchQuery, language]);
 
   // Animation variants for table rows
   const tableVariants = {
@@ -314,7 +393,7 @@ const MuracietlerPage = () => {
   // Update the render logic to handle loading and empty states
   if (isLoading) {
     return (
-      <div className="w-full flex justify-center">
+      <div className="w-full flex justify-center max-h-[calc(100vh-303px)]">
         <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
           <div className="w-full h-[400px] flex items-center justify-center">
             <div className="w-16 h-16 border-4 border-[#2E92A0] border-t-transparent rounded-full animate-spin"></div>
@@ -381,9 +460,7 @@ const MuracietlerPage = () => {
                       modalStep === 2 ? "flex-1 text-right" : ""
                     }`}
                   >
-                    {modalStep === 1
-                      ? "HS Kodu"
-                      : "İcazələr"}
+                    {modalStep === 1 ? texts.hsCode[language] || texts.hsCode.az : texts.permissions[language] || texts.permissions.az}
                   </h2>
                 )}
               </div>
@@ -392,9 +469,9 @@ const MuracietlerPage = () => {
               <div className="p-[16px] space-y-4 overflow-hidden">
                 <AnimatePresence mode="wait" initial={false} custom={direction}>
                   {modalStep === 3 ? (
-                    <SuccessStep 
-                      key="success" 
-                      closeModal={closeModal} 
+                    <SuccessStep
+                      key="success"
+                      closeModal={closeModal}
                       custom={direction}
                       approvalPdfs={approvalPdfs}
                       refreshApplications={fetchApplications}
@@ -441,7 +518,7 @@ const MuracietlerPage = () => {
                 className="w-[64px] md:w-[150px] flex items-center cursor-pointer"
                 onClick={() => handleSort("code")}
               >
-                <p className="font-medium text-[#3F3F3F] text-[14px]">Kod</p>
+                <p className="font-medium text-[#3F3F3F] text-[14px]">{texts.code[language] || texts.code.az}</p>
                 {sortField === "code" &&
                   (sortDirection === "asc" ? (
                     <IoIosArrowUp className="ml-1 text-[#3F3F3F]" />
@@ -449,19 +526,15 @@ const MuracietlerPage = () => {
                     <IoIosArrowDown className="ml-1 text-[#3F3F3F]" />
                   ))}
               </div>
-              <div
-                className="w-[75px] md:w-[150px] flex items-center gap-x-[8px] cursor-pointer"
-                
-              >
-                <p className="font-medium text-[#3F3F3F] text-[14px]">Sənəd</p>
-               
+              <div className="w-[75px] md:w-[150px] flex items-center gap-x-[8px] cursor-pointer">
+                <p className="font-medium text-[#3F3F3F] text-[14px]">{texts.document[language] || texts.document.az}</p>
               </div>
               <div className="w-[50px] md:w-[150px] flex items-center ">
-                <p className="font-medium text-[#3F3F3F] text-[14px]">Qurum</p>
+                <p className="font-medium text-[#3F3F3F] text-[14px]">{texts.organization[language] || texts.organization.az}</p>
               </div>
             </div>
             {/* <p className="font-medium text-[#3F3F3F] text-[14px] w-[40px] md-[80px] text-center">
-              Yüklə
+              {texts.download[language] || texts.download.az}
             </p> */}
           </div>
 
@@ -509,7 +582,7 @@ const MuracietlerPage = () => {
                         className="group-hover:stroke-[#2E92A0] transition-all duration-200"
                       />
                     </svg>
-                    <p>Hazırda heç bir müraciətiniz yoxdur</p>
+                    <p>{texts.noApplications[language] || texts.noApplications.az}</p>
                   </motion.div>
                 ) : currentItems.length > 0 ? (
                   currentItems.map((app) => (
@@ -523,10 +596,16 @@ const MuracietlerPage = () => {
                           {app.code}
                         </p>
                         <p className="text-[#3F3F3F] text-[14px] w-[75px] md:w-[150px]">
-                          {app.organization.az ? app.organization.az : "salam"}
+                        {app.approval_titles
+                            ? app.approval_titles.map((title, index) => 
+                                index < app.approval_titles.length - 1 
+                                  ? title.az + ", " 
+                                  : title.az)
+                            : texts.hello[language] || texts.hello.az}
+                          
                         </p>
                         <p className="text-[#3F3F3F] text-[14px] w-[55px] mobile-sm:w-[80px] xs:w-[100px] md:w-[150px]">
-                          {app.document_name ? app.document_name : "salam"}
+                        {app.organization.az ? app.organization.az : texts.hello[language] || texts.hello.az}
                         </p>
                       </div>
                       {/* <div className="w-[40px] md:w-[80px] flex justify-end">
@@ -569,7 +648,7 @@ const MuracietlerPage = () => {
                     className="p-[16px] text-center text-[#3F3F3F]"
                     variants={rowVariants}
                   >
-                    Axtarışa uyğun nəticə tapılmadı
+                    {texts.noResults[language] || texts.noResults.az}
                   </motion.div>
                 )}
               </motion.div>
@@ -591,7 +670,7 @@ const MuracietlerPage = () => {
                   whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
                   whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
                 >
-                  Geri
+                  {texts.previous[language] || texts.previous.az}
                 </motion.button>
 
                 {getPageNumbers().map((number) => (
@@ -621,7 +700,7 @@ const MuracietlerPage = () => {
                   whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
                   whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
                 >
-                  İrəli
+                  {texts.next[language] || texts.next.az}
                 </motion.button>
               </div>
             </div>

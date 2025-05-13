@@ -291,7 +291,7 @@ const IcazelerPage = () => {
               exit="exit"
             >
               {loading ? (
-                <div className="flex justify-center items-center min-h-[400px]">
+                <div className="flex justify-center items-center h-[calc(100vh-403px)]">
                   <div className="w-16 h-16 border-4 border-[#2E92A0] border-t-transparent rounded-full animate-spin"></div>
                 </div>
               ) : error ? (

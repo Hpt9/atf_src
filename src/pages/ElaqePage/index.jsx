@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import useLanguageStore from '../../store/languageStore';
 
 const ElaqePage = () => {
+  const { language } = useLanguageStore();
   const [formData, setFormData] = useState({
     name_surname: '',
     email: '',
@@ -11,19 +13,105 @@ const ElaqePage = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Text translations
+  const texts = {
+    contactUs: {
+      en: "Contact us",
+      ru: "Свяжитесь с нами",
+      az: "Bizimlə əlaqə saxlayın"
+    },
+    contactDescription: {
+      en: "You can send all your questions, problems, and notifications",
+      ru: "Вы можете отправить все ваши вопросы, проблемы и уведомления",
+      az: "Bütün sual, problem, bildirişlərinizi göndərə bilərsiniz"
+    },
+    emailLabel: {
+      en: "Email address",
+      ru: "Электронная почта",
+      az: "E-poçt ünvanı"
+    },
+    phoneLabel: {
+      en: "Phone",
+      ru: "Телефон",
+      az: "Telefon"
+    },
+    addressLabel: {
+      en: "Address",
+      ru: "Адрес",
+      az: "Ünvan"
+    },
+    nameField: {
+      en: "Name, Surname",
+      ru: "Имя, Фамилия",
+      az: "Ad, Soyad"
+    },
+    emailField: {
+      en: "Email address",
+      ru: "Электронная почта",
+      az: "E-Poçt ünvanı"
+    },
+    phoneField: {
+      en: "Phone number",
+      ru: "Номер телефона",
+      az: "Telefon nömrəniz"
+    },
+    messageField: {
+      en: "Your message",
+      ru: "Ваше сообщение",
+      az: "Mesajınız"
+    },
+    sendButton: {
+      en: "Send",
+      ru: "Отправить",
+      az: "Göndər"
+    },
+    sending: {
+      en: "Sending...",
+      ru: "Отправка...",
+      az: "Göndərilir..."
+    },
+    errorMessages: {
+      fillAllFields: {
+        en: "Please fill in all fields",
+        ru: "Пожалуйста, заполните все поля",
+        az: "Bütün sahələri doldurun"
+      },
+      invalidEmail: {
+        en: "Please enter a valid email address",
+        ru: "Пожалуйста, введите действительный адрес электронной почты",
+        az: "Düzgün e-poçt ünvanı daxil edin"
+      },
+      messageSent: {
+        en: "Your message has been sent successfully",
+        ru: "Ваше сообщение успешно отправлено",
+        az: "Mesajınız uğurla göndərildi"
+      },
+      messageFailed: {
+        en: "Message not sent",
+        ru: "Сообщение не отправлено",
+        az: "Mesaj göndərilmədi"
+      },
+      tryAgain: {
+        en: "Message not sent. Please try again",
+        ru: "Сообщение не отправлено. Пожалуйста, попробуйте снова",
+        az: "Mesaj göndərilmədi. Xahiş edirik yenidən cəhd edin"
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(formData);
     // Basic validation
     if (!formData.name_surname.trim() || !formData.email.trim() || !formData.phone.trim() || !formData.message.trim()) {
-      toast.error('Bütün sahələri doldurun');
+      toast.error(texts.errorMessages.fillAllFields[language] || texts.errorMessages.fillAllFields.az);
       return;
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      toast.error('Düzgün e-poçt ünvanı daxil edin');
+      toast.error(texts.errorMessages.invalidEmail[language] || texts.errorMessages.invalidEmail.az);
       return;
     }
 
@@ -47,7 +135,7 @@ const ElaqePage = () => {
       // console.log(response.data.success);
 
       if (response.data.success === "Message sen successfully") {
-        toast.success('Mesajınız uğurla göndərildi');
+        toast.success(texts.errorMessages.messageSent[language] || texts.errorMessages.messageSent.az);
         
         // Clear form after successful submission
         setFormData({
@@ -57,14 +145,14 @@ const ElaqePage = () => {
           message: ''
         });
       } else {
-        throw new Error('Mesaj göndərilmədi');
+        throw new Error(texts.errorMessages.messageFailed[language] || texts.errorMessages.messageFailed.az);
       }
     } catch (error) {
       console.error('Form submission error:', error);
       toast.error(
         error.response?.data?.message || 
         error.message || 
-        'Mesaj göndərilmədi. Xahiş edirik yenidən cəhd edin'
+        texts.errorMessages.tryAgain[language] || texts.errorMessages.tryAgain.az
       );
     } finally {
       setIsSubmitting(false);
@@ -85,10 +173,10 @@ const ElaqePage = () => {
           {/* Left Side - Contact Info */}
           <div className="space-y-6">
             <h1 className="text-[20px] md:text-[32px] font-semibold text-[#2E92A0]">
-              Bizimlə əlaqə saxlayın
+              {texts.contactUs[language] || texts.contactUs.az}
             </h1>
             <p className="text-[#3F3F3F] text-[16px] md:text-[24px]">
-              Bütün sual, problem, bildirişlərinizi göndərə bilərsiniz
+              {texts.contactDescription[language] || texts.contactDescription.az}
             </p>
 
             {/* Contact Details */}
@@ -101,7 +189,7 @@ const ElaqePage = () => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-[#3F3F3F]">E-poçt ünvanı</p>
+                  <p className="text-sm text-[#3F3F3F]">{texts.emailLabel[language] || texts.emailLabel.az}</p>
                   <p className="text-[#2E92A0]">info@xxxx.az</p>
                 </div>
                 <div className="ml-auto rotate-[-45deg] group-hover:rotate-0 transition-transform duration-200">
@@ -119,7 +207,7 @@ const ElaqePage = () => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-[#3F3F3F]">Telefon</p>
+                  <p className="text-sm text-[#3F3F3F]">{texts.phoneLabel[language] || texts.phoneLabel.az}</p>
                   <p className="text-[#2E92A0]">(+994) 50 123 45 67</p>
                 </div>
                 <div className="ml-auto rotate-[-45deg] group-hover:rotate-0 transition-transform duration-200">
@@ -138,7 +226,7 @@ const ElaqePage = () => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-[#3F3F3F]">Ünvan</p>
+                  <p className="text-sm text-[#3F3F3F]">{texts.addressLabel[language] || texts.addressLabel.az}</p>
                   <p className="text-[#2E92A0]">Test testov küçəsi 7A</p>
                 </div>
                 <div className="ml-auto rotate-[-45deg] group-hover:rotate-0 transition-transform duration-200">
@@ -157,7 +245,7 @@ const ElaqePage = () => {
                 <input
                   type="text"
                   name="name_surname"
-                  placeholder="Ad, Soyad"
+                  placeholder={texts.nameField[language] || texts.nameField.az}
                   value={formData.name_surname}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
@@ -168,7 +256,7 @@ const ElaqePage = () => {
                 <input
                   type="email"
                   name="email"
-                  placeholder="E-Poçt ünvanı"
+                  placeholder={texts.emailField[language] || texts.emailField.az}
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
@@ -179,7 +267,7 @@ const ElaqePage = () => {
                 <input
                   type="tel"
                   name="phone"
-                  placeholder="Telefon nömrəniz"
+                  placeholder={texts.phoneField[language] || texts.phoneField.az}
                   value={formData.phone}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
@@ -189,7 +277,7 @@ const ElaqePage = () => {
               <div>
                 <textarea
                   name="message"
-                  placeholder="Mesajınız"
+                  placeholder={texts.messageField[language] || texts.messageField.az}
                   value={formData.message}
                   onChange={handleChange}
                   rows="6"
@@ -207,10 +295,10 @@ const ElaqePage = () => {
                 {isSubmitting ? (
                   <div className="flex items-center justify-center">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Göndərilir...
+                    {texts.sending[language] || texts.sending.az}
                   </div>
                 ) : (
-                  'Göndər'
+                  texts.sendButton[language] || texts.sendButton.az
                 )}
               </button>
             </form>

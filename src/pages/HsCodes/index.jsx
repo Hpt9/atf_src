@@ -213,7 +213,7 @@ const HsCodesPage = () => {
 
   if (loading) {
     return (
-      <div className="w-full flex justify-center items-center min-h-[400px]">
+      <div className="w-full flex justify-center items-center h-[calc(100vh-403px)]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2E92A0]"></div>
       </div>
     );
@@ -236,11 +236,11 @@ const HsCodesPage = () => {
                  'HS adı'}
               </p>
             </div>
-            <p className="font-medium text-[#3F3F3F] text-[14px]">
+            {/* <p className="font-medium text-[#3F3F3F] text-[14px]">
               {language === 'en' ? 'Actions' : 
                language === 'ru' ? 'Действия' : 
                'Əməliyyatlar'}
-            </p>
+            </p> */}
           </div>
           
           <div ref={contentRef} className="max-h-[640px] overflow-y-auto">
@@ -293,7 +293,7 @@ const HsCodesPage = () => {
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-x-[8px] flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                    {/* <div className="flex items-center gap-x-[8px] flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                       <button 
                         className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]"
                         title={item.info?.az}
@@ -303,7 +303,7 @@ const HsCodesPage = () => {
                       <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]">
                         <FaRegFilePdf className="w-[20px] h-[20px] text-[#2E92A0]" />
                       </button>
-                    </div>
+                    </div> */}
                   </Motion.div>
                 ))
               ) : (
