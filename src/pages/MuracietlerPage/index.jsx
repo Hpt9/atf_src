@@ -467,7 +467,7 @@ const MuracietlerPage = () => {
               </div>
 
               {/* Modal Content */}
-              <div className="p-[16px] space-y-4 overflow-hidden">
+              <div className="p-[16px] space-y-4 overflow-y-auto max-h-[80vh]">
                 <AnimatePresence mode="wait" initial={false} custom={direction}>
                   {modalStep === 3 ? (
                     <SuccessStep

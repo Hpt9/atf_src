@@ -3,10 +3,12 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import useLanguageStore from '../store/languageStore';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, setUser } = useAuth();
+  const { setUser } = useAuth();
+  const { language } = useLanguageStore();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -18,6 +20,99 @@ const ProfilePage = () => {
     password_confirmation: ''
   });
   const [passwordError, setPasswordError] = useState('');
+
+  // Text translations
+  const texts = {
+    title: {
+      en: "Profile Information",
+      ru: "Информация профиля",
+      az: "Profil məlumatları"
+    },
+    firstName: {
+      en: "First Name",
+      ru: "Имя",
+      az: "Ad"
+    },
+    lastName: {
+      en: "Last Name",
+      ru: "Фамилия",
+      az: "Soyad"
+    },
+    email: {
+      en: "Email",
+      ru: "Электронная почта",
+      az: "E-poçt"
+    },
+    phone: {
+      en: "Phone",
+      ru: "Телефон",
+      az: "Telefon"
+    },
+    newPassword: {
+      en: "New Password",
+      ru: "Новый пароль",
+      az: "Yeni şifrə"
+    },
+    confirmPassword: {
+      en: "Confirm New Password",
+      ru: "Подтвердите новый пароль",
+      az: "Yeni şifrəni təsdiqlə"
+    },
+    passwordPlaceholder: {
+      en: "Leave empty to keep unchanged",
+      ru: "Оставьте пустым, чтобы не менять",
+      az: "Boş buraxsanız dəyişilməyəcək"
+    },
+    cancel: {
+      en: "Cancel",
+      ru: "Отмена",
+      az: "Ləğv et"
+    },
+    save: {
+      en: "Save",
+      ru: "Сохранить",
+      az: "Yadda saxla"
+    },
+    updating: {
+      en: "Updating...",
+      ru: "Обновление...",
+      az: "Yenilənir..."
+    },
+    edit: {
+      en: "Edit",
+      ru: "Редактировать",
+      az: "Redaktə et"
+    },
+    passwordErrors: {
+      mismatch: {
+        en: "Passwords don't match",
+        ru: "Пароли не совпадают",
+        az: "Şifrələr eyni deyil"
+      },
+      tooShort: {
+        en: "Password must be at least 6 characters",
+        ru: "Пароль должен содержать не менее 6 символов",
+        az: "Şifrə ən azı 6 simvol olmalıdır"
+      }
+    },
+    toastMessages: {
+      loadError: {
+        en: "Could not load data",
+        ru: "Не удалось загрузить данные",
+        az: "Məlumatları yükləmək mümkün olmadı"
+      },
+      updateSuccess: {
+        en: "Your information has been successfully updated",
+        ru: "Ваша информация успешно обновлена",
+        az: "Məlumatlarınız uğurla yeniləndi"
+      },
+      validationError: {
+        en: "Information is not valid",
+        ru: "Информация недействительна",
+        az: "Məlumatlar düzgün deyil"
+      }
+    }
+  };
 
   useEffect(() => {
     try {
@@ -35,11 +130,11 @@ const ProfilePage = () => {
         password: '',
         password_confirmation: ''
       });
-    } catch (error) {
-      toast.error('Məlumatları yükləmək mümkün olmadı');
+    } catch {
+      toast.error(texts.toastMessages.loadError[language] || texts.toastMessages.loadError.az);
       navigate('/giris?type=login');
     }
-  }, [navigate]);
+  }, [navigate, language]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -57,11 +152,11 @@ const ProfilePage = () => {
   const validatePasswords = () => {
     if (formData.password || formData.password_confirmation) {
       if (formData.password !== formData.password_confirmation) {
-        setPasswordError('Şifrələr eyni deyil');
+        setPasswordError(texts.passwordErrors.mismatch[language] || texts.passwordErrors.mismatch.az);
         return false;
       }
       if (formData.password.length < 6) {
-        setPasswordError('Şifrə ən azı 6 simvol olmalıdır');
+        setPasswordError(texts.passwordErrors.tooShort[language] || texts.passwordErrors.tooShort.az);
         return false;
       }
     }
@@ -107,7 +202,7 @@ const ProfilePage = () => {
         // Update auth context
         setUser(updatedUserData);
         
-        toast.success('Məlumatlarınız uğurla yeniləndi');
+        toast.success(texts.toastMessages.updateSuccess[language] || texts.toastMessages.updateSuccess.az);
         setIsEditing(false);
         
         // Clear password fields
@@ -121,7 +216,7 @@ const ProfilePage = () => {
       if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else if (error.response?.status === 422) {
-        toast.error('Məlumatlar düzgün deyil');
+        toast.error(texts.toastMessages.validationError[language] || texts.toastMessages.validationError.az);
       } else {
         // toast.error('Xəta baş verdi');
       }
@@ -134,12 +229,12 @@ const ProfilePage = () => {
     <div className="bg-gray-50 py-8">
       <div className="max-w-3xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-2xl font-semibold text-[#3F3F3F] mb-6">Profil məlumatları</h1>
+          <h1 className="text-2xl font-semibold text-[#3F3F3F] mb-6">{texts.title[language] || texts.title.az}</h1>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-[#3F3F3F] mb-2">Ad</label>
+                <label className="block text-sm font-medium text-[#3F3F3F] mb-2">{texts.firstName[language] || texts.firstName.az}</label>
                 <input
                   type="text"
                   name="name"
@@ -151,7 +246,7 @@ const ProfilePage = () => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-[#3F3F3F] mb-2">Soyad</label>
+                <label className="block text-sm font-medium text-[#3F3F3F] mb-2">{texts.lastName[language] || texts.lastName.az}</label>
                 <input
                   type="text"
                   name="surname"
@@ -163,7 +258,7 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#3F3F3F] mb-2">E-poçt</label>
+                <label className="block text-sm font-medium text-[#3F3F3F] mb-2">{texts.email[language] || texts.email.az}</label>
                 <input
                   type="email"
                   name="email"
@@ -175,7 +270,7 @@ const ProfilePage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#3F3F3F] mb-2">Telefon</label>
+                <label className="block text-sm font-medium text-[#3F3F3F] mb-2">{texts.phone[language] || texts.phone.az}</label>
                 <input
                   type="tel"
                   name="phone"
@@ -188,7 +283,7 @@ const ProfilePage = () => {
 
 
                   <div>
-                    <label className="block text-sm font-medium text-[#3F3F3F] mb-2">Yeni şifrə</label>
+                    <label className="block text-sm font-medium text-[#3F3F3F] mb-2">{texts.newPassword[language] || texts.newPassword.az}</label>
                     <input
                       type="password"
                       name="password"
@@ -196,12 +291,12 @@ const ProfilePage = () => {
                       onChange={handleInputChange}
                       disabled={!isEditing}
                       className="w-full px-4 py-3 rounded-lg border border-[#E7E7E7] focus:border-[#2E92A0] outline-none transition-colors disabled:bg-gray-50"
-                      placeholder="Boş buraxsanız dəyişilməyəcək"
+                      placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-[#3F3F3F] mb-2">Yeni şifrəni təsdiqlə</label>
+                    <label className="block text-sm font-medium text-[#3F3F3F] mb-2">{texts.confirmPassword[language] || texts.confirmPassword.az}</label>
                     <input
                       type="password"
                       name="password_confirmation"
@@ -209,7 +304,7 @@ const ProfilePage = () => {
                       onChange={handleInputChange} 
                       disabled={!isEditing}
                       className="w-full px-4 py-3 rounded-lg border border-[#E7E7E7] focus:border-[#2E92A0] outline-none transition-colors disabled:bg-gray-50"
-                      placeholder="Boş buraxsanız dəyişilməyəcək"
+                      placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
                     />
                   </div>
             </div>
@@ -240,14 +335,14 @@ const ProfilePage = () => {
                     }}
                     className="px-6 py-3 text-[#3F3F3F] rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    Ləğv et
+                    {texts.cancel[language] || texts.cancel.az}
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
                     className="px-6 py-3 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors disabled:bg-gray-400"
                   >
-                    {loading ? 'Yenilənir...' : 'Yadda saxla'}
+                    {loading ? (texts.updating[language] || texts.updating.az) : (texts.save[language] || texts.save.az)}
                   </button>
                 </>
               ) : (
@@ -256,7 +351,7 @@ const ProfilePage = () => {
                   onClick={() => setIsEditing(true)}
                   className="px-6 py-3 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors"
                 >
-                  Redaktə et
+                  {texts.edit[language] || texts.edit.az}
                 </button>
               )}
             </div>

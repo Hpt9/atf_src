@@ -1,20 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { slideAnimation } from './shared/animations';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import toast from 'react-hot-toast';
 import useLanguageStore from '../../../store/languageStore';
 
-const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, refreshApplications, setDocumentName }) => {
+const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshApplications, setDocumentName }) => {
   const { token } = useAuth();
   const { language } = useLanguageStore();
   const [approvals, setApprovals] = useState([]);
   const [selectedApprovals, setSelectedApprovals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [approvalPdfs, setApprovalPdfs] = useState([]);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [fetchTrigger, setFetchTrigger] = useState(0);
 
   // Text translations
   const texts = {
@@ -38,12 +35,17 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
       ru: "Отправка...",
       az: "Göndərilir..."
     },
+    noApprovals: {
+      en: "No approvals found for this HS Code",
+      ru: "Не найдены разрешения для данного HS кода",
+      az: "Bu HS Kod üçün icazələr tapılmadı"
+    },
+    retryFetch: {
+      en: "Retry",
+      ru: "Повторить",
+      az: "Yenidən cəhd edin"
+    },
     errorMessages: {
-      downloadFailed: {
-        en: "Failed to download PDF",
-        ru: "Не удалось скачать PDF",
-        az: "PDF yükləmək mümkün olmadı"
-      },
       approvalsLoadFailed: {
         en: "Failed to load approvals",
         ru: "Не удалось загрузить разрешения",
@@ -57,153 +59,112 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
     }
   };
 
-  const downloadPdf = async (url, filename) => {
+  // Fetch approvals based on HS code
+  function fetchApprovals() {
+    setIsLoading(true);
+    
+    // Ensure HS code is a valid number
+    let hsCodeInt;
     try {
-      // Check if we're in development or production
-      const baseUrl = import.meta.env.PROD 
-        ? 'https://atfplatform.tw1.ru' 
-        : '';
-      
-      // If the URL is already absolute, use it as is, otherwise prepend the base URL
-      const fullUrl = url.startsWith('http') 
-        ? url 
-        : `${baseUrl}${url}`;
-      
-      const response = await axios({
-        url: fullUrl,
-        method: 'GET',
-        responseType: 'blob',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.setAttribute('download', filename || 'document.pdf'); 
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
-    } catch (error) {
-      console.error('Download failed:', error);
-      toast.error(texts.errorMessages.downloadFailed[language] || texts.errorMessages.downloadFailed.az);
-    }
-  };
-
-  const downloadAllPdfs = async (pdfs) => {
-    for (const approval of pdfs) {
-      for (const [index, pdf] of approval.pdfs.entries()) {
-        const filename = `${approval.title}_${index + 1}.pdf`;
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Add 1 second delay between downloads
-        await downloadPdf(pdf.url, filename);
+      hsCodeInt = parseInt(selectedHsCode, 10);
+      if (isNaN(hsCodeInt)) {
+        hsCodeInt = 0;
       }
+    } catch (e) {
+      console.error('Invalid HS code', e);
+      hsCodeInt = 0;
     }
-  };
+    
+    console.log('Fetching approvals for HS code:', hsCodeInt);
 
-  useEffect(() => {
-    const fetchApprovals = async () => {
-      try {
-        const response = await axios.post(
-          'https://atfplatform.tw1.ru/api/code-categories-documents',
-          { hs_code: parseInt(selectedHsCode, 10) },
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
-        setApprovals(response.data.approvals || []);
-      } catch (error) {
-        console.error('Error fetching approvals:', error);
-        toast.error(texts.errorMessages.approvalsLoadFailed[language] || texts.errorMessages.approvalsLoadFailed.az);
-      } finally {
-        setIsLoading(false);
+    // Use axios instead of XMLHttpRequest for better compatibility
+    axios({
+      method: 'POST',
+      url: 'https://atfplatform.tw1.ru/api/code-categories-documents',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      data: { hs_code: hsCodeInt }
+    })
+    .then(function(response) {
+      console.log('Approvals fetch successful:', response.data);
+      if (response.data && response.data.approvals) {
+        setApprovals(response.data.approvals);
+      } else {
+        setApprovals([]);
       }
-    };
+      setIsLoading(false);
+    })
+    .catch(function(error) {
+      console.error('Error fetching approvals:', error);
+      toast.error(texts.errorMessages.approvalsLoadFailed[language] || texts.errorMessages.approvalsLoadFailed.az);
+      setApprovals([]);
+      setIsLoading(false);
+    });
+  }
 
+  // Trigger fetch on component mount and when dependencies change
+  useEffect(function() {
     fetchApprovals();
-  }, [selectedHsCode, token, language]);
+  }, [selectedHsCode, token, language, fetchTrigger]);
 
-  const handleApprovalChange = (approvalId) => {
-    if (isSubmitting) return; // Prevent changes while submitting
-    setSelectedApprovals(prev => {
-      if (prev.includes(approvalId)) {
-        return prev.filter(id => id !== approvalId);
+  function handleApprovalChange(approvalId) {
+    if (isSubmitting) return;
+    
+    setSelectedApprovals(function(prev) {
+      const index = prev.indexOf(approvalId);
+      if (index !== -1) {
+        const newSelected = [...prev];
+        newSelected.splice(index, 1);
+        return newSelected;
       } else {
         return [...prev, approvalId];
       }
     });
-  };
+  }
 
-  const handleNext = async () => {
+  function handleNext() {
     if (selectedApprovals.length === 0 || isSubmitting) return;
 
-    const finalData = {
-      hs_code: parseInt(selectedHsCode, 10),
-      approval_ids: selectedApprovals
-    };
-
     setIsSubmitting(true);
-    setDocumentName(finalData.approval_ids);
-    try {
-      const response = await axios.post(
-        'https://atfplatform.tw1.ru/api/code-categories-downloads',
-        finalData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+    setDocumentName(selectedApprovals);
+    
+    axios({
+      method: 'POST',
+      url: 'https://atfplatform.tw1.ru/api/code-categories-downloads',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      data: {
+        hs_code: parseInt(selectedHsCode, 10),
+        approval_ids: selectedApprovals
+      }
+    })
+    .then(function(response) {
       console.log('Success Response:', response.data);
+      setModalStep(3); // Go to success step
       
-      // Get PDFs for selected approvals
-      const selectedPdfs = approvals
-        .filter(approval => selectedApprovals.includes(approval.id))
-        .map(approval => ({
-          title: approval.title,
-          pdfs: approval.pdfs.map(pdf => ({
-            ...pdf,
-            url: `/storage/${pdf.slug}`
-          }))
-        }));
-      
-      // Log URLs in a clear format
-      console.log('Selected Approvals with URLs:');
-      selectedPdfs.forEach(approval => {
-        console.log(`\nApproval: ${approval.title}`);
-        approval.pdfs.forEach((pdf, index) => {
-          console.log(`PDF ${index + 1}: ${pdf.url}`);
-        });
-      });
-      
-      setApprovalPdfs(selectedPdfs);
-      setModalStep(3); // Go to success step with PDFs
-      setIsSuccess(true); // Set success state to true
-
-      // Start downloading PDFs after a short delay
-      setTimeout(() => {
-        downloadAllPdfs(selectedPdfs);
-      }, 1000);
-
       // Refresh the applications list after successful submission
-      setTimeout(() => {
+      setTimeout(function() {
         refreshApplications();
-      }, 2000); // Wait 2 seconds after success to refresh the list
-
-    } catch (error) {
+      }, 1000);
+    })
+    .catch(function(error) {
       console.error('Error submitting request:', error);
-      if (error.response?.data?.message) {
+      if (error.response && error.response.data && error.response.data.message) {
         toast.error(error.response.data.message);
       } else {
         toast.error(texts.errorMessages.requestFailed[language] || texts.errorMessages.requestFailed.az);
       }
       setIsSubmitting(false);
-    }
-  };
+    });
+  }
+
+  function handleRetryFetch() {
+    setFetchTrigger(prev => prev + 1);
+  }
 
   if (isLoading) {
     return (
@@ -214,64 +175,70 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
   }
 
   return (
-    <motion.div
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      custom={custom}
-      variants={slideAnimation}
-    >
+    <div>
       <div className="flex items-center gap-4 mb-4">
         <h2 className="text-[18px] font-medium text-[#3F3F3F] flex-1">
           {texts.hsCodeTitle[language] || texts.hsCodeTitle.az} {selectedHsCode}
         </h2>
       </div>
 
-      <div className="space-y-4">
-        {approvals.map((approval) => (
-          <div key={approval.id} className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id={`approval-${approval.id}`}
-              checked={selectedApprovals.includes(approval.id)}
-              onChange={() => handleApprovalChange(approval.id)}
-              disabled={isSubmitting}
-              className={`w-4 h-4 text-[#2E92A0] border-[#E7E7E7] rounded focus:ring-[#2E92A0] ${
-                isSubmitting ? 'cursor-not-allowed opacity-50' : ''
-              }`}
-            />
-            <label
-              htmlFor={`approval-${approval.id}`}
-              className={`text-[#3F3F3F] ${
-                isSubmitting ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-              }`}
-            >
-              {approval.title}
-          </label>
-          </div>
-        ))}
-      </div>
+      {approvals.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-4 gap-4">
+          <p className="text-[#3F3F3F]">
+            {texts.noApprovals[language] || texts.noApprovals.az}
+          </p>
+          <button
+            onClick={handleRetryFetch}
+            className="py-2 px-4 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85]"
+          >
+            {texts.retryFetch[language] || texts.retryFetch.az}
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {approvals.map(function(approval) {
+            return (
+              <div key={approval.id} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id={"approval-" + approval.id}
+                  checked={selectedApprovals.indexOf(approval.id) !== -1}
+                  onChange={function() { handleApprovalChange(approval.id); }}
+                  disabled={isSubmitting}
+                  className={"w-4 h-4 text-[#2E92A0] border-[#E7E7E7] rounded focus:ring-[#2E92A0] " +
+                    (isSubmitting ? "cursor-not-allowed opacity-50" : "")}
+                />
+                <label
+                  htmlFor={"approval-" + approval.id}
+                  className={"text-[#3F3F3F] " +
+                    (isSubmitting ? "cursor-not-allowed opacity-50" : "cursor-pointer")}
+                >
+                  {approval.title}
+                </label>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <div className="flex flex-col gap-2 mt-4">
         <button
           onClick={closeModal}
           disabled={isSubmitting}
-          className={`w-full py-2 px-4 bg-white border border-[#E7E7E7] text-[#3F3F3F] rounded-lg ${
-            isSubmitting
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:bg-[#F5F5F5] transition-colors'
-          }`}
+          className={"w-full py-2 px-4 bg-white border border-[#E7E7E7] text-[#3F3F3F] rounded-lg " +
+            (isSubmitting
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-[#F5F5F5] transition-colors")}
         >
           {texts.cancel[language] || texts.cancel.az}
         </button>
         <button
           onClick={handleNext}
           disabled={selectedApprovals.length === 0 || isSubmitting}
-          className={`w-full py-2 px-4 rounded-lg transition-colors relative ${
-            selectedApprovals.length === 0 || isSubmitting
-              ? 'bg-gray-300 cursor-not-allowed text-white'
-              : 'bg-[#2E92A0] text-white hover:bg-[#267A85]'
-          }`}
+          className={"w-full py-2 px-4 rounded-lg transition-colors relative " +
+            (selectedApprovals.length === 0 || isSubmitting
+              ? "bg-gray-300 cursor-not-allowed text-white"
+              : "bg-[#2E92A0] text-white hover:bg-[#267A85]")}
         >
           {isSubmitting ? (
             <div className="flex items-center justify-center">
@@ -283,7 +250,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
           )}
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

@@ -35,12 +35,55 @@ const Header = () => {
   const [isSearching, setIsSearching] = useState(false);
   const searchTimeoutRef = useRef(null);
   const searchContainerRef = useRef(null);
+  const [menuItems, setMenuItems] = useState([]);
+  const [isMenuLoading, setIsMenuLoading] = useState(true);
 
   const languages = [
     { code: 'az', label: 'AZ' },
     { code: 'en', label: 'EN' },
     { code: 'ru', label: 'RU' }
   ];
+
+  // Fetch menu items from API
+  useEffect(() => {
+    const fetchMenuItems = async () => {
+      // Check if menu items exist in localStorage and are not expired
+      const cachedMenu = localStorage.getItem('menuItems');
+      const cachedTimestamp = localStorage.getItem('menuItemsTimestamp');
+      const now = new Date().getTime();
+      
+      // Use cached menu if it exists and is less than 1 hour old
+      if (cachedMenu && cachedTimestamp && (now - parseInt(cachedTimestamp)) < 3600000) {
+        try {
+          const parsedMenu = JSON.parse(cachedMenu);
+          setMenuItems(parsedMenu);
+          setIsMenuLoading(false);
+          return;
+        } catch (error) {
+          console.error('Error parsing cached menu:', error);
+          // Continue to fetch from API if parsing fails
+        }
+      }
+      
+      setIsMenuLoading(true);
+      try {
+        const response = await axios.get('https://atfplatform.tw1.ru/api/menu');
+        // Sort by order property
+        const sortedMenu = response.data.sort((a, b) => a.order - b.order);
+        setMenuItems(sortedMenu);
+        
+        // Cache the menu items and timestamp
+        localStorage.setItem('menuItems', JSON.stringify(sortedMenu));
+        localStorage.setItem('menuItemsTimestamp', new Date().getTime().toString());
+      } catch (error) {
+        console.error('Error fetching menu items:', error);
+      } finally {
+        setIsMenuLoading(false);
+      }
+    };
+    
+    fetchMenuItems();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -100,15 +143,6 @@ const Header = () => {
     setShowLanguageDropdown(false);
     setShowMobileLanguageDropdown(false);
   };
-
-  const navigationLinks = [
-    { path: "/", label: "Ana səhifə" },
-    { path: "/hs-codes", label: "HS Kodlar" },
-    { path: "/icazeler", label: "İcazələr" },
-    { path: "/muracietler", label: "Müraciətlər" },
-    { path: "/elaqe", label: "Əlaqə" },
-    { path: "/faq", label: "FAQ" },
-  ];
 
   // Handle search
   useEffect(() => {
@@ -226,7 +260,7 @@ const Header = () => {
                     className="px-4 py-[10px] font-semibold text-[#2E92A0] hover:text-white rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer flex items-center gap-2"
                   >
                     <IoLogOutOutline size={20} />
-                    Çıxış
+                    {language === 'az' ? 'Çıxış' : language === 'en' ? 'Logout' : 'Выход'}
                   </button>
                 </div>
               ) : (
@@ -324,7 +358,7 @@ const Header = () => {
                       className="w-full px-4 py-[10px] font-semibold text-[#2E92A0] hover:text-white rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer flex items-center justify-center gap-2"
                     >
                       <IoLogOutOutline size={20} />
-                      Çıxış
+                      {language === 'az' ? 'Çıxış' : language === 'en' ? 'Logout' : 'Выход'}
                     </button>
                   </div>
                 ) : (
@@ -355,7 +389,7 @@ const Header = () => {
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="Ümumi axtarış"
+                      placeholder={language === 'az' ? "Ümumi axtarış" : language === 'en' ? "Global search" : "Общий поиск"}
                       className="w-full px-4 py-3 pl-11 border border-[#E7E7E7] rounded-lg outline-none focus:border-[#2E92A0] transition-colors"
                       value={localSearchValue}
                       onChange={(e) => setLocalSearchValue(e.target.value)}
@@ -408,7 +442,9 @@ const Header = () => {
                           </>
                         ) : (
                           <div className="p-4 text-center text-[#3F3F3F]">
-                            Axtarışa uyğun nəticə tapılmadı
+                            {language === 'az' ? "Axtarışa uyğun nəticə tapılmadı" : 
+                             language === 'en' ? "No results found" : 
+                             "Результаты не найдены"}
                           </div>
                         )}
                       </Motion.div>
@@ -416,25 +452,32 @@ const Header = () => {
                   </AnimatePresence>
                 </div>
 
-                {/* Navigation Links */}
+                {/* Dynamic Navigation Links from API */}
                 <div className="flex flex-col">
-                  {navigationLinks.map((link) => (
-                    <Link
-                      key={link.path}
-                      to={link.path}
-                      className="py-4 border-b border-gray-100 hover:bg-gray-50 flex justify-between items-center text-[#3F3F3F] font-medium"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {link.label}
-                      <FaArrowRight className="w-[24px] h-[24px]" />
-                    </Link>
-                  ))}
+                  {isMenuLoading ? (
+                    <div className="py-4 text-center text-[#696969]">
+                      {language === 'az' ? "Yüklənir..." : language === 'en' ? "Loading..." : "Загрузка..."}
+                    </div>
+                  ) : (
+                    menuItems.map((item) => (
+                      <Link
+                        key={item.id}
+                        to={`/${item.url}`}
+                        className="py-4 border-b border-gray-100 hover:bg-gray-50 flex justify-between items-center text-[#3F3F3F] font-medium"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {item.title[language] || item.title.az}
+                        <FaArrowRight className="w-[24px] h-[24px]" />
+                      </Link>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
           )}
 
-          <Navbar />
+          {/* Pass menuItems to Navbar for desktop view */}
+          <Navbar menuItems={menuItems} isMenuLoading={isMenuLoading} />
           <div className="flex md:hidden bg-white">{searchBar}</div>
         </div>
       </div>
@@ -456,19 +499,23 @@ const Header = () => {
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ duration: 0.15, delay: 0.1 }}
             >
-              <h3 className="text-lg font-semibold text-[#3F3F3F] mb-4">Çıxış etmək istədiyinizə əminsiniz?</h3>
+              <h3 className="text-lg font-semibold text-[#3F3F3F] mb-4">
+                {language === 'az' ? "Çıxış etmək istədiyinizə əminsiniz?" : 
+                 language === 'en' ? "Are you sure you want to log out?" : 
+                 "Вы уверены, что хотите выйти?"}
+              </h3>
               <div className="flex gap-4 justify-end">
                 <button
                   onClick={() => setShowLogoutModal(false)}
                   className="px-4 py-2 text-[#3F3F3F] hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  Xeyr
+                  {language === 'az' ? "Xeyr" : language === 'en' ? "No" : "Нет"}
                 </button>
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors"
                 >
-                  Bəli
+                  {language === 'az' ? "Bəli" : language === 'en' ? "Yes" : "Да"}
                 </button>
               </div>
             </Motion.div>

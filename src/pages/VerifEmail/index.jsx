@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { motion } from "framer-motion";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { ImSpinner8 } from "react-icons/im";
 import useLanguageStore from "../../store/languageStore";
+import { useAuth } from "../../context/AuthContext";
 
 export const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
@@ -13,6 +13,7 @@ export const VerifyEmail = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState("verifying"); // verifying, success, error
   const { language } = useLanguageStore();
+  const { login } = useAuth();
 
   const getText = {
     verifying: {
@@ -57,6 +58,39 @@ export const VerifyEmail = () => {
     }
   };
 
+  const updateUserData = async (token) => {
+    try {
+      // Fetch updated user data after verification
+      const response = await axios.get('https://atfplatform.tw1.ru/api/user', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.data && response.data.user) {
+        // Get the current user data from localStorage and update it
+        const currentUserData = JSON.parse(localStorage.getItem('user') || '{}');
+        const updatedUserData = {
+          ...currentUserData,
+          ...response.data.user,
+          email_verified_at: new Date().toISOString()
+        };
+        
+        // Update the user data in localStorage
+        localStorage.setItem('user', JSON.stringify(updatedUserData));
+        
+        // Update the auth context if needed
+        login(updatedUserData, token);
+        
+        console.log('User data updated after email verification');
+      }
+    } catch (error) {
+      console.error('Error updating user data:', error);
+      // Continue with the verification success flow even if user data update fails
+    }
+  };
+
   useEffect(() => {
     const verify = async () => {
       if (!redirectUrl) {
@@ -73,8 +107,13 @@ export const VerifyEmail = () => {
             Accept: "application/json",
           },
         });
+        
         toast.success(getText.verificationSuccess[language] || getText.verificationSuccess.az);
         setStatus("success");
+        
+        // Update user data after successful verification
+        await updateUserData(token);
+        
         // Redirect after showing success animation
         setTimeout(() => navigate("/profile"), 2000);
       } catch (err) {
@@ -91,90 +130,41 @@ export const VerifyEmail = () => {
     switch (status) {
       case "verifying":
         return (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center gap-4"
-          >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            >
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin">
               <ImSpinner8 className="w-12 h-12 text-blue-500" />
-            </motion.div>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-lg font-medium text-gray-700"
-            >
+            </div>
+            <p className="text-lg font-medium text-gray-700">
               {getText.verifying[language] || getText.verifying.az}
-            </motion.p>
-          </motion.div>
+            </p>
+          </div>
         );
       case "success":
         return (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center gap-4"
-          >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 10 }}
-            >
-              <FaCheckCircle className="w-16 h-16 text-green-500" />
-            </motion.div>
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg font-medium text-gray-700"
-            >
+          <div className="flex flex-col items-center gap-4">
+            <FaCheckCircle className="w-16 h-16 text-green-500" />
+            <p className="text-lg font-medium text-gray-700">
               {getText.success[language] || getText.success.az}
-            </motion.p>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="text-sm text-gray-500"
-            >
+            </p>
+            <p className="text-sm text-gray-500">
               {getText.redirecting[language] || getText.redirecting.az}
-            </motion.p>
-          </motion.div>
+            </p>
+          </div>
         );
       case "error":
         return (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center gap-4"
-          >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 10 }}
-            >
-              <FaTimesCircle className="w-16 h-16 text-red-500" />
-            </motion.div>
-            <motion.p
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg font-medium text-gray-700"
-            >
+          <div className="flex flex-col items-center gap-4">
+            <FaTimesCircle className="w-16 h-16 text-red-500" />
+            <p className="text-lg font-medium text-gray-700">
               {getText.error[language] || getText.error.az}
-            </motion.p>
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
+            </p>
+            <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 transition-colors"
             >
               {getText.tryAgain[language] || getText.tryAgain.az}
-            </motion.button>
-          </motion.div>
+            </button>
+          </div>
         );
       default:
         return null;
@@ -183,13 +173,9 @@ export const VerifyEmail = () => {
 
   return (
     <div className="min-h-[calc(100vh-303px)] flex items-center justify-center bg-gray-50">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="p-8 bg-white rounded-lg shadow-lg"
-      >
+      <div className="p-8 bg-white rounded-lg shadow-lg">
         {renderStatus()}
-      </motion.div>
+      </div>
     </div>
   );
 };

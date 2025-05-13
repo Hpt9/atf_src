@@ -1,15 +1,11 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { slideAnimation } from './shared/animations';
-import axios from 'axios';
-import { useAuth } from '../../../context/AuthContext';
+import React, { useState } from 'react';
 import useLanguageStore from '../../../store/languageStore';
+import toast from 'react-hot-toast';
 
-const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setModalStep, custom }) => {
-  const { token } = useAuth();
+const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setModalStep }) => {
   const { language } = useLanguageStore();
+  const [validationError, setValidationError] = useState("");
 
-  // Text translations
   const texts = {
     hsCodePlaceholder: {
       en: "Enter HS Code",
@@ -25,55 +21,65 @@ const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setMod
       en: "Next",
       ru: "Далее",
       az: "Növbəti"
+    },
+    errorMessages: {
+      onlyNumbers: {
+        en: "Only numbers are allowed",
+        ru: "Разрешены только цифры",
+        az: "Yalnız rəqəmlər daxil edilə bilər"
+      },
+      inputRequired: {
+        en: "Please enter HS Code",
+        ru: "Пожалуйста, введите HS код",
+        az: "HS Kodu daxil edin"
+      }
     }
   };
 
-  const handleNext = async () => {
-    if (!selectedHsCode || !selectedHsCode.trim()) return;
+  const handleInputChange = function(e) {
+    var value = e.target.value;
     
-    try {
-      // Convert HS code to number
-      const hsCodeNumber = parseInt(selectedHsCode.trim(), 10);
-      
-      if (isNaN(hsCodeNumber)) {
-        console.error('Invalid HS code: not a number');
-        return;
-      }
-
-      const response = await axios.post(
-        'https://atfplatform.tw1.ru/api/code-categories-documents',
-        { hs_code: hsCodeNumber },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-      
-      // console.log('API Response:', response.data);
-      setModalStep(2);
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-      // You might want to show an error message to the user here
+    if (value && !/^\d+$/.test(value)) {
+      setValidationError(texts.errorMessages.onlyNumbers[language] || texts.errorMessages.onlyNumbers.az);
+      toast.error(texts.errorMessages.onlyNumbers[language] || texts.errorMessages.onlyNumbers.az);
+      return;
     }
+    
+    setSelectedHsCode(value);
+    setValidationError("");
+  };
+
+  const handleNext = function() {
+    // Blur active element to hide keyboard on mobile
+    if (document.activeElement) {
+      document.activeElement.blur();
+    }
+    
+    // Simple validation
+    if (!selectedHsCode || selectedHsCode.trim() === "") {
+      setValidationError(texts.errorMessages.inputRequired[language] || texts.errorMessages.inputRequired.az);
+      return;
+    }
+    
+    // Directly move to next step without any async operations
+    setModalStep(2);
   };
 
   return (
-    <motion.div
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      custom={custom}
-      variants={slideAnimation}
-    >
+    <div className="hscode-step">
       <div className='mb-2'>
         <input
           type="text"
           placeholder={texts.hsCodePlaceholder[language] || texts.hsCodePlaceholder.az}
-          className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
+          className={`w-full px-4 py-2 border ${validationError ? 'border-red-500' : 'border-[#E7E7E7]'} rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]`}
           value={selectedHsCode || ""}
-          onChange={(e) => setSelectedHsCode(e.target.value)}
+          onChange={handleInputChange}
+          inputMode="numeric" 
+          pattern="[0-9]*"
         />
+        {validationError && (
+          <p className="text-red-500 text-sm mt-1">{validationError}</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -86,17 +92,17 @@ const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setMod
         <button
           onClick={handleNext}
           className={`w-full py-2 px-4 rounded-lg transition-colors ${
-            !selectedHsCode || !selectedHsCode.trim() 
+            !selectedHsCode || !selectedHsCode.trim() || validationError
               ? 'bg-gray-300 cursor-not-allowed text-white'
               : 'bg-[#2E92A0] text-white hover:bg-[#267A85]'
           }`}
-          disabled={!selectedHsCode || !selectedHsCode.trim()}
+          disabled={!selectedHsCode || !selectedHsCode.trim() || !!validationError}
         >
           {texts.next[language] || texts.next.az}
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
-export default HSCodeStep; 
+export default HSCodeStep;
