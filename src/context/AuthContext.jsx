@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
@@ -37,6 +38,18 @@ export const AuthProvider = ({ children }) => {
   //   }
   // };
 
+  // Check if email is verified and show toast if not
+  const checkEmailVerification = (userData) => {
+    if (userData && userData.email_verified_at === null) {
+      // Email not verified - show toast notification
+      toast.error('Zəhmət olmasa e-poçt ünvanınızı təsdiq edin', {
+        duration: 5000,
+        position: 'top-right',
+        id: 'email-verification-reminder',
+      });
+    }
+  };
+
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem('token');
@@ -44,8 +57,12 @@ export const AuthProvider = ({ children }) => {
       
       if (storedToken && storedUser) {
         // Set the stored data immediately
-        setUser(JSON.parse(storedUser));
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
         setToken(storedToken);
+        
+        // Check email verification status
+        checkEmailVerification(userData);
         
         // Then validate the token in the background
         //await checkToken(storedToken);
@@ -61,6 +78,16 @@ export const AuthProvider = ({ children }) => {
     setToken(token);
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('token', token);
+    
+    // Show email verification notification for new logins
+    if (userData && userData.email_verified_at === null) {
+      // Email not verified - show toast notification
+      toast.error('Zəhmət olmasa e-poçt ünvanınızı təsdiq edin', {
+        duration: 5000,
+        position: 'top-right',
+        id: 'email-verification-reminder',
+      });
+    }
   };
 
   const logout = async () => {

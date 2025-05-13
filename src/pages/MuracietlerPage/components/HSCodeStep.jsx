@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import useLanguageStore from '../../../store/languageStore';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../../context/AuthContext';
 
 const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setModalStep }) => {
   const { language } = useLanguageStore();
+  const { user } = useAuth();
   const [validationError, setValidationError] = useState("");
 
   const texts = {
@@ -32,6 +34,11 @@ const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setMod
         en: "Please enter HS Code",
         ru: "Пожалуйста, введите HS код",
         az: "HS Kodu daxil edin"
+      },
+      emailNotVerified: {
+        en: "Please verify your email to view documents",
+        ru: "Пожалуйста, подтвердите свою электронную почту, чтобы просмотреть документы",
+        az: "Sənədləri görmək üçün e-poçt ünvanınızı təsdiqləməlisiniz"
       }
     }
   };
@@ -58,6 +65,17 @@ const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setMod
     // Simple validation
     if (!selectedHsCode || selectedHsCode.trim() === "") {
       setValidationError(texts.errorMessages.inputRequired[language] || texts.errorMessages.inputRequired.az);
+      return;
+    }
+    
+    // Check if user's email is verified
+    if (user && user.email_verified_at === null) {
+      // Email not verified - show toast notification
+      toast.error(texts.errorMessages.emailNotVerified[language] || texts.errorMessages.emailNotVerified.az, {
+        duration: 5000,
+        position: 'top-right',
+        id: 'email-verification-required',
+      });
       return;
     }
     

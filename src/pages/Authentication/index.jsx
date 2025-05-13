@@ -430,6 +430,13 @@ const RegisterForm = ({ setLogin }) => {
             duration: 2000,
           });
           
+          // Show email verification toast
+          toast.error('Zəhmət olmasa e-poçt ünvanınızı təsdiq edin', {
+            duration: 5000,
+            position: 'top-right',
+            id: 'email-verification-reminder',
+          });
+          
           // Log in the user immediately
           login(user, token);
           
