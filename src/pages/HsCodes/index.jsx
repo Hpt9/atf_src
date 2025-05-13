@@ -7,26 +7,31 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { motion as Motion } from "framer-motion";
 import { IoSearch } from "react-icons/io5";
+import useLanguageStore from "../../store/languageStore";
 
 const HsCodesPage = () => {
   const { setSearchBar } = useSearchBar();
+  const { language } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedGroups, setExpandedGroups] = useState({});
   const [loading, setLoading] = useState(true);
   const [hsCodesData, setHsCodesData] = useState([]);
   const contentRef = useRef(null);
   const searchTimeoutRef = useRef(null);
-  const { language } = useSearchBar();
-
+  const texts = {
+    search: {
+      en: "Search",
+      ru: "Поиск",
+      az: "Axtar"
+    },
+  };
   useEffect(() => {
     setSearchBar(
       <div className="relative w-full md:w-[300px] px-[16px]">
         <input
           type="text"
           placeholder={
-            language === 'en' ? 'Search HS codes...' :
-            language === 'ru' ? 'Поиск HS кодов...' :
-            'HS kodları üzrə axtarış...'
+            texts.search[language] || texts.search.az
           }
           className="w-full px-4 py-2 pl-10 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           value={searchQuery}

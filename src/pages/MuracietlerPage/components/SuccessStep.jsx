@@ -1,8 +1,30 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { slideAnimation } from './shared/animations';
+import useLanguageStore from '../../../store/languageStore';
 
 const SuccessStep = ({ closeModal, custom, approvalPdfs = [], refreshApplications }) => {
+  const { language } = useLanguageStore();
+  
+  // Text translations
+  const texts = {
+    successMessage: {
+      en: "Your application has been accepted",
+      ru: "Ваша заявка принята",
+      az: "Müraciətiniz qəbul edildi"
+    },
+    pdfLabel: {
+      en: "PDF",
+      ru: "PDF",
+      az: "PDF"
+    },
+    close: {
+      en: "Close",
+      ru: "Закрыть",
+      az: "Bağla"
+    }
+  };
+
   const handleClose = () => {
     closeModal();
     // Refresh the applications list after modal is closed
@@ -36,7 +58,7 @@ const SuccessStep = ({ closeModal, custom, approvalPdfs = [], refreshApplication
         </svg>
       </div>
       <h3 className="text-[18px] font-medium text-[#3F3F3F] my-2">
-        Müraciətiniz qəbul edildi
+        {texts.successMessage[language] || texts.successMessage.az}
       </h3>
      
 
@@ -83,7 +105,7 @@ const SuccessStep = ({ closeModal, custom, approvalPdfs = [], refreshApplication
                         strokeLinejoin="round"
                       />
                     </svg>
-                    PDF {pdfIndex + 1}
+                    {texts.pdfLabel[language] || texts.pdfLabel.az} {pdfIndex + 1}
                   </a>
                 ))}
               </div>
@@ -96,7 +118,7 @@ const SuccessStep = ({ closeModal, custom, approvalPdfs = [], refreshApplication
         onClick={handleClose}
         className="w-full py-2 px-4 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors"
       >
-        Bağla
+        {texts.close[language] || texts.close.az}
       </button>
     </motion.div>
   );

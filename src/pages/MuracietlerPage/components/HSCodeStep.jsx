@@ -3,9 +3,30 @@ import { motion } from 'framer-motion';
 import { slideAnimation } from './shared/animations';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
+import useLanguageStore from '../../../store/languageStore';
 
 const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setModalStep, custom }) => {
   const { token } = useAuth();
+  const { language } = useLanguageStore();
+
+  // Text translations
+  const texts = {
+    hsCodePlaceholder: {
+      en: "Enter HS Code",
+      ru: "Введите код HS",
+      az: "HS Kodu daxil edin"
+    },
+    cancel: {
+      en: "Cancel",
+      ru: "Отмена",
+      az: "Ləğv et"
+    },
+    next: {
+      en: "Next",
+      ru: "Далее",
+      az: "Növbəti"
+    }
+  };
 
   const handleNext = async () => {
     if (!selectedHsCode || !selectedHsCode.trim()) return;
@@ -29,7 +50,7 @@ const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setMod
         }
       );
       
-      console.log('API Response:', response.data);
+      // console.log('API Response:', response.data);
       setModalStep(2);
     } catch (error) {
       console.error('Error fetching documents:', error);
@@ -48,7 +69,7 @@ const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setMod
       <div className='mb-2'>
         <input
           type="text"
-          placeholder="HS Kodu daxil edin"
+          placeholder={texts.hsCodePlaceholder[language] || texts.hsCodePlaceholder.az}
           className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           value={selectedHsCode || ""}
           onChange={(e) => setSelectedHsCode(e.target.value)}
@@ -60,7 +81,7 @@ const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setMod
           onClick={closeModal}
           className="w-full py-2 px-4 bg-white border border-[#E7E7E7] text-[#3F3F3F] rounded-lg hover:bg-[#F5F5F5] transition-colors"
         >
-          Ləğv et
+          {texts.cancel[language] || texts.cancel.az}
         </button>
         <button
           onClick={handleNext}
@@ -71,7 +92,7 @@ const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setMod
           }`}
           disabled={!selectedHsCode || !selectedHsCode.trim()}
         >
-          Növbəti
+          {texts.next[language] || texts.next.az}
         </button>
       </div>
     </motion.div>

@@ -31,6 +31,7 @@ const MuracietlerPage = () => {
       ru: "Поиск",
       az: "Axtar"
     },
+    
     apply: {
       en: "Apply",
       ru: "Подать заявление",
@@ -168,7 +169,7 @@ const MuracietlerPage = () => {
     indexOfFirstItem,
     indexOfLastItem
   );
-  console.log(currentItems);
+  // console.log(currentItems);
   const totalPages = Math.ceil(sortedApplications.length / itemsPerPage);
 
   // Handle sort

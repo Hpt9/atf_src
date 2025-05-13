@@ -4,15 +4,58 @@ import { slideAnimation } from './shared/animations';
 import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext';
 import toast from 'react-hot-toast';
+import useLanguageStore from '../../../store/languageStore';
 
 const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, refreshApplications, setDocumentName }) => {
   const { token } = useAuth();
+  const { language } = useLanguageStore();
   const [approvals, setApprovals] = useState([]);
   const [selectedApprovals, setSelectedApprovals] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [approvalPdfs, setApprovalPdfs] = useState([]);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Text translations
+  const texts = {
+    hsCodeTitle: {
+      en: "HS Code:",
+      ru: "HS Код:",
+      az: "HS Kodu:"
+    },
+    cancel: {
+      en: "Cancel",
+      ru: "Отмена",
+      az: "Ləğv et"
+    },
+    next: {
+      en: "Next",
+      ru: "Далее",
+      az: "Növbəti"
+    },
+    sending: {
+      en: "Sending...",
+      ru: "Отправка...",
+      az: "Göndərilir..."
+    },
+    errorMessages: {
+      downloadFailed: {
+        en: "Failed to download PDF",
+        ru: "Не удалось скачать PDF",
+        az: "PDF yükləmək mümkün olmadı"
+      },
+      approvalsLoadFailed: {
+        en: "Failed to load approvals",
+        ru: "Не удалось загрузить разрешения",
+        az: "İcazələri yükləmək mümkün olmadı"
+      },
+      requestFailed: {
+        en: "Request was not sent. Please try again.",
+        ru: "Запрос не отправлен. Пожалуйста, попробуйте еще раз.",
+        az: "Müraciət göndərilmədi. Xahiş edirik yenidən cəhd edin."
+      }
+    }
+  };
 
   const downloadPdf = async (url, filename) => {
     try {
@@ -46,7 +89,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
       window.URL.revokeObjectURL(downloadUrl);
     } catch (error) {
       console.error('Download failed:', error);
-      toast.error('PDF yükləmək mümkün olmadı');
+      toast.error(texts.errorMessages.downloadFailed[language] || texts.errorMessages.downloadFailed.az);
     }
   };
 
@@ -75,14 +118,14 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
         setApprovals(response.data.approvals || []);
       } catch (error) {
         console.error('Error fetching approvals:', error);
-        toast.error('İcazələri yükləmək mümkün olmadı');
+        toast.error(texts.errorMessages.approvalsLoadFailed[language] || texts.errorMessages.approvalsLoadFailed.az);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchApprovals();
-  }, [selectedHsCode, token]);
+  }, [selectedHsCode, token, language]);
 
   const handleApprovalChange = (approvalId) => {
     if (isSubmitting) return; // Prevent changes while submitting
@@ -156,16 +199,11 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
       if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
-        toast.error('Müraciət göndərilmədi. Xahiş edirik yenidən cəhd edin.');
+        toast.error(texts.errorMessages.requestFailed[language] || texts.errorMessages.requestFailed.az);
       }
       setIsSubmitting(false);
     }
   };
-
-  // const handleBack = () => {
-  //   if (isSubmitting) return; // Prevent navigation while submitting
-  //   setModalStep(1);
-  // };
 
   if (isLoading) {
     return (
@@ -185,7 +223,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
     >
       <div className="flex items-center gap-4 mb-4">
         <h2 className="text-[18px] font-medium text-[#3F3F3F] flex-1">
-          HS Kodu: {selectedHsCode}
+          {texts.hsCodeTitle[language] || texts.hsCodeTitle.az} {selectedHsCode}
         </h2>
       </div>
 
@@ -224,7 +262,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
               : 'hover:bg-[#F5F5F5] transition-colors'
           }`}
         >
-          Ləğv et
+          {texts.cancel[language] || texts.cancel.az}
         </button>
         <button
           onClick={handleNext}
@@ -238,10 +276,10 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, custom, ref
           {isSubmitting ? (
             <div className="flex items-center justify-center">
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              Göndərilir...
+              {texts.sending[language] || texts.sending.az}
             </div>
           ) : (
-            'Növbəti'
+            texts.next[language] || texts.next.az
           )}
         </button>
       </div>
