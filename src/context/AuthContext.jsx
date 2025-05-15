@@ -9,34 +9,31 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // const checkToken = async (storedToken) => {
-  //   try {
-  //     const response = await axios.get('https://atfplatform.tw1.ru/api/user', {
-  //       headers: {
-  //         'Authorization': `Bearer ${storedToken}`
-  //       }
-  //     });
+  const fetchUserData = async (authToken) => {
+    try {
+      const response = await axios.get('https://atfplatform.tw1.ru/api/user', {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Accept': 'application/json'
+        }
+      });
       
-  //     if (response.data) {
-  //       // Update user data from the server
-  //       setUser(response.data);
-  //       localStorage.setItem('user', JSON.stringify(response.data));
-  //       setToken(storedToken);
-  //       return true;
-  //     }
-  //     return false;
-  //   } catch (error) {
-  //     // Only clear data if we get a 401 (Unauthorized) error
-  //     if (error.response && error.response.status === 401) {
-  //       console.error('Token is invalid');
-  //       localStorage.removeItem('token');
-  //       localStorage.removeItem('user');
-  //       setUser(null);
-  //       setToken(null);
-  //     }
-  //     return false;
-  //   }
-  // };
+      if (response.data) {
+        setUser(response.data);
+        return response.data;
+      }
+      return null;
+    } catch (error) {
+      // Only clear data if we get a 401 (Unauthorized) error
+      if (error.response && error.response.status === 401) {
+        console.error('Token is invalid');
+        localStorage.removeItem('token');
+        setUser(null);
+        setToken(null);
+      }
+      return null;
+    }
+  };
 
   // Check if email is verified and show toast if not
   const checkEmailVerification = (userData) => {
@@ -53,19 +50,17 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = localStorage.getItem('token');
-      const storedUser = localStorage.getItem('user');
       
-      if (storedToken && storedUser) {
-        // Set the stored data immediately
-        const userData = JSON.parse(storedUser);
-        setUser(userData);
+      if (storedToken) {
         setToken(storedToken);
         
-        // Check email verification status
-        checkEmailVerification(userData);
+        // Fetch user data from API
+        const userData = await fetchUserData(storedToken);
         
-        // Then validate the token in the background
-        //await checkToken(storedToken);
+        if (userData) {
+          // Check email verification status
+          checkEmailVerification(userData);
+        }
       }
       setIsLoading(false);
     };
@@ -73,21 +68,23 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const login = (userData, token) => {
-    setUser(userData);
-    setToken(token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('token', token);
+  const login = async (userToken) => {
+    setToken(userToken);
+    localStorage.setItem('token', userToken);
     
-    // Show email verification notification for new logins
+    // Fetch user data after login
+    const userData = await fetchUserData(userToken);
+    
+    // Show email verification notification if needed
     if (userData && userData.email_verified_at === null) {
-      // Email not verified - show toast notification
       toast.error('Zəhmət olmasa e-poçt ünvanınızı təsdiq edin', {
         duration: 5000,
         position: 'top-right',
         id: 'email-verification-reminder',
       });
     }
+    
+    return userData;
   };
 
   const logout = async () => {
@@ -105,7 +102,6 @@ export const AuthProvider = ({ children }) => {
       // Always clear local state regardless of API success/failure
       setUser(null);
       setToken(null);
-      localStorage.removeItem('user');
       localStorage.removeItem('token');
     }
   };
@@ -115,7 +111,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout, fetchUserData }}>
       {children}
     </AuthContext.Provider>
   );

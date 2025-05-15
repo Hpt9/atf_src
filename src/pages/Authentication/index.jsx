@@ -100,19 +100,19 @@ const LoginForm = ({ setLogin }) => {
   // Helper function to handle successful auth (both from success and error paths)
   const handleAuthSuccess = (data) => {
     // Log in the user with the received data
-    login(data.user, data.token);
-    
-    // Show the phone number missing message if no phone
-    if (!data.user.phone) {
-      toast.error('Telefon nömrəniz qeyd olunmayıb', {
-        duration: 3000,
-      });
-    }
-    
-    // Navigate to home
-    setTimeout(() => {
-      navigate("/");
-    }, 1000);
+    login(data.token).then(userData => {
+      // Show the phone number missing message if no phone
+      if (userData && !userData.phone) {
+        toast.error('Telefon nömrəniz qeyd olunmayıb', {
+          duration: 3000,
+        });
+      }
+      
+      // Navigate to home
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
+    });
   };
 
   function handleLogin() {
@@ -126,9 +126,10 @@ const LoginForm = ({ setLogin }) => {
       })
       .then((res) => {
         if (res.status === 200) {
-          const { token, ...userData } = res.data;
-          login(userData, token);
-          navigate("/");
+          const { token } = res.data;
+          login(token).then(() => {
+            navigate("/");
+          });
         }
       })
       .catch((err) => {
@@ -502,19 +503,19 @@ const RegisterForm = ({ setLogin }) => {
   // Helper function to handle successful auth (both from success and error paths)
   const handleAuthSuccess = (data) => {
     // Log in the user with the received data
-    login(data.user, data.token);
-    
-    // Show the phone number missing message if no phone
-    if (!data.user.phone) {
-      toast.error('Telefon nömrəniz qeyd olunmayıb', {
-        duration: 3000,
-      });
-    }
-    
-    // Navigate to home
-    setTimeout(() => {
-      navigate("/");
-    }, 1000);
+    login(data.token).then(userData => {
+      // Show the phone number missing message if no phone
+      if (userData && !userData.phone) {
+        toast.error('Telefon nömrəniz qeyd olunmayıb', {
+          duration: 3000,
+        });
+      }
+      
+      // Navigate to home
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
+    });
   };
 
   return (

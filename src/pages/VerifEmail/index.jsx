@@ -60,31 +60,9 @@ export const VerifyEmail = () => {
 
   const updateUserData = async (token) => {
     try {
-      // Fetch updated user data after verification
-      const response = await axios.get('https://atfplatform.tw1.ru/api/user', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (response.data && response.data.user) {
-        // Get the current user data from localStorage and update it
-        const currentUserData = JSON.parse(localStorage.getItem('user') || '{}');
-        const updatedUserData = {
-          ...currentUserData,
-          ...response.data.user,
-          email_verified_at: new Date().toISOString()
-        };
-        
-        // Update the user data in localStorage
-        localStorage.setItem('user', JSON.stringify(updatedUserData));
-        
-        // Update the auth context if needed
-        login(updatedUserData, token);
-        
-        console.log('User data updated after email verification');
-      }
+      // Use the login function from auth context which now fetches user data
+      await login(token);
+      console.log('User data updated after email verification');
     } catch (error) {
       console.error('Error updating user data:', error);
       // Continue with the verification success flow even if user data update fails

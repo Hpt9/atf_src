@@ -7,10 +7,11 @@ import useLanguageStore from '../store/languageStore';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { token } = useAuth();
   const { language } = useLanguageStore();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     surname: '',
@@ -114,34 +115,123 @@ const ProfilePage = () => {
     }
   };
 
-  useEffect(() => {
+  const fetchUserData = async () => {
+    setInitialLoading(true);
     try {
-      const userData = JSON.parse(localStorage.getItem('user'));
-      if (!userData) {
+      if (!token) {
         navigate('/giris?type=login');
-        return;
+        return null;
       }
 
-      setFormData({
-        name: userData.name || '',
-        surname: userData.surname || '',
-        email: userData.email || '',
-        phone: userData.phone || '',
-        password: '',
-        password_confirmation: ''
+      const response = await axios.get('https://atfplatform.tw1.ru/api/user', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
       });
-    } catch {
+      
+      console.log('User data fetched:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user data:', error);
       toast.error(texts.toastMessages.loadError[language] || texts.toastMessages.loadError.az);
       navigate('/giris?type=login');
+      return null;
+    } finally {
+      setInitialLoading(false);
     }
-  }, [navigate, language]);
+  };
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      const userData = await fetchUserData();
+      
+      if (userData) {
+        // Format the phone number when loading user data
+        const formattedPhone = userData.phone ? formatPhoneNumber(userData.phone) : '';
+
+        setFormData({
+          name: userData.name || '',
+          surname: userData.surname || '',
+          email: userData.email || '',
+          phone: formattedPhone,
+          password: '',
+          password_confirmation: ''
+        });
+      }
+    };
+
+    loadUserData();
+  }, [token, navigate, language]);
+
+  const formatPhoneNumber = (value) => {
+    // Remove all non-digit characters
+    const number = value.replace(/\D/g, '');
+    
+    // Return empty if no input
+    if (number.length === 0) return '';
+    
+    // Start building the formatted number
+    let formatted = '+';
+    
+    // Add the country code
+    if (number.length >= 3) {
+      formatted += number.slice(0, 3);
+      if (number.length > 3) formatted += '-';
+    } else {
+      return formatted + number;
+    }
+    
+    // Add the operator code
+    if (number.length >= 5) {
+      formatted += number.slice(3, 5);
+      if (number.length > 5) formatted += '-';
+    } else {
+      return formatted + number.slice(3);
+    }
+    
+    // Add the first part of subscriber number
+    if (number.length >= 8) {
+      formatted += number.slice(5, 8);
+      if (number.length > 8) formatted += '-';
+    } else {
+      return formatted + number.slice(5);
+    }
+    
+    // Add the second part
+    if (number.length >= 10) {
+      formatted += number.slice(8, 10);
+      if (number.length > 10) formatted += '-';
+    } else {
+      return formatted + number.slice(8);
+    }
+    
+    // Add the last part
+    if (number.length >= 12) {
+      formatted += number.slice(10, 12);
+    } else {
+      return formatted + number.slice(10);
+    }
+    
+    return formatted;
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // Special handling for phone number formatting
+    if (name === 'phone') {
+      const formattedNumber = formatPhoneNumber(value);
+      setFormData(prev => ({
+        ...prev,
+        [name]: formattedNumber
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
 
     // Clear password error when user starts typing new passwords
     if (name === 'password' || name === 'password_confirmation') {
@@ -169,7 +259,6 @@ const ProfilePage = () => {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const dataToSend = { ...formData };
       
       // Only include password fields if they are filled
@@ -183,24 +272,16 @@ const ProfilePage = () => {
         dataToSend,
         {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
           }
         }
       );
 
       if (response.data) {
-        // Update local storage with new user data
-        const updatedUserData = {
-          ...JSON.parse(localStorage.getItem('user')),
-          name: formData.name,
-          surname: formData.surname,
-          email: formData.email,
-          phone: formData.phone
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUserData));
-        
-        // Update auth context
-        setUser(updatedUserData);
+        // Refresh user data after successful update
+        await fetchUserData();
         
         toast.success(texts.toastMessages.updateSuccess[language] || texts.toastMessages.updateSuccess.az);
         setIsEditing(false);
@@ -225,9 +306,15 @@ const ProfilePage = () => {
     }
   };
 
+  if (initialLoading) {
+    return <div className="flex justify-center items-center min-h-[calc(100vh-303px)]">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2E92A0]"></div>
+    </div>;
+  }
+
   return (
-    <div className="bg-gray-50 py-8">
-      <div className="max-w-3xl mx-auto px-4">
+    <div className="bg-gray-50 py-8 min-h-[calc(100vh-303px)]">
+      <div className="max-w-3xl mx-auto my-auto px-4">
         <div className="bg-white rounded-lg shadow p-6">
           <h1 className="text-2xl font-semibold text-[#3F3F3F] mb-6">{texts.title[language] || texts.title.az}</h1>
           
@@ -264,8 +351,8 @@ const ProfilePage = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-3 rounded-lg border border-[#E7E7E7] focus:border-[#2E92A0] outline-none transition-colors disabled:bg-gray-50"
+                  disabled={true}
+                  className="w-full px-4 py-3 rounded-lg border border-[#E7E7E7] bg-gray-50 cursor-not-allowed"
                 />
               </div>
 
@@ -278,35 +365,35 @@ const ProfilePage = () => {
                   onChange={handleInputChange}
                   disabled={!isEditing}
                   className="w-full px-4 py-3 rounded-lg border border-[#E7E7E7] focus:border-[#2E92A0] outline-none transition-colors disabled:bg-gray-50"
+                  placeholder="+994-xx-xxx-xx-xx"
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-[#3F3F3F] mb-2">{texts.newPassword[language] || texts.newPassword.az}</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  disabled={!isEditing}
+                  className="w-full px-4 py-3 rounded-lg border border-[#E7E7E7] focus:border-[#2E92A0] outline-none transition-colors disabled:bg-gray-50"
+                  placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
+                />
+              </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-[#3F3F3F] mb-2">{texts.newPassword[language] || texts.newPassword.az}</label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                      className="w-full px-4 py-3 rounded-lg border border-[#E7E7E7] focus:border-[#2E92A0] outline-none transition-colors disabled:bg-gray-50"
-                      placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-[#3F3F3F] mb-2">{texts.confirmPassword[language] || texts.confirmPassword.az}</label>
-                    <input
-                      type="password"
-                      name="password_confirmation"
-                      value={formData.password_confirmation}
-                      onChange={handleInputChange} 
-                      disabled={!isEditing}
-                      className="w-full px-4 py-3 rounded-lg border border-[#E7E7E7] focus:border-[#2E92A0] outline-none transition-colors disabled:bg-gray-50"
-                      placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
-                    />
-                  </div>
+              <div>
+                <label className="block text-sm font-medium text-[#3F3F3F] mb-2">{texts.confirmPassword[language] || texts.confirmPassword.az}</label>
+                <input
+                  type="password"
+                  name="password_confirmation"
+                  value={formData.password_confirmation}
+                  onChange={handleInputChange} 
+                  disabled={!isEditing}
+                  className="w-full px-4 py-3 rounded-lg border border-[#E7E7E7] focus:border-[#2E92A0] outline-none transition-colors disabled:bg-gray-50"
+                  placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
+                />
+              </div>
             </div>
 
             {passwordError && (
@@ -320,17 +407,21 @@ const ProfilePage = () => {
                 <>
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       setIsEditing(false);
-                      const userData = JSON.parse(localStorage.getItem('user'));
-                      setFormData({
-                        name: userData?.name || '',
-                        surname: userData?.surname || '',
-                        email: userData?.email || '',
-                        phone: userData?.phone || '',
-                        password: '',
-                        password_confirmation: ''
-                      });
+                      // Re-fetch user data to reset form
+                      const userData = await fetchUserData();
+                      if (userData) {
+                        const formattedPhone = userData.phone ? formatPhoneNumber(userData.phone) : '';
+                        setFormData({
+                          name: userData.name || '',
+                          surname: userData.surname || '',
+                          email: userData.email || '',
+                          phone: formattedPhone,
+                          password: '',
+                          password_confirmation: ''
+                        });
+                      }
                       setPasswordError('');
                     }}
                     className="px-6 py-3 text-[#3F3F3F] rounded-lg hover:bg-gray-100 transition-colors"

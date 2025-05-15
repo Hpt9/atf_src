@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
+// import ChatMessageItem from './ChatMessageItem';
+import axios from 'axios';
 
 export default function ChatWidget() {
   const [messages, setMessages] = useState([]);
@@ -9,21 +11,40 @@ export default function ChatWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState(null);
+  const [userName, setUserName] = useState('');
   const bottomRef = useRef(null);
+
+  // Fetch user data function
+  const fetchUserData = async (token) => {
+    try {
+      const response = await axios.get('https://atfplatform.tw1.ru/api/user', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.data) {
+        console.log('User logged in:', response.data);
+        setIsLoggedIn(true);
+        setUserId(response.data.id);
+        setUserName(response.data.name || 'User');
+        return response.data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      setIsLoggedIn(false);
+      setUserId(null);
+      return null;
+    }
+  };
 
   // Check if user is logged in and set userId
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        console.log('User logged in:', user);
-        setIsLoggedIn(true);
-        setUserId(user.id);
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-      }
+    if (token) {
+      fetchUserData(token);
     } else {
       console.log('No user logged in');
       setIsLoggedIn(false);
@@ -60,7 +81,7 @@ export default function ChatWidget() {
           message: msg.message,
           type: msg.type || (msg.user_id === userId ? 'request' : 'response'),
           created_at: msg.created_at,
-          username: msg.username || (msg.type === 'response' ? 'Support' : JSON.parse(localStorage.getItem('user')).name)
+          username: msg.username || (msg.type === 'response' ? 'Support' : userName)
         }));
         setMessages(formattedMessages);
         // Scroll to bottom after messages load
@@ -110,7 +131,7 @@ export default function ChatWidget() {
       user_id: userId,
       created_at: new Date().toISOString(),
       type: 'request',
-      username: JSON.parse(localStorage.getItem('user')).name
+      username: userName
     };
 
     console.log('📤 Sending message:', newMessage);
