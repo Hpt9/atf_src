@@ -12,6 +12,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fetchTrigger, setFetchTrigger] = useState(0);
+  const [pdfFiles, setPdfFiles] = useState([]);
 
   // Text translations
   const texts = {
@@ -55,6 +56,11 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
         en: "Request was not sent. Please try again.",
         ru: "Запрос не отправлен. Пожалуйста, попробуйте еще раз.",
         az: "Müraciət göndərilmədi. Xahiş edirik yenidən cəhd edin."
+      },
+      downloadFailed: {
+        en: "Failed to download the file",
+        ru: "Не удалось скачать файл",
+        az: "Faylı yükləmək mümkün olmadı"
       }
     }
   };
@@ -91,8 +97,26 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
       console.log('Approvals fetch successful:', response.data);
       if (response.data && response.data.approvals) {
         setApprovals(response.data.approvals);
+        
+        // Extract PDF information
+        const pdfFilesData = [];
+        response.data.approvals.forEach(approval => {
+          if (approval.pdfs && approval.pdfs.length > 0) {
+            approval.pdfs.forEach(pdf => {
+              pdfFilesData.push({
+                approvalId: approval.id,
+                approvalTitle: approval.title,
+                slug: pdf.slug,
+                title: pdf.title || 'Document'
+              });
+            });
+          }
+        });
+        setPdfFiles(pdfFilesData);
+        console.log('PDF files found:', pdfFilesData);
       } else {
         setApprovals([]);
+        setPdfFiles([]);
       }
       setIsLoading(false);
     })
@@ -100,6 +124,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
       console.error('Error fetching approvals:', error);
       toast.error(texts.errorMessages.approvalsLoadFailed[language] || texts.errorMessages.approvalsLoadFailed.az);
       setApprovals([]);
+      setPdfFiles([]);
       setIsLoading(false);
     });
   }
@@ -124,6 +149,29 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
     });
   }
 
+  // Function to download a PDF file
+  function downloadPDF(pdfSlug, title) {
+    if (!pdfSlug) {
+      console.error('No PDF URL provided');
+      toast.error(texts.errorMessages.downloadFailed[language] || texts.errorMessages.downloadFailed.az);
+      return;
+    }
+
+    // Ensure slug starts with a forward slash
+    const slugWithSlash = pdfSlug.startsWith('/') ? pdfSlug : '/' + pdfSlug;
+    const downloadUrl = `https://atfplatform.tw1.ru/storage${slugWithSlash}`;
+    console.log('Downloading PDF from:', downloadUrl);
+
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.target = '_blank';
+    link.download = title || 'document.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   function handleNext() {
     if (selectedApprovals.length === 0 || isSubmitting) return;
 
@@ -144,6 +192,16 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
     })
     .then(function(response) {
       console.log('Success Response:', response.data);
+      
+      // Download selected PDFs
+      selectedApprovals.forEach(approvalId => {
+        const pdfFilesForApproval = pdfFiles.filter(pdf => pdf.approvalId === approvalId);
+        
+        pdfFilesForApproval.forEach(pdf => {
+          downloadPDF(pdf.slug, pdf.title);
+        });
+      });
+      
       setModalStep(3); // Go to success step
       
       // Refresh the applications list after successful submission
@@ -197,6 +255,9 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
       ) : (
         <div className="space-y-4">
           {approvals.map(function(approval) {
+            // Check if this approval has PDFs
+            const hasPdfs = approval.pdfs && approval.pdfs.length > 0;
+            
             return (
               <div key={approval.id} className="flex items-center gap-2">
                 <input
@@ -214,6 +275,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
                     (isSubmitting ? "cursor-not-allowed opacity-50" : "cursor-pointer")}
                 >
                   {approval.title}
+                  {hasPdfs && <span className="ml-2 text-xs text-green-600">(PDF included)</span>}
                 </label>
               </div>
             );
