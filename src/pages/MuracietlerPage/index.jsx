@@ -586,7 +586,7 @@ const MuracietlerPage = () => {
                     <p>{texts.noApplications[language] || texts.noApplications.az}</p>
                   </motion.div>
                 ) : currentItems.length > 0 ? (
-                  currentItems.map((app) => (
+                  currentItems.reverse().map((app) => (
                     <motion.div
                       key={app.id}
                       className="p-[16px] flex justify-between items-center border-t border-[#E7E7E7] hover:bg-[#F5F5F5]"
@@ -643,6 +643,7 @@ const MuracietlerPage = () => {
                         </button>
                       </div> */}
                     </motion.div>
+                    
                   ))
                 ) : (
                   <motion.div

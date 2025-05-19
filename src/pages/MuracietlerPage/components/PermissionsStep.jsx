@@ -149,29 +149,6 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
     });
   }
 
-  // Function to download a PDF file
-  function downloadPDF(pdfSlug, title) {
-    if (!pdfSlug) {
-      console.error('No PDF URL provided');
-      toast.error(texts.errorMessages.downloadFailed[language] || texts.errorMessages.downloadFailed.az);
-      return;
-    }
-
-    // Ensure slug starts with a forward slash
-    const slugWithSlash = pdfSlug.startsWith('/') ? pdfSlug : '/' + pdfSlug;
-    const downloadUrl = `https://atfplatform.tw1.ru/storage${slugWithSlash}`;
-    console.log('Downloading PDF from:', downloadUrl);
-
-    // Create a temporary anchor element to trigger download
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.target = '_blank';
-    link.download = title || 'document.pdf';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
   function handleNext() {
     if (selectedApprovals.length === 0 || isSubmitting) return;
 
@@ -193,21 +170,44 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
     .then(function(response) {
       console.log('Success Response:', response.data);
       
-      // Download selected PDFs
+      // Count total PDFs to download
+      let totalPdfs = 0;
+      selectedApprovals.forEach(approvalId => {
+        const pdfFilesForApproval = pdfFiles.filter(pdf => pdf.approvalId === approvalId);
+        totalPdfs += pdfFilesForApproval.length;
+      });
+      
+      // If no PDFs to download, just proceed
+      if (totalPdfs === 0) {
+        setModalStep(3); // Go to success step
+        // Refresh the applications list after successful submission
+        setTimeout(function() {
+          refreshApplications();
+        }, 1000);
+        return;
+      }
+      
+      // Open PDFs in new tabs instead of direct download to avoid CORS issues
       selectedApprovals.forEach(approvalId => {
         const pdfFilesForApproval = pdfFiles.filter(pdf => pdf.approvalId === approvalId);
         
         pdfFilesForApproval.forEach(pdf => {
-          downloadPDF(pdf.slug, pdf.title);
+          // Ensure slug starts with a forward slash
+          const slugWithSlash = pdf.slug.startsWith('/') ? pdf.slug : '/' + pdf.slug;
+          const pdfUrl = `https://atfplatform.tw1.ru/storage${slugWithSlash}`;
+          
+          // Open PDF in new tab
+          window.open(pdfUrl, '_blank');
         });
       });
       
+      // Proceed to next step after opening PDFs
       setModalStep(3); // Go to success step
       
       // Refresh the applications list after successful submission
-      setTimeout(function() {
-        refreshApplications();
-      }, 1000);
+      // setTimeout(function() {
+      //   refreshApplications();
+      // }, 1000);
     })
     .catch(function(error) {
       console.error('Error submitting request:', error);

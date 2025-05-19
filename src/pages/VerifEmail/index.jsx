@@ -11,7 +11,7 @@ export const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
   const redirectUrl = searchParams.get("redirect_url");
   const navigate = useNavigate();
-  const [status, setStatus] = useState("verifying"); // verifying, success, error
+  const [status, setStatus] = useState("verifying"); // verifying, success, error, already_verified
   const { language } = useLanguageStore();
   const { login } = useAuth();
 
@@ -55,6 +55,11 @@ export const VerifyEmail = () => {
       en: "Verification failed",
       ru: "Ошибка проверки",
       az: "Təsdiqləmə zamanı xəta baş verdi"
+    },
+    alreadyVerified: {
+      en: "Your email is already verified",
+      ru: "Ваш email уже подтвержден",
+      az: "E-poçtunuz artıq təsdiqlənib"
     }
   };
 
@@ -69,8 +74,45 @@ export const VerifyEmail = () => {
     }
   };
 
+  // Check if user's email is already verified
+  const checkEmailVerificationStatus = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate('/giris?type=login');
+      return;
+    }
+    
+    try {
+      const response = await axios.get('https://atfplatform.tw1.ru/api/user', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.data && response.data.email_verified_at) {
+        // Email is already verified
+        setStatus("already_verified");
+        toast.success(getText.alreadyVerified[language] || getText.alreadyVerified.az);
+        // Redirect after a short delay
+        setTimeout(() => navigate("/profile"), 2000);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error checking email verification status:', error);
+      return false;
+    }
+  };
+
   useEffect(() => {
     const verify = async () => {
+      // First check if email is already verified
+      const isAlreadyVerified = await checkEmailVerificationStatus();
+      if (isAlreadyVerified) return;
+      
+      // If not already verified and no redirect URL, show error
       if (!redirectUrl) {
         toast.error(getText.missingLink[language] || getText.missingLink.az);
         setStatus("error");
@@ -79,6 +121,11 @@ export const VerifyEmail = () => {
 
       try {
         const token = localStorage.getItem("token");
+        if (!token) {
+          navigate('/giris?type=login');
+          return;
+        }
+        
         await axios.get(redirectUrl, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -123,6 +170,18 @@ export const VerifyEmail = () => {
             <FaCheckCircle className="w-16 h-16 text-green-500" />
             <p className="text-lg font-medium text-gray-700">
               {getText.success[language] || getText.success.az}
+            </p>
+            <p className="text-sm text-gray-500">
+              {getText.redirecting[language] || getText.redirecting.az}
+            </p>
+          </div>
+        );
+      case "already_verified":
+        return (
+          <div className="flex flex-col items-center gap-4">
+            <FaCheckCircle className="w-16 h-16 text-green-500" />
+            <p className="text-lg font-medium text-gray-700">
+              {getText.alreadyVerified[language] || getText.alreadyVerified.az}
             </p>
             <p className="text-sm text-gray-500">
               {getText.redirecting[language] || getText.redirecting.az}

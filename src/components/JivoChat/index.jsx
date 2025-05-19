@@ -29,18 +29,25 @@ const JivoChat = () => {
   };
 
   // Function to initialize Jivo with user data
-  // const initializeJivoWithUser = () => {
-  //   if (window.jivo_api && user) {
-  //     // Set user token to load their specific chat history
-  //     window.jivo_api.setUserToken(user.id.toString());
-  //     // Set user info with only available properties
-  //     window.jivo_api.setUserInfo({
-  //       name: `${user.name} ${user.surname}`,
-  //       // Only include phone if it exists
-  //       ...(user.phone && { phone: user.phone })
-  //     });
-  //   }
-  // };
+  const initializeJivoWithUser = () => {
+    if (window.jivo_api && user) {
+      try {
+        // Only call if the method exists (Pro plan)
+        if (typeof window.jivo_api.setUserToken === 'function') {
+          window.jivo_api.setUserToken(user.id.toString());
+        }
+        if (typeof window.jivo_api.setUserInfo === 'function') {
+          window.jivo_api.setUserInfo({
+            name: `${user.name} ${user.surname}`,
+            email: user.email,
+            ...(user.phone && { phone: user.phone })
+          });
+        }
+      } catch (error) {
+        console.error('Error initializing Jivo:', error);
+      }
+    }
+  };
 
   // Effect to handle user state changes
   useEffect(() => {
@@ -48,7 +55,7 @@ const JivoChat = () => {
       removeJivoElements();
     } else {
       // Initialize Jivo with user data when user logs in
-      // initializeJivoWithUser();
+      initializeJivoWithUser();
     }
   }, [user]); // This effect runs whenever user state changes
 
@@ -90,21 +97,36 @@ const JivoChat = () => {
       script.src = '//code.jivosite.com/widget/TuiC7XnLP8';
       script.async = true;
       script.onload = () => {
+        console.log('Jivo script loaded');
         // Wait for Jivo API to be available
         const checkJivoApi = setInterval(() => {
           if (window.jivo_api) {
+            console.log('Jivo API available');
             clearInterval(checkJivoApi);
-            // initializeJivoWithUser();
+            initializeJivoWithUser();
           }
         }, 100);
+
+        // Clear interval after 5 seconds if Jivo API doesn't become available
+        setTimeout(() => {
+          clearInterval(checkJivoApi);
+          if (!window.jivo_api) {
+            console.error('Jivo API failed to initialize');
+          }
+        }, 5000);
       };
+
+      script.onerror = (error) => {
+        console.error('Error loading Jivo script:', error);
+      };
+
       document.body.appendChild(script);
 
-      // Add a small delay to ensure the script is loaded
-      setTimeout(() => {
-        // Add click listener to the Jivo button specifically
+      // Poll for the Jivo button for up to 10 seconds
+      const waitForJivoButton = (retries = 100) => {
         const jivoButton = document.querySelector('#jivo_chat_widget');
         if (jivoButton) {
+          console.log('Jivo button found');
           jivoButton.addEventListener('click', (e) => {
             if (!user) {
               e.preventDefault();
@@ -115,8 +137,15 @@ const JivoChat = () => {
               }, 3000);
             }
           });
+        } else if (retries > 0) {
+          setTimeout(() => waitForJivoButton(retries - 1), 100);
+        } else {
+          console.log('Jivo button not found after polling');
         }
-      }, 1000);
+      };
+
+      // Start polling for the Jivo button
+      waitForJivoButton();
     };
 
     // Initialize Jivo for logged-in users
