@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    port: 4000,
     proxy: {
       '/api': {
         target: 'https://atfplatform.tw1.ru',
@@ -16,6 +17,7 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       }
-    }
+    },
+    
   }
 })
