@@ -17,6 +17,9 @@ import { Toaster } from 'react-hot-toast';
 import { RouteGuard } from './components/RouteGuard';
 import AdminRouteGuard from './components/AdminRouteGuard';
 import { VerifyEmail } from "./pages/VerifEmail";
+import { Elanlar } from "./pages/Transportation/Elanlar";
+import { ElanDetail } from "./pages/Transportation/ElanDetail";
+import { Kataloq } from "./pages/Transportation/Kataloq";
 
 function App() {
   const location = useLocation();
@@ -55,6 +58,17 @@ function App() {
             <Route path="/icazeler" element={
               <PageTransition>
                 <IcazelerPage />
+              </PageTransition>
+            } />
+            <Route path="/elanlar" element={
+              <PageTransition>
+                <Elanlar />
+              </PageTransition>
+            } />
+            <Route path="/elanlar/:id" element={<ElanDetail />} />
+            <Route path="/kataloq" element={
+              <PageTransition>
+                <Kataloq />
               </PageTransition>
             } />
             <Route path="/muracietler" element={

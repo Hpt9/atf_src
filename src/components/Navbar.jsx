@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import useLanguageStore from '../store/languageStore';
+import { IoChevronDown } from "react-icons/io5";
 
 const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
   const location = useLocation();
@@ -14,6 +15,7 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
   const { user } = useAuth();
   const { language } = useLanguageStore();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
   
   const handleMuracietlerClick = (e) => {
     e.preventDefault();
@@ -32,6 +34,29 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
     }
   };
 
+  // Helper to check if a menu item or any of its children matches the current path
+  const isMenuItemActive = (item) => {
+    const path = `/${item.url}`;
+    if (location.pathname === path || (location.pathname === '/' && item.url === '')) {
+      return true;
+    }
+    if (item.children && item.children.length > 0) {
+      return item.children.some(isMenuItemActive);
+    }
+    return false;
+  };
+
+  // Close dropdown on outside click
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.navbar-dropdown-parent')) {
+        setOpenDropdownId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Don't render loading state once we have menu items
   const shouldShowMenuItems = !isMenuLoading || menuItems.length > 0;
 
@@ -48,56 +73,72 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
               ) : (
                 menuItems.map((item) => {
                   const path = `/${item.url}`;
-                  const isActive = location.pathname === path || 
-                                 (location.pathname === '/' && item.url === '');
-                  
-                  // Special handling for muracietler path
-                  if (item.url === 'muracietler') {
+                  const hasChildren = item.children && item.children.length > 0;
+                  const isActive = isMenuItemActive(item);
+                  if (hasChildren) {
                     return (
-                      <Link 
-                        key={item.id}
-                        to={path}
-                        onClick={handleMuracietlerClick}
-                        className={`text-[14px] font-medium transition-all duration-150 cursor-pointer relative ${
-                          isActive 
-                            ? 'text-[#2E92A0]' 
-                            : 'text-[#3F3F3F] hover:text-[#2E92A0]'
-                        }`}
-                      >
-                        {item.title[language] || item.title.az}
-                        {isActive && 
-                          <motion.span 
-                            className="absolute -bottom-1 left-0 w-full h-[2px] bg-[#2E92A0]"
-                            layoutId="underline"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                          />
-                        }
-                      </Link>
+                      <div key={item.id} className="navbar-dropdown-parent relative inline-block">
+                        <button
+                          className={`text-[14px] font-medium transition-all duration-150 cursor-pointer relative flex items-center gap-1 ${
+                            isActive ? 'text-[#2E92A0]' : 'text-[#3F3F3F] hover:text-[#2E92A0]'
+                          }`}
+                          type="button"
+                          style={{ background: 'none', border: 'none', padding: 0 }}
+                          onClick={() => setOpenDropdownId(openDropdownId === item.id ? null : item.id)}
+                          aria-expanded={openDropdownId === item.id}
+                        >
+                          {item.title[language] || item.title.az}
+                          <IoChevronDown className="ml-1 text-[16px]" />
+                          {isActive && (
+                            <motion.span
+                              className="absolute -bottom-1 left-0 w-full h-[2px] bg-[#2E92A0]"
+                              layoutId="underline"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                            />
+                          )}
+                        </button>
+                        {openDropdownId === item.id && (
+                          <div className="absolute left-0 top-full mt-2 z-50 transition-opacity duration-200"
+                            style={{ minWidth: '92px' }}
+                          >
+                            <div className="bg-white border border-[#D1D5DB] rounded-[12px] flex flex-col gap-y-[12px] p-[16px]" style={{ boxShadow: 'none' }}>
+                              {item.children.map((child) => (
+                                <Link
+                                  key={child.id}
+                                  to={`/${child.url}`}
+                                  className="text-[14px] font-medium text-[#3F3F3F] hover:text-[#2E92A0] hover:bg-gray-50 rounded transition-colors"
+                                  onClick={() => setOpenDropdownId(null)}
+                                >
+                                  {child.title[language] || child.title.az}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     );
                   }
-                  
+                  // Normal link
                   return (
-                    <Link 
+                    <Link
                       key={item.id}
                       to={item.url === '' ? '/' : path}
                       className={`text-[14px] font-medium transition-all duration-150 cursor-pointer relative ${
-                        isActive 
-                          ? 'text-[#2E92A0]' 
-                          : 'text-[#3F3F3F] hover:text-[#2E92A0]'
+                        isActive ? 'text-[#2E92A0]' : 'text-[#3F3F3F] hover:text-[#2E92A0]'
                       }`}
                     >
                       {item.title[language] || item.title.az}
-                      {isActive && 
-                        <motion.span 
+                      {isActive && (
+                        <motion.span
                           className="absolute -bottom-1 left-0 w-full h-[2px] bg-[#2E92A0]"
                           layoutId="underline"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                         />
-                      }
+                      )}
                     </Link>
                   );
                 })

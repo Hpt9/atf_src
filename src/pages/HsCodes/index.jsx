@@ -15,7 +15,14 @@ const HsCodesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedGroups, setExpandedGroups] = useState({});
   const [loading, setLoading] = useState(true);
+  const [loadingChildren, setLoadingChildren] = useState({});
   const [hsCodesData, setHsCodesData] = useState([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    lastPage: 1,
+    perPage: 100,
+    total: 0
+  });
   const contentRef = useRef(null);
   const searchTimeoutRef = useRef(null);
   const texts = {
@@ -24,15 +31,26 @@ const HsCodesPage = () => {
       ru: "Поиск",
       az: "Axtar"
     },
+    pagination: {
+      previous: {
+        en: "Previous",
+        ru: "Предыдущий",
+        az: "Əvvəl"
+      },
+      next: {
+        en: "Next",
+        ru: "Следующий",
+        az: "Sonra"
+      }
+    }
   };
+
   useEffect(() => {
     setSearchBar(
       <div className="relative w-full md:w-[300px] px-[16px]">
         <input
           type="text"
-          placeholder={
-            texts.search[language] || texts.search.az
-          }
+          placeholder={texts.search[language] || texts.search.az}
           className="w-full px-4 py-2 pl-10 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -59,22 +77,21 @@ const HsCodesPage = () => {
         searchHsCodes(searchQuery.trim());
       }, 500);
     } else {
-      fetchHsCodes();
+      fetchRootCategories();
     }
   }, [searchQuery]);
 
-  const fetchHsCodes = async () => {
+  const fetchRootCategories = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('https://atfplatform.tw1.ru/api/code-categories');
+      const response = await axios.post('https://atfplatform.tw1.ru/api/code-categories', {
+        parent_id: null
+      });
       setHsCodesData(response.data);
     } catch (error) {
-      // Check if error is 404 (Not Found) or other data-related error
       if (error.response && error.response.status === 404) {
-        // For 404 errors, just set empty data without showing error toast
         setHsCodesData([]);
       } else {
-        // For other errors, show the toast error message
         const errorMessages = {
           en: "Error loading data",
           ru: "Ошибка при загрузке данных",
@@ -88,6 +105,68 @@ const HsCodesPage = () => {
     }
   };
 
+  const fetchChildren = async (parentId) => {
+    try {
+      setLoadingChildren(prev => ({ ...prev, [parentId]: true }));
+      const response = await axios.post('https://atfplatform.tw1.ru/api/code-categories', {
+        parent_id: parentId
+      });
+      
+      console.log('Children data for parent ID', parentId, ':', response.data);
+      
+      // Update the parent's children in the data
+      setHsCodesData(prevData => {
+        const updateChildren = (items) => {
+          return items.map(item => {
+            if (item.id === parentId) {
+              return { ...item, children: response.data || [] };
+            }
+            if (item.children) {
+              return { ...item, children: updateChildren(item.children) };
+            }
+            return item;
+          });
+        };
+        return updateChildren(prevData);
+      });
+
+      // Force update expanded state to show children
+      setExpandedGroups(prev => ({
+        ...prev,
+        [parentId]: true
+      }));
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        console.log('No children found for parent ID:', parentId);
+        // No children found, that's okay - set empty children array
+        setHsCodesData(prevData => {
+          const updateChildren = (items) => {
+            return items.map(item => {
+              if (item.id === parentId) {
+                return { ...item, children: [] };
+              }
+              if (item.children) {
+                return { ...item, children: updateChildren(item.children) };
+              }
+              return item;
+            });
+          };
+          return updateChildren(prevData);
+        });
+      } else {
+        console.error('Error fetching children:', error);
+        const errorMessages = {
+          en: "Error loading children",
+          ru: "Ошибка при загрузке подкатегорий",
+          az: "Alt kateqoriyaları yükləyərkən xəta baş verdi"
+        };
+        toast.error(errorMessages[language] || errorMessages.az);
+      }
+    } finally {
+      setLoadingChildren(prev => ({ ...prev, [parentId]: false }));
+    }
+  };
+
   const searchHsCodes = async (query) => {
     try {
       setLoading(true);
@@ -96,16 +175,14 @@ const HsCodesPage = () => {
         include_children: true
       });
       
-      // After getting search results, automatically expand the matched items
       const newExpandedGroups = {};
       const expandMatchedItems = (items, shouldExpand = false) => {
         items.forEach(item => {
-          if (shouldExpand || item.code.toString().includes(query)) {
+          if (shouldExpand || item.code?.toString().includes(query)) {
             newExpandedGroups[item.id] = true;
           }
           if (item.children && item.children.length > 0) {
-            // If current item matches search, expand all its children
-            expandMatchedItems(item.children, shouldExpand || item.code.toString().includes(query));
+            expandMatchedItems(item.children, shouldExpand || item.code?.toString().includes(query));
           }
         });
       };
@@ -114,12 +191,9 @@ const HsCodesPage = () => {
       setExpandedGroups(newExpandedGroups);
       setHsCodesData(response.data);
     } catch (error) {
-      // Check if error is 404 (Not Found) or 422 (Unprocessable Content)
       if (error.response && (error.response.status === 404 || error.response.status === 422)) {
-        // For 404 and 422 errors, just set empty data without showing error toast
         setHsCodesData([]);
       } else {
-        // For other errors, show the toast error message
         const errorMessages = {
           en: "Error during search",
           ru: "Ошибка при поиске",
@@ -133,25 +207,43 @@ const HsCodesPage = () => {
     }
   };
 
-  // Toggle expansion of a group
-  const toggleGroup = (groupId) => {
+  const toggleGroup = async (groupId) => {
+    const isCurrentlyExpanded = isExpanded(groupId);
+    
+    // If we're expanding and don't have children loaded yet, fetch them
+    if (!isCurrentlyExpanded) {
+      const item = findItemById(hsCodesData, groupId);
+      if (item && (!item.children || item.children.length === 0)) {
+        await fetchChildren(groupId);
+      }
+    }
+    
     setExpandedGroups(prev => ({
       ...prev,
       [groupId]: !prev[groupId]
     }));
   };
 
-  // Check if a group is expanded
+  const findItemById = (items, id) => {
+    for (const item of items) {
+      if (item.id === id) return item;
+      if (item.children) {
+        const found = findItemById(item.children, id);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
   const isExpanded = (groupId) => {
     return !!expandedGroups[groupId];
   };
 
-  // Flatten the hierarchical data for filtering
   const flattenData = (data, level = 0, parentExpanded = true, isSearchResult = false) => {
     let result = [];
     
     data.forEach(item => {
-      const isMatch = searchQuery && item.code.toString().includes(searchQuery);
+      const isMatch = searchQuery && item.code?.toString().includes(searchQuery);
       const shouldShow = parentExpanded || isMatch || isSearchResult;
       
       if (shouldShow) {
@@ -166,7 +258,6 @@ const HsCodesPage = () => {
         result.push(flatItem);
         
         if (item.children && item.children.length > 0) {
-          // Only show children if parent is expanded (even in search results)
           const showChildren = isExpanded(item.id);
           const childrenResults = flattenData(
             item.children,
@@ -184,14 +275,12 @@ const HsCodesPage = () => {
     return result;
   };
 
-  // Get filtered and flattened data
   const getFilteredAndFlattenedData = () => {
     return flattenData(hsCodesData, 0, true, !!searchQuery);
   };
 
   const filteredHsCodes = getFilteredAndFlattenedData();
 
-  // Animation variants for table rows
   const tableVariants = {
     hidden: { opacity: 0 },
     visible: { 
@@ -213,6 +302,12 @@ const HsCodesPage = () => {
         stiffness: 300, 
         damping: 24 
       }
+    }
+  };
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= pagination.lastPage) {
+      fetchRootCategories();
     }
   };
 
@@ -241,11 +336,6 @@ const HsCodesPage = () => {
                  'HS adı'}
               </p>
             </div>
-            {/* <p className="font-medium text-[#3F3F3F] text-[14px]">
-              {language === 'en' ? 'Actions' : 
-               language === 'ru' ? 'Действия' : 
-               'Əməliyyatlar'}
-            </p> */}
           </div>
           
           <div ref={contentRef} className="max-h-[640px] overflow-y-auto">
@@ -262,24 +352,21 @@ const HsCodesPage = () => {
                       item.level === 0 ? 'bg-[#F9F9F9]' : 
                       item.level === 1 ? 'bg-[#FCFCFC]' : 
                       'bg-white'
-                    } ${item.hasChildren ? 'cursor-pointer' : ''}`}
-                    onClick={item.hasChildren ? () => toggleGroup(item.id) : undefined}
+                    } cursor-pointer`}
+                    onClick={() => toggleGroup(item.id)}
                     variants={rowVariants}
                   >
                     <div className="flex items-center w-full gap-x-[]">
                       <div style={{ width: `${item.level * 24}px` }} className="flex-shrink-0"></div>
-                      
-                      {item.hasChildren ? (
-                        <div className="mr-2 text-[#3F3F3F] flex-shrink-0">
-                          {isExpanded(item.id) ? 
-                            <IoIosArrowDown className="text-[#2E92A0]" /> : 
-                            <IoIosArrowRight className="text-[#2E92A0]" />
-                          }
-                        </div>
-                      ) : (
-                        <div className="mr-2 w-4 flex-shrink-0"></div>
-                      )}
-                      
+                      <div className="mr-2 text-[#3F3F3F] flex-shrink-0">
+                        {loadingChildren[item.id] ? (
+                          <div className="w-4 h-4 border-t-2 border-b-2 border-[#2E92A0] rounded-full animate-spin" />
+                        ) : isExpanded(item.id) ? (
+                          <IoIosArrowDown className="text-[#2E92A0]" />
+                        ) : (
+                          <IoIosArrowRight className="text-[#2E92A0]" />
+                        )}
+                      </div>
                       <div className="flex items-center w-full mobile:gap-x-[16px] lg:gap-x-[0px]">
                         <p className={`text-[#3F3F3F] text-[14px] min-w-[100px] ${
                           item.level === 0 ? 'font-bold' : 
@@ -297,18 +384,6 @@ const HsCodesPage = () => {
                         </p>
                       </div>
                     </div>
-                    
-                    {/* <div className="flex items-center gap-x-[8px] flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                      <button 
-                        className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]"
-                        title={item.info?.az}
-                      >
-                        <LuInfo className="w-[20px] h-[20px] text-[#2E92A0]" />
-                      </button>
-                      <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#E7E7E7]">
-                        <FaRegFilePdf className="w-[20px] h-[20px] text-[#2E92A0]" />
-                      </button>
-                    </div> */}
                   </Motion.div>
                 ))
               ) : (
@@ -323,6 +398,39 @@ const HsCodesPage = () => {
               )}
             </Motion.div>
           </div>
+
+          {/* Pagination Controls */}
+          {!searchQuery && (
+            <div className="flex justify-center items-center gap-2 p-4 border-t border-[#E7E7E7]">
+              <button
+                onClick={() => handlePageChange(pagination.currentPage - 1)}
+                disabled={pagination.currentPage === 1}
+                className={`px-4 py-2 rounded-lg ${
+                  pagination.currentPage === 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-[#2E92A0] hover:bg-[#F5F5F5]'
+                }`}
+              >
+                {texts.pagination.previous[language] || texts.pagination.previous.az}
+              </button>
+              
+              <span className="text-[#3F3F3F]">
+                {pagination.currentPage} / {pagination.lastPage}
+              </span>
+              
+              <button
+                onClick={() => handlePageChange(pagination.currentPage + 1)}
+                disabled={pagination.currentPage === pagination.lastPage}
+                className={`px-4 py-2 rounded-lg ${
+                  pagination.currentPage === pagination.lastPage
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-[#2E92A0] hover:bg-[#F5F5F5]'
+                }`}
+              >
+                {texts.pagination.next[language] || texts.pagination.next.az}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
