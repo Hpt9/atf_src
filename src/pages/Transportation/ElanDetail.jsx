@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { IoArrowBack, IoCall } from 'react-icons/io5';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const mockElan = {
   images: [
@@ -40,14 +40,14 @@ const mockElan = {
 export const ElanDetail = () => {
   const { id } = useParams();
   const [selectedImage, setSelectedImage] = useState(0);
-
+  const navigate = useNavigate();
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-4 md:py-8 flex flex-col md:flex-row gap-8">
         {/* Left: Main Content */}
         <div className="flex-1">
           {/* Back Button */}
-          <button className="mb-4 w-10 h-10 flex items-center justify-center rounded-full bg-[#FAFAFA] border border-[#E7E7E7] hover:bg-[#F0F0F0]">
+          <button className="mb-4 w-10 h-10 flex items-center justify-center rounded-full bg-[#FAFAFA] border border-[#E7E7E7] hover:bg-[#F0F0F0]" onClick={() => navigate(-1)}>
             <IoArrowBack size={20} />
           </button>
           {/* Gallery */}

@@ -60,13 +60,17 @@ function App() {
                 <IcazelerPage />
               </PageTransition>
             } />
-            <Route path="/elanlar" element={
+            <Route path="/dasinma/elanlar" element={
               <PageTransition>
                 <Elanlar />
               </PageTransition>
             } />
-            <Route path="/elanlar/:id" element={<ElanDetail />} />
-            <Route path="/kataloq" element={
+            <Route path="/dasinma/elanlar/:id" element={
+              <PageTransition>
+                <ElanDetail />
+              </PageTransition>
+            } />
+            <Route path="/dasinma/kataloq" element={
               <PageTransition>
                 <Kataloq />
               </PageTransition>

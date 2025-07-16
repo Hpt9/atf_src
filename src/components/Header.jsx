@@ -204,7 +204,7 @@ const Header = () => {
 
   return (
     <>
-      <div className="w-full flex justify-center sticky top-0 z-[1000] bg-white">
+      <div className="w-full flex justify-center sticky top-0 z-[1001] bg-white">
         <div className="w-full max-w-[2136px] flex flex-col ">
           <div className="login w-full h-[118px] bg-white flex justify-between items-center px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-[20px]">
             <img
