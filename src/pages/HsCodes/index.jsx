@@ -209,19 +209,22 @@ const HsCodesPage = () => {
 
   const toggleGroup = async (groupId) => {
     const isCurrentlyExpanded = isExpanded(groupId);
-    
     // If we're expanding and don't have children loaded yet, fetch them
     if (!isCurrentlyExpanded) {
+      setExpandedGroups(prev => ({
+        ...prev,
+        [groupId]: true
+      }));
       const item = findItemById(hsCodesData, groupId);
       if (item && (!item.children || item.children.length === 0)) {
         await fetchChildren(groupId);
       }
+    } else {
+      setExpandedGroups(prev => ({
+        ...prev,
+        [groupId]: false
+      }));
     }
-    
-    setExpandedGroups(prev => ({
-      ...prev,
-      [groupId]: !prev[groupId]
-    }));
   };
 
   const findItemById = (items, id) => {

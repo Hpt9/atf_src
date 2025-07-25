@@ -15,6 +15,7 @@ import { IoLogOutOutline } from "react-icons/io5";
 import { AnimatePresence } from "framer-motion";
 import { motion as Motion } from "framer-motion";
 import { IoChevronDown } from "react-icons/io5";
+import { IoChevronUp } from "react-icons/io5";
 import { IoIosArrowForward } from "react-icons/io";
 import useLanguageStore from "../store/languageStore";
 import axios from "axios";
@@ -37,6 +38,11 @@ const Header = () => {
   const searchContainerRef = useRef(null);
   const [menuItems, setMenuItems] = useState([]);
   const [isMenuLoading, setIsMenuLoading] = useState(true);
+  // Add state for expanded mobile dropdowns
+  const [expandedMobileMenus, setExpandedMobileMenus] = useState({});
+  const toggleMobileDropdown = (id) => {
+    setExpandedMobileMenus((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const languages = [
     { code: 'az', label: 'AZ' },
@@ -202,6 +208,50 @@ const Header = () => {
     }
   };
 
+  // Helper for rendering mobile menu items recursively
+  const renderMobileMenuItems = (items) => {
+    return items.map((item) => {
+      const hasChildren = item.children && item.children.length > 0;
+      if (hasChildren) {
+        return (
+          <div key={item.id}>
+            <button
+              className="w-full flex justify-between items-center py-4 border-b border-gray-100 text-[#3F3F3F] font-medium focus:outline-none"
+              onClick={() => toggleMobileDropdown(item.id)}
+            >
+              <span>{item.title[language] || item.title.az}</span>
+              <span className="ml-2">{expandedMobileMenus[item.id] ? <FaArrowRight className="ml-1 text-[24px] relative top-[2px] transition-transform duration-200" style={{ transform: 'rotate(90deg)' }} /> : <FaArrowRight className="ml-1 text-[24px] relative top-[2px] transition-transform duration-200" style={{ transform: 'rotate(0deg)' }} />}</span>
+            </button>
+            <AnimatePresence>
+            {expandedMobileMenus[item.id] && (
+              <Motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="pl-4 border-l border-gray-200"
+              >
+                {renderMobileMenuItems(item.children)}
+              </Motion.div>
+            )}
+            </AnimatePresence>
+          </div>
+        );
+      }
+      return (
+        <Link
+          key={item.id}
+          to={`/${item.url}`}
+          className="py-4 border-b border-gray-100 hover:bg-gray-50 flex justify-between items-center text-[#3F3F3F] font-medium"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          {item.title[language] || item.title.az}
+          <FaArrowRight className="w-[24px] h-[24px]" />
+        </Link>
+      );
+    });
+  };
+
   return (
     <>
       <div className="w-full flex justify-center sticky top-0 z-[1001] bg-white">
@@ -229,7 +279,7 @@ const Header = () => {
                   <span className="uppercase">{language}</span>
                   <IoChevronDown className={`transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
                 </button>
-                {showLanguageDropdown && (
+                {/* {showLanguageDropdown && (
                   <div className="absolute top-full right-0 mt-1 bg-white border border-[#E7E7E7] rounded-lg shadow-lg py-2 min-w-[120px] z-[100]">
                     {languages.map((lang) => (
                       <button
@@ -243,7 +293,7 @@ const Header = () => {
                       </button>
                     ))}
                   </div>
-                )}
+                )} */}
               </div>
 
               {user ? (
@@ -282,7 +332,7 @@ const Header = () => {
             </div>
             <div className="flex md:hidden gap-x-[8px]">
               {/* Language Dropdown - Mobile */}
-              <div className="relative" ref={mobileLanguageDropdownRef}>
+              {/* <div className="relative" ref={mobileLanguageDropdownRef}>
                 <button
                   onClick={() => setShowMobileLanguageDropdown(!showMobileLanguageDropdown)}
                   className="w-[44px] h-[44px] flex justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px]"
@@ -304,7 +354,7 @@ const Header = () => {
                     ))}
                   </div>
                 )}
-              </div>
+              </div> */}
               <button 
                 className="w-[44px] h-[44px] flex justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px] relative cursor-pointer"
                 onClick={openMobileMenu}
@@ -459,17 +509,7 @@ const Header = () => {
                       {language === 'az' ? "Yüklənir..." : language === 'en' ? "Loading..." : "Загрузка..."}
                     </div>
                   ) : (
-                    menuItems.map((item) => (
-                      <Link
-                        key={item.id}
-                        to={`/${item.url}`}
-                        className="py-4 border-b border-gray-100 hover:bg-gray-50 flex justify-between items-center text-[#3F3F3F] font-medium"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                      >
-                        {item.title[language] || item.title.az}
-                        <FaArrowRight className="w-[24px] h-[24px]" />
-                      </Link>
-                    ))
+                    renderMobileMenuItems(menuItems)
                   )}
                 </div>
               </div>

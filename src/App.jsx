@@ -20,6 +20,7 @@ import { VerifyEmail } from "./pages/VerifEmail";
 import { Elanlar } from "./pages/Transportation/Elanlar";
 import { ElanDetail } from "./pages/Transportation/ElanDetail";
 import { Kataloq } from "./pages/Transportation/Kataloq";
+import { KataloqDetail } from "./pages/Transportation/KataloqDetail";
 
 function App() {
   const location = useLocation();
@@ -73,6 +74,11 @@ function App() {
             <Route path="/dasinma/kataloq" element={
               <PageTransition>
                 <Kataloq />
+              </PageTransition>
+            } />
+            <Route path="/dasinma/kataloq/:id" element={
+              <PageTransition>
+                <KataloqDetail />
               </PageTransition>
             } />
             <Route path="/muracietler" element={

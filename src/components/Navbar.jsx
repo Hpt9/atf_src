@@ -88,7 +88,7 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
                           aria-expanded={openDropdownId === item.id}
                         >
                           {item.title[language] || item.title.az}
-                          <IoChevronDown className="ml-1 text-[16px]" />
+                          <IoChevronDown className="ml-1 text-[16px] relative top-[2px]" />
                           {isActive && (
                             <motion.span
                               className="absolute -bottom-1 left-0 w-full h-[2px] bg-[#2E92A0]"
