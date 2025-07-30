@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { setTokenCookie, getTokenCookie, removeTokenCookie } from '../utils/cookieUtils';
 
 const AuthContext = createContext();
 
@@ -27,7 +28,7 @@ export const AuthProvider = ({ children }) => {
       // Only clear data if we get a 401 (Unauthorized) error
       if (error.response && error.response.status === 401) {
         console.error('Token is invalid');
-        localStorage.removeItem('token');
+        removeTokenCookie();
         setUser(null);
         setToken(null);
       }
@@ -49,7 +50,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const storedToken = localStorage.getItem('token');
+      const storedToken = getTokenCookie();
       
       if (storedToken) {
         setToken(storedToken);
@@ -70,7 +71,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (userToken) => {
     setToken(userToken);
-    localStorage.setItem('token', userToken);
+    setTokenCookie(userToken);
     
     // Fetch user data after login
     const userData = await fetchUserData(userToken);
@@ -102,7 +103,7 @@ export const AuthProvider = ({ children }) => {
       // Always clear local state regardless of API success/failure
       setUser(null);
       setToken(null);
-      localStorage.removeItem('token');
+      removeTokenCookie();
     }
   };
 

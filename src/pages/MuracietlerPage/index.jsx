@@ -13,7 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import useLanguageStore from "../../store/languageStore";
-
+import { getTokenCookie } from '../../utils/cookieUtils';
 const MuracietlerPage = () => {
   const navigate = useNavigate();
   const { setSearchBar } = useSearchBar();
@@ -111,7 +111,7 @@ const MuracietlerPage = () => {
         "https://atfplatform.tw1.ru/api/requests",
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${getTokenCookie()}`,
           },
         }
       );
@@ -372,6 +372,7 @@ const MuracietlerPage = () => {
   const closeModal = () => {
     setIsMuracietModalOpen(false);
     setModalStep(1);
+    console.log(selectedHsCode)
     setSelectedHsCode("");
     setIsSuccess(false);
     setApprovalPdfs([]);
@@ -421,7 +422,7 @@ const MuracietlerPage = () => {
       <AnimatePresence>
         {isMuracietModalOpen && (
           <motion.div
-            className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-[1000] flex items-center justify-center"
+            className="fixed inset-0 bg-[rgba(0,0,0,0.5)] z-[1001] flex items-center justify-center"
             initial="initial"
             animate="animate"
             exit="exit"

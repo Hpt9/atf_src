@@ -6,6 +6,7 @@ import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { ImSpinner8 } from "react-icons/im";
 import useLanguageStore from "../../store/languageStore";
 import { useAuth } from "../../context/AuthContext";
+import { getTokenCookie } from "../../utils/cookieUtils";
 
 export const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
@@ -76,7 +77,7 @@ export const VerifyEmail = () => {
 
   // Check if user's email is already verified
   const checkEmailVerificationStatus = async () => {
-    const token = localStorage.getItem("token");
+    const token = getTokenCookie();
     if (!token) {
       navigate('/giris?type=login');
       return;
@@ -120,7 +121,7 @@ export const VerifyEmail = () => {
       }
 
       try {
-        const token = localStorage.getItem("token");
+        const token = getTokenCookie();
         if (!token) {
           navigate('/giris?type=login');
           return;

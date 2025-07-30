@@ -3,6 +3,7 @@ import { AnimatePresence } from "framer-motion";
 import { IoClose } from "react-icons/io5";
 // import ChatMessageItem from './ChatMessageItem';
 import axios from 'axios';
+import { getTokenCookie } from '../utils/cookieUtils';
 
 export default function ChatWidget() {
   const [messages, setMessages] = useState([]);
@@ -42,7 +43,7 @@ export default function ChatWidget() {
 
   // Check if user is logged in and set userId
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = getTokenCookie();
     if (token) {
       fetchUserData(token);
     } else {
@@ -66,7 +67,7 @@ export default function ChatWidget() {
         method: 'GET',
         credentials: 'include',
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${getTokenCookie()}`,
           Accept: 'application/json',
           'Content-Type': 'application/json'
         },
@@ -146,7 +147,7 @@ export default function ChatWidget() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${getTokenCookie()}`,
         },
         body: JSON.stringify({
           support_id: 1,

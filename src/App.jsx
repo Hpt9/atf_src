@@ -21,6 +21,7 @@ import { Elanlar } from "./pages/Transportation/Elanlar";
 import { ElanDetail } from "./pages/Transportation/ElanDetail";
 import { Kataloq } from "./pages/Transportation/Kataloq";
 import { KataloqDetail } from "./pages/Transportation/KataloqDetail";
+import { NewUpdate } from "./pages/NewUpdate";
 
 function App() {
   const location = useLocation();
@@ -64,6 +65,11 @@ function App() {
             <Route path="/dasinma/elanlar" element={
               <PageTransition>
                 <Elanlar />
+              </PageTransition>
+            } />
+            <Route path="/dasinma/yeni" element={
+              <PageTransition>
+                <NewUpdate />
               </PageTransition>
             } />
             <Route path="/dasinma/elanlar/:id" element={

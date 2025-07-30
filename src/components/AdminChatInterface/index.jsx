@@ -3,6 +3,7 @@ import Pusher from 'pusher-js';
 import Echo from 'laravel-echo';
 import UserList from './UserList';
 import ChatWindow from './ChatWindow';
+import { getTokenCookie } from '../../utils/cookieUtils';
 
 // Create Echo instance with proper configuration
 const createEchoInstance = () => {
@@ -21,7 +22,7 @@ const createEchoInstance = () => {
     auth: {
       headers: {
         Accept: 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
+        Authorization: `Bearer ${getTokenCookie()}`,
       },
     },
   });
@@ -110,7 +111,7 @@ const AdminChatInterface = () => {
       try {
         const response = await fetch('https://atfplatform.tw1.ru/api/support/users', {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${getTokenCookie()}`,
           },
         });
         
@@ -179,7 +180,7 @@ const AdminChatInterface = () => {
     try {
       const response = await fetch(`https://atfplatform.tw1.ru/api/messages/${user.id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${getTokenCookie()}`,
         },
       });
       
@@ -243,7 +244,7 @@ const AdminChatInterface = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${getTokenCookie()}`,
         },
         body: JSON.stringify({
           user_id: selectedUser.id,

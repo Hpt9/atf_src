@@ -88,7 +88,7 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
                           aria-expanded={openDropdownId === item.id}
                         >
                           {item.title[language] || item.title.az}
-                          <IoChevronDown className="ml-1 text-[16px] relative top-[2px]" />
+                          <IoChevronDown className="ml-1 text-[16px] relative top-[2px] transition-transform duration-200" style={{ transform: openDropdownId === item.id ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                           {isActive && (
                             <motion.span
                               className="absolute -bottom-1 left-0 w-full h-[2px] bg-[#2E92A0]"
@@ -99,11 +99,17 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
                             />
                           )}
                         </button>
+                        <AnimatePresence>
                         {openDropdownId === item.id && (
                           <div className="absolute left-0 top-full mt-2 z-50 transition-opacity duration-200"
                             style={{ minWidth: '92px' }}
                           >
-                            <div className="bg-white border border-[#D1D5DB] rounded-[12px] flex flex-col gap-y-[12px] p-[16px]" style={{ boxShadow: 'none' }}>
+                            <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                            className="bg-white border border-[#D1D5DB] rounded-[12px] flex flex-col gap-y-[12px] p-[16px]" style={{ boxShadow: 'none' }}>
                               {item.children.map((child) => (
                                 <Link
                                   key={child.id}
@@ -114,9 +120,10 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
                                   {child.title[language] || child.title.az}
                                 </Link>
                               ))}
-                            </div>
+                            </motion.div>
                           </div>
                         )}
+                        </AnimatePresence>
                       </div>
                     );
                   }

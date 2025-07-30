@@ -17,6 +17,8 @@ import { motion as Motion } from "framer-motion";
 import { IoChevronDown } from "react-icons/io5";
 import { IoChevronUp } from "react-icons/io5";
 import { IoIosArrowForward } from "react-icons/io";
+import { FaPlus } from "react-icons/fa6";
+
 import useLanguageStore from "../store/languageStore";
 import axios from "axios";
 
@@ -27,7 +29,8 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
-  const [showMobileLanguageDropdown, setShowMobileLanguageDropdown] = useState(false);
+  const [showMobileLanguageDropdown, setShowMobileLanguageDropdown] =
+    useState(false);
   const languageDropdownRef = useRef(null);
   const mobileLanguageDropdownRef = useRef(null);
   const { language, setLanguage } = useLanguageStore();
@@ -45,64 +48,77 @@ const Header = () => {
   };
 
   const languages = [
-    { code: 'az', label: 'AZ' },
-    { code: 'en', label: 'EN' },
-    { code: 'ru', label: 'RU' }
+    { code: "az", label: "AZ" },
+    { code: "en", label: "EN" },
+    { code: "ru", label: "RU" },
   ];
 
   // Fetch menu items from API
   useEffect(() => {
     const fetchMenuItems = async () => {
       // Check if menu items exist in localStorage and are not expired
-      const cachedMenu = localStorage.getItem('menuItems');
-      const cachedTimestamp = localStorage.getItem('menuItemsTimestamp');
+      const cachedMenu = localStorage.getItem("menuItems");
+      const cachedTimestamp = localStorage.getItem("menuItemsTimestamp");
       const now = new Date().getTime();
-      
+
       // Use cached menu if it exists and is less than 1 hour old
-      if (cachedMenu && cachedTimestamp && (now - parseInt(cachedTimestamp)) < 3600000) {
+      if (
+        cachedMenu &&
+        cachedTimestamp &&
+        now - parseInt(cachedTimestamp) < 3600000
+      ) {
         try {
           const parsedMenu = JSON.parse(cachedMenu);
           setMenuItems(parsedMenu);
           setIsMenuLoading(false);
           return;
         } catch (error) {
-          console.error('Error parsing cached menu:', error);
+          console.error("Error parsing cached menu:", error);
           // Continue to fetch from API if parsing fails
         }
       }
-      
+
       setIsMenuLoading(true);
       try {
-        const response = await axios.get('https://atfplatform.tw1.ru/api/menu');
+        const response = await axios.get("https://atfplatform.tw1.ru/api/menu");
         // Sort by order property
         const sortedMenu = response.data.sort((a, b) => a.order - b.order);
         setMenuItems(sortedMenu);
-        
+
         // Cache the menu items and timestamp
-        localStorage.setItem('menuItems', JSON.stringify(sortedMenu));
-        localStorage.setItem('menuItemsTimestamp', new Date().getTime().toString());
+        localStorage.setItem("menuItems", JSON.stringify(sortedMenu));
+        localStorage.setItem(
+          "menuItemsTimestamp",
+          new Date().getTime().toString()
+        );
       } catch (error) {
-        console.error('Error fetching menu items:', error);
+        console.error("Error fetching menu items:", error);
       } finally {
         setIsMenuLoading(false);
       }
     };
-    
+
     fetchMenuItems();
   }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target)) {
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target)
+      ) {
         setShowLanguageDropdown(false);
       }
-      if (mobileLanguageDropdownRef.current && !mobileLanguageDropdownRef.current.contains(event.target)) {
+      if (
+        mobileLanguageDropdownRef.current &&
+        !mobileLanguageDropdownRef.current.contains(event.target)
+      ) {
         setShowMobileLanguageDropdown(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -134,13 +150,13 @@ const Header = () => {
       setShowLogoutModal(false);
       await logout();
       // Wait for state updates to complete
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       navigate("/");
       // Wait for navigation to complete
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       window.location.reload();
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -160,12 +176,15 @@ const Header = () => {
       setIsSearching(true);
       searchTimeoutRef.current = setTimeout(async () => {
         try {
-          const response = await axios.post('https://atfplatform.tw1.ru/api/global-search', {
-            q: localSearchValue.trim()
-          });
+          const response = await axios.post(
+            "https://atfplatform.tw1.ru/api/global-search",
+            {
+              q: localSearchValue.trim(),
+            }
+          );
           setSearchResults(response.data.results);
         } catch (error) {
-          console.error('Search error:', error);
+          console.error("Search error:", error);
           setSearchResults(null);
         } finally {
           setIsSearching(false);
@@ -186,13 +205,16 @@ const Header = () => {
   // Handle click outside search results
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target)
+      ) {
         setSearchResults(null);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Handle navigation
@@ -200,11 +222,11 @@ const Header = () => {
     setSearchResults(null);
     setLocalSearchValue("");
     setIsMobileMenuOpen(false);
-    
-    if (type === 'hs_codes') {
-      navigate('/hs-codes', { state: { searchQuery: item.code.toString() } });
-    } else if (type === 'approvals') {
-      navigate('/icazeler', { state: { searchQuery: item.title[language] } });
+
+    if (type === "hs_codes") {
+      navigate("/hs-codes", { state: { searchQuery: item.code.toString() } });
+    } else if (type === "approvals") {
+      navigate("/icazeler", { state: { searchQuery: item.title[language] } });
     }
   };
 
@@ -220,20 +242,32 @@ const Header = () => {
               onClick={() => toggleMobileDropdown(item.id)}
             >
               <span>{item.title[language] || item.title.az}</span>
-              <span className="ml-2">{expandedMobileMenus[item.id] ? <FaArrowRight className="ml-1 text-[24px] relative top-[2px] transition-transform duration-200" style={{ transform: 'rotate(90deg)' }} /> : <FaArrowRight className="ml-1 text-[24px] relative top-[2px] transition-transform duration-200" style={{ transform: 'rotate(0deg)' }} />}</span>
+              <span className="ml-2">
+                {expandedMobileMenus[item.id] ? (
+                  <FaArrowRight
+                    className="ml-1 text-[24px] relative top-[2px] transition-transform duration-200"
+                    style={{ transform: "rotate(90deg)" }}
+                  />
+                ) : (
+                  <FaArrowRight
+                    className="ml-1 text-[24px] relative top-[2px] transition-transform duration-200"
+                    style={{ transform: "rotate(0deg)" }}
+                  />
+                )}
+              </span>
             </button>
             <AnimatePresence>
-            {expandedMobileMenus[item.id] && (
-              <Motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="pl-4 border-l border-gray-200"
-              >
-                {renderMobileMenuItems(item.children)}
-              </Motion.div>
-            )}
+              {expandedMobileMenus[item.id] && (
+                <Motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="pl-4 border-l border-gray-200"
+                >
+                  {renderMobileMenuItems(item.children)}
+                </Motion.div>
+              )}
             </AnimatePresence>
           </div>
         );
@@ -271,7 +305,7 @@ const Header = () => {
             />
             <div className="hidden md:flex items-center gap-4">
               {/* Language Dropdown - Desktop */}
-              <div className="relative" ref={languageDropdownRef}>
+              {/* <div className="relative" ref={languageDropdownRef}>
                 <button
                   onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
                   className="flex items-center gap-1 px-3 py-2 text-[#3F3F3F] hover:text-[#2E92A0] transition-colors"
@@ -279,7 +313,7 @@ const Header = () => {
                   <span className="uppercase">{language}</span>
                   <IoChevronDown className={`transition-transform ${showLanguageDropdown ? 'rotate-180' : ''}`} />
                 </button>
-                {/* {showLanguageDropdown && (
+                {showLanguageDropdown && (
                   <div className="absolute top-full right-0 mt-1 bg-white border border-[#E7E7E7] rounded-lg shadow-lg py-2 min-w-[120px] z-[100]">
                     {languages.map((lang) => (
                       <button
@@ -293,39 +327,62 @@ const Header = () => {
                       </button>
                     ))}
                   </div>
-                )} */}
-              </div>
+                )}
+              </div> */}
 
               {user ? (
                 <div className="flex items-center gap-4">
-                  <div 
+                  <div
                     className="flex items-center gap-2 hover:cursor-pointer"
                     onClick={() => navigate("/profile")}
                   >
-                    <IoPersonCircleOutline size={24} className="text-[#2E92A0]" />
-                    <span className="text-[#3F3F3F]">{user.name} {user.surname}</span>
+                    <IoPersonCircleOutline
+                      size={24}
+                      className="text-[#2E92A0]"
+                    />
+                    <span className="text-[#3F3F3F]">
+                      {user.name} {user.surname}
+                    </span>
                   </div>
-                  <button 
+                  <button
+                    onClick={() => navigate("/dasinma/yeni")}
+                    className="px-4 py-[10px] font-semibold text-white hover:text-[#2E92A0] rounded-[8px] bg-[#2E92A0] hover:bg-white transition-colors border border-[#2E92A0] hover:cursor-pointer flex items-center gap-2">
+                    Elan Yerləşdir
+                    <FaPlus size={20} />
+                  </button>
+                  <button
                     onClick={handleLogoutClick}
                     className="px-4 py-[10px] font-semibold text-[#2E92A0] hover:text-white rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer flex items-center gap-2"
                   >
                     <IoLogOutOutline size={20} />
-                    {language === 'az' ? 'Çıxış' : language === 'en' ? 'Logout' : 'Выход'}
+                    {language === "az"
+                      ? "Çıxış"
+                      : language === "en"
+                      ? "Logout"
+                      : "Выход"}
                   </button>
                 </div>
               ) : (
                 <>
-                  <button 
+                  <button
                     className="px-4 py-[10px] font-semibold text-[#2E92A0] hover:text-[white] rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer"
                     onClick={() => navigate("/giris?type=register")}
                   >
-                    {language === 'az' ? 'Qeydiyyat' : language === 'en' ? 'Register' : 'Регистрация'}
+                    {language === "az"
+                      ? "Qeydiyyat"
+                      : language === "en"
+                      ? "Register"
+                      : "Регистрация"}
                   </button>
-                  <button 
+                  <button
                     className="px-6 py-[10px] bg-[#2E92A0] font-semibold text-white rounded-[8px] hover:bg-[white] hover:text-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer"
                     onClick={() => navigate("/giris?type=login")}
                   >
-                    {language === 'az' ? 'Daxil ol' : language === 'en' ? 'Login' : 'Войти'}
+                    {language === "az"
+                      ? "Daxil ol"
+                      : language === "en"
+                      ? "Login"
+                      : "Войти"}
                   </button>
                 </>
               )}
@@ -355,7 +412,7 @@ const Header = () => {
                   </div>
                 )}
               </div> */}
-              <button 
+              <button
                 className="w-[44px] h-[44px] flex justify-center items-center border border-[#E7E7E7] bg-[#FAFAFA] rounded-[8px] relative cursor-pointer"
                 onClick={openMobileMenu}
               >
@@ -390,46 +447,65 @@ const Header = () => {
                 {/* Auth Section */}
                 {user ? (
                   <div className="flex flex-col gap-4 mb-4">
-                    <div 
+                    <div
                       className="flex items-center gap-2 p-2 hover:cursor-pointer"
                       onClick={() => {
                         navigate("/profile");
                         setIsMobileMenuOpen(false);
                       }}
                     >
-                      <IoPersonCircleOutline size={24} className="text-[#2E92A0]" />
+                      <IoPersonCircleOutline
+                        size={24}
+                        className="text-[#2E92A0]"
+                      />
                       <div className="flex flex-col">
-                        <span className="text-[#3F3F3F] font-medium">{user.name} {user.surname}</span>
-                        <span className="text-[#696969] text-sm">+{user.phone}</span>
+                        <span className="text-[#3F3F3F] font-medium">
+                          {user.name} {user.surname}
+                        </span>
+                        <span className="text-[#696969] text-sm">
+                          +{user.phone}
+                        </span>
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={handleLogoutClick}
                       className="w-full px-4 py-[10px] font-semibold text-[#2E92A0] hover:text-white rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer flex items-center justify-center gap-2"
                     >
                       <IoLogOutOutline size={20} />
-                      {language === 'az' ? 'Çıxış' : language === 'en' ? 'Logout' : 'Выход'}
+                      {language === "az"
+                        ? "Çıxış"
+                        : language === "en"
+                        ? "Logout"
+                        : "Выход"}
                     </button>
                   </div>
                 ) : (
                   <div className="flex gap-x-[8px] w-full mb-4">
-                    <button 
+                    <button
                       className="px-4 py-[10px] w-[50%] font-semibold text-[#2E92A0] rounded-[8px] bg-white hover:bg-[#2E92A0] hover:text-white transition-colors border border-[#2E92A0]"
                       onClick={() => {
                         navigate("/giris?type=register");
                         setIsMobileMenuOpen(false);
                       }}
                     >
-                      {language === 'az' ? 'Qeydiyyat' : language === 'en' ? 'Register' : 'Регистрация'}
+                      {language === "az"
+                        ? "Qeydiyyat"
+                        : language === "en"
+                        ? "Register"
+                        : "Регистрация"}
                     </button>
-                    <button 
+                    <button
                       className="px-6 py-[10px] w-[50%] font-semibold bg-[#2E92A0] text-white rounded-[8px] hover:bg-white hover:text-[#2E92A0] transition-colors border border-[#2E92A0]"
                       onClick={() => {
                         navigate("/giris?type=login");
                         setIsMobileMenuOpen(false);
                       }}
                     >
-                      {language === 'az' ? 'Daxil ol' : language === 'en' ? 'Login' : 'Войти'}
+                      {language === "az"
+                        ? "Daxil ol"
+                        : language === "en"
+                        ? "Login"
+                        : "Войти"}
                     </button>
                   </div>
                 )}
@@ -439,12 +515,22 @@ const Header = () => {
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder={language === 'az' ? "Ümumi axtarış" : language === 'en' ? "Global search" : "Общий поиск"}
+                      placeholder={
+                        language === "az"
+                          ? "Ümumi axtarış"
+                          : language === "en"
+                          ? "Global search"
+                          : "Общий поиск"
+                      }
                       className="w-full px-4 py-3 pl-11 border border-[#E7E7E7] rounded-lg outline-none focus:border-[#2E92A0] transition-colors"
                       value={localSearchValue}
                       onChange={(e) => setLocalSearchValue(e.target.value)}
                     />
-                    <LuSearch className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-[20px] h-[20px] ${isSearching ? 'text-[#2E92A0]' : 'text-[#A0A0A0]'}`} />
+                    <LuSearch
+                      className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-[20px] h-[20px] ${
+                        isSearching ? "text-[#2E92A0]" : "text-[#A0A0A0]"
+                      }`}
+                    />
                   </div>
 
                   <AnimatePresence>
@@ -455,35 +541,50 @@ const Header = () => {
                         exit={{ opacity: 0, y: -10 }}
                         className="absolute left-4 right-4 mt-2 bg-white rounded-[8px] shadow-lg max-h-[400px] overflow-y-auto border border-[#E7E7E7] z-50"
                       >
-                        {(searchResults.hs_codes?.length > 0 || searchResults.approvals?.length > 0) ? (
+                        {searchResults.hs_codes?.length > 0 ||
+                        searchResults.approvals?.length > 0 ? (
                           <>
                             {searchResults.hs_codes?.length > 0 && (
                               <div className="p-2">
-                                <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">HS Kodları</div>
+                                <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">
+                                  HS Kodları
+                                </div>
                                 {searchResults.hs_codes.map((item) => (
                                   <div
                                     key={item.id}
-                                    onClick={() => handleResultClick('hs_codes', item)}
+                                    onClick={() =>
+                                      handleResultClick("hs_codes", item)
+                                    }
                                     className="flex items-center px-3 py-2 hover:bg-[#F5F5F5] cursor-pointer rounded-[4px]"
                                   >
-                                    <span className="text-[#2E92A0] font-medium mr-2">{item.code}</span>
-                                    <span className="text-[#3F3F3F] flex-1">{item.name[language]}</span>
+                                    <span className="text-[#2E92A0] font-medium mr-2">
+                                      {item.code}
+                                    </span>
+                                    <span className="text-[#3F3F3F] flex-1">
+                                      {item.name[language]}
+                                    </span>
                                     <IoIosArrowForward className="text-[#3F3F3F] ml-2" />
                                   </div>
                                 ))}
                               </div>
                             )}
-                            
+
                             {searchResults.approvals?.length > 0 && (
                               <div className="p-2 border-t border-[#E7E7E7]">
-                                <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">İcazələr</div>
+                                <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">
+                                  İcazələr
+                                </div>
                                 {searchResults.approvals.map((item) => (
                                   <div
                                     key={item.id}
-                                    onClick={() => handleResultClick('approvals', item)}
+                                    onClick={() =>
+                                      handleResultClick("approvals", item)
+                                    }
                                     className="flex items-center px-3 py-2 hover:bg-[#F5F5F5] cursor-pointer rounded-[4px]"
                                   >
-                                    <span className="text-[#3F3F3F]">{item.title[language]}</span>
+                                    <span className="text-[#3F3F3F]">
+                                      {item.title[language]}
+                                    </span>
                                     <IoIosArrowForward className="text-[#3F3F3F] ml-2" />
                                   </div>
                                 ))}
@@ -492,9 +593,11 @@ const Header = () => {
                           </>
                         ) : (
                           <div className="p-4 text-center text-[#3F3F3F]">
-                            {language === 'az' ? "Axtarışa uyğun nəticə tapılmadı" : 
-                             language === 'en' ? "No results found" : 
-                             "Результаты не найдены"}
+                            {language === "az"
+                              ? "Axtarışa uyğun nəticə tapılmadı"
+                              : language === "en"
+                              ? "No results found"
+                              : "Результаты не найдены"}
                           </div>
                         )}
                       </Motion.div>
@@ -506,7 +609,11 @@ const Header = () => {
                 <div className="flex flex-col">
                   {isMenuLoading ? (
                     <div className="py-4 text-center text-[#696969]">
-                      {language === 'az' ? "Yüklənir..." : language === 'en' ? "Loading..." : "Загрузка..."}
+                      {language === "az"
+                        ? "Yüklənir..."
+                        : language === "en"
+                        ? "Loading..."
+                        : "Загрузка..."}
                     </div>
                   ) : (
                     renderMobileMenuItems(menuItems)
@@ -525,14 +632,14 @@ const Header = () => {
       {/* Logout Confirmation Modal */}
       <AnimatePresence>
         {showLogoutModal && (
-          <Motion.div 
+          <Motion.div
             className="fixed inset-0 bg-[#0000003e] flex items-center justify-center z-[10001]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <Motion.div 
+            <Motion.div
               className="bg-white rounded-lg p-6 max-w-sm w-full mx-4"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -540,22 +647,32 @@ const Header = () => {
               transition={{ duration: 0.15, delay: 0.1 }}
             >
               <h3 className="text-lg font-semibold text-[#3F3F3F] mb-4">
-                {language === 'az' ? "Çıxış etmək istədiyinizə əminsiniz?" : 
-                 language === 'en' ? "Are you sure you want to log out?" : 
-                 "Вы уверены, что хотите выйти?"}
+                {language === "az"
+                  ? "Çıxış etmək istədiyinizə əminsiniz?"
+                  : language === "en"
+                  ? "Are you sure you want to log out?"
+                  : "Вы уверены, что хотите выйти?"}
               </h3>
               <div className="flex gap-4 justify-end">
                 <button
                   onClick={() => setShowLogoutModal(false)}
                   className="px-4 py-2 text-[#3F3F3F] hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  {language === 'az' ? "Xeyr" : language === 'en' ? "No" : "Нет"}
+                  {language === "az"
+                    ? "Xeyr"
+                    : language === "en"
+                    ? "No"
+                    : "Нет"}
                 </button>
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors"
                 >
-                  {language === 'az' ? "Bəli" : language === 'en' ? "Yes" : "Да"}
+                  {language === "az"
+                    ? "Bəli"
+                    : language === "en"
+                    ? "Yes"
+                    : "Да"}
                 </button>
               </div>
             </Motion.div>
