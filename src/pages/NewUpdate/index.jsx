@@ -337,7 +337,7 @@ export const NewUpdate = () => {
                         handleElanInputChange("elaveMelumat", e.target.value)
                       }
                       rows={4}
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
                       placeholder="Əlavə məlumatlar..."
                     />
                   </div>

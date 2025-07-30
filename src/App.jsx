@@ -68,9 +68,11 @@ function App() {
               </PageTransition>
             } />
             <Route path="/dasinma/yeni" element={
-              <PageTransition>
-                <NewUpdate />
-              </PageTransition>
+              <RouteGuard>
+                <PageTransition>
+                  <NewUpdate />
+                </PageTransition>
+              </RouteGuard>
             } />
             <Route path="/dasinma/elanlar/:id" element={
               <PageTransition>
