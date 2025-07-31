@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { IoPersonCircleOutline } from "react-icons/io5";
 import { IoLogOutOutline } from "react-icons/io5";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { motion as Motion } from "framer-motion";
 import { IoChevronDown } from "react-icons/io5";
 import { IoChevronUp } from "react-icons/io5";
@@ -441,8 +441,14 @@ const Header = () => {
           </div>
 
           {/* Mobile Menu */}
+          <AnimatePresence>
           {isMobileMenuOpen && (
-            <div className="fixed inset-0 bg-white z-50 mt-[118px] md:hidden overflow-y-auto">
+            <Motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-white z-50 mt-[118px] md:hidden overflow-y-auto">
               <div className="px-[16px] py-[24px]">
                 {/* Auth Section */}
                 {user ? (
@@ -467,6 +473,10 @@ const Header = () => {
                         </span>
                       </div>
                     </div>
+                    <div className="flex w-full gap-x-[8px]">
+                      <button 
+                      onClick={() => navigate("/dasinma/yeni")}
+                      className="w-full px-4 py-[10px] font-semibold text-white hover:text-[#2E92A0] rounded-[8px] bg-[#2E92A0] hover:bg-white transition-colors border border-[#2E92A0] hover:cursor-pointer flex items-center justify-center gap-2">Elan Yerləşdir <FaPlus size={20} /></button>
                     <button
                       onClick={handleLogoutClick}
                       className="w-full px-4 py-[10px] font-semibold text-[#2E92A0] hover:text-white rounded-[8px] bg-white hover:bg-[#2E92A0] transition-colors border border-[#2E92A0] hover:cursor-pointer flex items-center justify-center gap-2"
@@ -478,6 +488,7 @@ const Header = () => {
                         ? "Logout"
                         : "Выход"}
                     </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="flex gap-x-[8px] w-full mb-4">
@@ -620,9 +631,9 @@ const Header = () => {
                   )}
                 </div>
               </div>
-            </div>
+            </Motion.div>
           )}
-
+          </AnimatePresence>
           {/* Pass menuItems to Navbar for desktop view */}
           <Navbar menuItems={menuItems} isMenuLoading={isMenuLoading} />
           <div className="flex md:hidden bg-white">{searchBar}</div>

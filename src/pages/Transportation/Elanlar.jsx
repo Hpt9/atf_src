@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { IoClose } from 'react-icons/io5';
 import { useSearchBar } from "../../context/SearchBarContext";
 import useLanguageStore from '../../store/languageStore';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const mockData = [
   {
@@ -33,28 +34,74 @@ const tabs = [
   { label: 'Gedən', value: 'outgoing' },
 ];
 
+// Dropdown options
+const unitOptions = [
+  'Ton',
+  'Palet',
+  'Ədəd',
+  'Kubmetr (m³)',
+  'Konteyner tipi (20ft)',
+  'Konteyner tipi (40ft)'
+];
+
+const truckTypeOptions = [
+  'Tentli',
+  'Frigo (Soyuduculu)',
+  'Izotermik',
+  'Platforma',
+  'Lowbed'
+];
+
 export const Elanlar = () => {
   const { setSearchBar } = useSearchBar();
   const { language } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState('all');
-  const [page, setPage] = useState(1);
   const [showFilter, setShowFilter] = useState(false);
-  // Filter form state (mock, not functional)
-  const [filter, setFilter] = useState({
-    from: '',
-    to: '',
-    startDate: '',
-    endDate: '',
-    amount: '',
-    unit: 'Vahid',
-    truckType: '',
-  });
+  
+  // Dropdown states
+  const [activeDropdown, setActiveDropdown] = useState(null); // 'unit' or 'truckType' or null
+  const [selectedUnit, setSelectedUnit] = useState('Vahid');
+  const [selectedTruckType, setSelectedTruckType] = useState('Tırın tipi');
+  
+
 
   // Filter data based on activeTab
   const filteredData = activeTab === 'all'
     ? mockData
     : mockData.filter(item => item.direction === activeTab);
+
+  // Close dropdowns when filter modal closes
+  useEffect(() => {
+    if (!showFilter) {
+      setActiveDropdown(null);
+    }
+  }, [showFilter]);
+
+  // Handle click outside dropdowns
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (activeDropdown) {
+        const dropdowns = document.querySelectorAll('.dropdown-container');
+        let clickedInside = false;
+        
+        dropdowns.forEach(dropdown => {
+          if (dropdown.contains(event.target)) {
+            clickedInside = true;
+          }
+        });
+        
+        if (!clickedInside) {
+          setActiveDropdown(null);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [activeDropdown]);
 
 
     useEffect(() => {
@@ -141,9 +188,21 @@ export const Elanlar = () => {
         {/* Filter Modal */}
         
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 relative">
-        {showFilter && (
-          <div className='absolute right-0 w-full md:w-[404px] bg-white shadow-xl z-[1000] flex flex-col p-[16px] md:p-[32px] rounded-[8px]'>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 relative overflow-x-hidden">
+        <AnimatePresence>
+          {showFilter && (
+            <motion.div 
+              className='absolute right-0 w-full md:w-[404px] bg-white shadow-xl z-[1000] flex flex-col p-[16px] md:p-[32px] rounded-[8px]'
+              initial={{ opacity: 0, x: 300, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 300, scale: 0.9 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 300, 
+                damping: 30,
+                duration: 0.3
+              }}
+            >
             {/* Right-side drawer */}
             <div className="flex flex-col">
               <button
@@ -153,35 +212,120 @@ export const Elanlar = () => {
                 <IoClose size={24} />
               </button>
               <form className="flex flex-col gap-4 mt-4">
-                <div className="flex w-full">
-                  <input type="text" placeholder="Çıxma vaxtı" className="h-[48px] px-4 py-2 w-1/2 rounded-l-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none"  />
-                  <input type="text" placeholder="Gəlmə vaxtı" className="h-[48px] px-4 py-2 w-1/2 rounded-r-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none"  />
+                                 <div className="flex w-full">
+                   <input type="text" placeholder="Çıxma vaxtı" className="h-[48px] px-4 py-2 w-1/2 rounded-l-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
+                   <input type="text" placeholder="Gəlmə vaxtı" className="h-[48px] px-4 py-2 w-1/2 rounded-r-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
+                 </div>
+                 <div className="flex w-full">
+                   <input type="text" placeholder="Haradan" className="h-[48px] px-4 py-2 w-1/2 rounded-l-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
+                   <input type="text" placeholder="Hara" className="h-[48px] px-4 py-2 w-1/2 rounded-r-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
+                 </div>
+                 <input type="text" placeholder="Yükün miqdarı" className="h-[48px] px-4 py-2 rounded-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
+                
+                                 {/* Tırın tutumu custom select */}
+                 <div className="w-full relative dropdown-container">
+                   <div className="w-full flex items-center border border-[#E7E7E7] rounded-[8px] overflow-hidden h-[48px] bg-[#FAFAFA]">
+                     <div className="w-[228px] flex items-center justify-start h-full text-[#A0A0A0] text-[16px] font-semibold pl-[16px]">Tırın tutumu</div>
+                     <button 
+                       type="button" 
+                       className="w-[calc(100%-228px)] min-w-[110px] flex items-center justify-end h-full text-[#2E92A0] text-[16px] font-semibold pr-[16px] gap-2 focus:outline-none border-l border-[#E7E7E7] hover:bg-[#F0F0F0]"
+                       onClick={() => setActiveDropdown(activeDropdown === 'unit' ? null : 'unit')}
+                     >
+                       {selectedUnit}
+                       <svg 
+                         width="24" 
+                         height="24" 
+                         fill="none" 
+                         xmlns="http://www.w3.org/2000/svg"
+                         className={`transition-transform duration-200 ${activeDropdown === 'unit' ? 'rotate-180' : ''}`}
+                       >
+                         <path d="M7 10l5 5 5-5" stroke="#2E92A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                       </svg>
+                     </button>
+                   </div>
+                   
+                   {/* Unit Dropdown Menu */}
+                   <AnimatePresence>
+                     {activeDropdown === 'unit' && (
+                       <motion.div 
+                         className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E7E7E7] rounded-[8px] shadow-lg z-50 max-h-[200px] overflow-y-auto"
+                         initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                         animate={{ opacity: 1, y: 0, scale: 1 }}
+                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                         transition={{ duration: 0.2 }}
+                       >
+                       {unitOptions.map((option, index) => (
+                         <button
+                           key={index}
+                           type="button"
+                           className="w-full px-4 py-3 text-left text-[#3F3F3F] text-[15px] hover:bg-[#F5F5F5] focus:outline-none focus:bg-[#F5F5F5]"
+                           onClick={() => {
+                             setSelectedUnit(option);
+                             setActiveDropdown(null);
+                           }}
+                         >
+                           {option}
+                         </button>
+                       ))}
+                       </motion.div>
+                     )}
+                   </AnimatePresence>
                 </div>
-                <div className="flex w-full">
-                  <input type="text" placeholder="Haradan" className="h-[48px] px-4 py-2 w-1/2 rounded-l-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none"  />
-                  <input type="text" placeholder="Hara" className="h-[48px] px-4 py-2 w-1/2 rounded-r-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none"  />
-                </div>
-                <input type="text" placeholder="Yükün miqdarı" className="h-[48px] px-4 py-2 rounded-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none"  />
-                  {/* Tırın tutumu custom select */}
-                  <div className="w-full flex items-center border border-[#CFCFCF] rounded-[8px] overflow-hidden h-[48px]">
-                    <div className="w-[228px] flex items-center justify-start h-full text-[#A0A0A0] text-[16px] font-semibold pl-[16px]">Tırın tutumu</div>
-                    {/* <div className="w-[1px] h-full bg-[#CFCFCF]" /> */}
-                    <button type="button" className="w-[calc(100%-228px)] min-w-[110px] flex items-center justify-end h-full text-[#2E92A0] text-[16px] font-semibold pr-[16px] gap-2 focus:outline-none border-l border-[#CFCFCF]">
-                      Vahid
-                      <svg width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5" stroke="#2E92A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    </button>
-                  </div>
-                <div className="flex-1 relative">
-                  <input type="text" placeholder="Tırın tipi" className="w-full px-4 py-2 rounded-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#2E92A0] text-[15px] font-medium"  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#2E92A0] font-medium cursor-pointer select-none">Tırın tipi <span className="ml-1">▼</span></span>
+
+                {/* Tırın tipi dropdown */}
+                 <div className="w-full relative dropdown-container">
+                   <button
+                     type="button"
+                     className="w-full h-[48px] px-4 py-2 rounded-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#2E92A0] text-[15px] font-medium flex items-center justify-between focus:outline-none hover:bg-[#F0F0F0]"
+                     onClick={() => setActiveDropdown(activeDropdown === 'truckType' ? null : 'truckType')}
+                   >
+                     <span>{selectedTruckType}</span>
+                     <svg 
+                       width="24" 
+                       height="24" 
+                       fill="none" 
+                       xmlns="http://www.w3.org/2000/svg"
+                       className={`transition-transform duration-200 ${activeDropdown === 'truckType' ? 'rotate-180' : ''}`}
+                     >
+                       <path d="M7 10l5 5 5-5" stroke="#2E92A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                     </svg>
+                   </button>
+                   
+                   {/* Truck Type Dropdown Menu */}
+                   <AnimatePresence>
+                     {activeDropdown === 'truckType' && (
+                       <motion.div 
+                         className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E7E7E7] rounded-[8px] shadow-lg z-50 max-h-[200px] overflow-y-auto"
+                         initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                         animate={{ opacity: 1, y: 0, scale: 1 }}
+                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                         transition={{ duration: 0.2 }}
+                       >
+                       {truckTypeOptions.map((option, index) => (
+                         <button
+                           key={index}
+                           type="button"
+                           className="w-full px-4 py-3 text-left text-[#3F3F3F] text-[15px] hover:bg-[#F5F5F5] focus:outline-none focus:bg-[#F5F5F5]"
+                           onClick={() => {
+                             setSelectedTruckType(option);
+                             setActiveDropdown(null);
+                           }}
+                         >
+                           {option}
+                         </button>
+                       ))}
+                       </motion.div>
+                     )}
+                   </AnimatePresence>
                 </div>
                 <button type="button" className="w-full mt-2 py-3 rounded-[8px] bg-[#2E92A0] text-white border font-medium text-[18px] hover:bg-[#fff] hover:cursor-pointer hover:text-[#2E92A0] hover:border-[#2E92A0] transition-colors duration-150">Göster</button>
               </form>
             </div>
             {/* Transparent click-outside area */}
             <div className="fixed z-40" onClick={() => setShowFilter(false)} />
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
           {filteredData.map((item) => (
             <Link
               key={item.id}
