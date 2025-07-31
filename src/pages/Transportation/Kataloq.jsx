@@ -45,9 +45,10 @@ export const Kataloq = () => {
     }
   }, [showFilter]);
 
-  // Handle click outside dropdowns
+  // Handle click outside dropdowns and filter modal
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Handle dropdown clicks
       if (activeDropdown) {
         const dropdowns = document.querySelectorAll('.dropdown-container');
         let clickedInside = false;
@@ -62,13 +63,21 @@ export const Kataloq = () => {
           setActiveDropdown(null);
         }
       }
+
+      // Handle filter modal clicks
+      if (showFilter) {
+        const filterModal = document.querySelector('.filter-modal');
+        if (filterModal && !filterModal.contains(event.target)) {
+          setShowFilter(false);
+        }
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [activeDropdown]);
+  }, [activeDropdown, showFilter]);
 
   useEffect(() => {
     setSearchBar(
@@ -129,7 +138,7 @@ export const Kataloq = () => {
           <AnimatePresence>
             {showFilter && (
               <motion.div 
-                className='absolute right-0 w-full md:w-[404px] bg-white shadow-xl z-[1000] flex flex-col p-[16px] md:p-[32px] rounded-[8px]'
+                className='absolute right-0 w-full md:w-[404px] bg-white shadow-xl z-[1000] flex flex-col p-[16px] md:p-[32px] rounded-[8px] filter-modal'
                 initial={{ opacity: 0, x: 300, scale: 0.9 }}
                 animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, x: 300, scale: 0.9 }}
@@ -211,8 +220,6 @@ export const Kataloq = () => {
                   </button>
                 </form>
               </div>
-              {/* Transparent click-outside area */}
-              <div className="fixed z-40" onClick={() => setShowFilter(false)} />
               </motion.div>
             )}
           </AnimatePresence>

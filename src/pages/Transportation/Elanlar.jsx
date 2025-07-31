@@ -78,9 +78,10 @@ export const Elanlar = () => {
     }
   }, [showFilter]);
 
-  // Handle click outside dropdowns
+  // Handle click outside dropdowns and filter modal
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Handle dropdown clicks
       if (activeDropdown) {
         const dropdowns = document.querySelectorAll('.dropdown-container');
         let clickedInside = false;
@@ -95,13 +96,21 @@ export const Elanlar = () => {
           setActiveDropdown(null);
         }
       }
+
+      // Handle filter modal clicks
+      if (showFilter) {
+        const filterModal = document.querySelector('.filter-modal');
+        if (filterModal && !filterModal.contains(event.target)) {
+          setShowFilter(false);
+        }
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [activeDropdown]);
+  }, [activeDropdown, showFilter]);
 
 
     useEffect(() => {
@@ -191,8 +200,8 @@ export const Elanlar = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 relative overflow-x-hidden">
         <AnimatePresence>
           {showFilter && (
-            <motion.div 
-              className='absolute right-0 w-full md:w-[404px] bg-white shadow-xl z-[1000] flex flex-col p-[16px] md:p-[32px] rounded-[8px]'
+                         <motion.div 
+               className='absolute right-0 w-full md:w-[404px] bg-white shadow-xl z-[1000] flex flex-col p-[16px] md:p-[32px] rounded-[8px] filter-modal'
               initial={{ opacity: 0, x: 300, scale: 0.9 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 300, scale: 0.9 }}
@@ -213,8 +222,8 @@ export const Elanlar = () => {
               </button>
               <form className="flex flex-col gap-4 mt-4">
                                  <div className="flex w-full">
-                   <input type="text" placeholder="Çıxma vaxtı" className="h-[48px] px-4 py-2 w-1/2 rounded-l-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
-                   <input type="text" placeholder="Gəlmə vaxtı" className="h-[48px] px-4 py-2 w-1/2 rounded-r-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
+                   <input type="datetime-local" placeholder="Çıxma vaxtı" className="h-[48px] px-4 py-2 w-1/2 rounded-l-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
+                   <input type="datetime-local" placeholder="Gəlmə vaxtı" className="h-[48px] px-4 py-2 w-1/2 rounded-r-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
                  </div>
                  <div className="flex w-full">
                    <input type="text" placeholder="Haradan" className="h-[48px] px-4 py-2 w-1/2 rounded-l-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
@@ -321,9 +330,7 @@ export const Elanlar = () => {
                 <button type="button" className="w-full mt-2 py-3 rounded-[8px] bg-[#2E92A0] text-white border font-medium text-[18px] hover:bg-[#fff] hover:cursor-pointer hover:text-[#2E92A0] hover:border-[#2E92A0] transition-colors duration-150">Göster</button>
               </form>
             </div>
-            {/* Transparent click-outside area */}
-            <div className="fixed z-40" onClick={() => setShowFilter(false)} />
-            </motion.div>
+                         </motion.div>
           )}
         </AnimatePresence>
           {filteredData.map((item) => (
