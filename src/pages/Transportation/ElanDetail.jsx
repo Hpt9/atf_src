@@ -1,17 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { IoArrowBack, IoCall } from "react-icons/io5";
 import { useNavigate, useParams } from "react-router-dom";
 
 const mockElan = {
   images: [
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1468421870903-4df1664ac249?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=80",
-    "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80",
+    "https://media.istockphoto.com/id/1465157700/photo/brightly-red-colored-semi-truck-speeding-on-a-two-lane-highway-with-cars-in-background-under.jpg?s=612x612&w=0&k=20&c=cfbbPy2ylvFGRULNLGO_Ucm-C5DsOJMFHiZBdKGsq3c=",
+    "https://plus.unsplash.com/premium_photo-1664695368767-c42483a0bda1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dHJ1Y2t8ZW58MHx8MHx8fDA%3D",
+    "https://media.istockphoto.com/id/1465157700/photo/brightly-red-colored-semi-truck-speeding-on-a-two-lane-highway-with-cars-in-background-under.jpg?s=612x612&w=0&k=20&c=cfbbPy2ylvFGRULNLGO_Ucm-C5DsOJMFHiZBdKGsq3c=",
+    "https://plus.unsplash.com/premium_photo-1664695368767-c42483a0bda1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dHJ1Y2t8ZW58MHx8MHx8fDA%3D",
+    "https://media.istockphoto.com/id/1465157700/photo/brightly-red-colored-semi-truck-speeding-on-a-two-lane-highway-with-cars-in-background-under.jpg?s=612x612&w=0&k=20&c=cfbbPy2ylvFGRULNLGO_Ucm-C5DsOJMFHiZBdKGsq3c=",
+    "https://plus.unsplash.com/premium_photo-1664695368767-c42483a0bda1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dHJ1Y2t8ZW58MHx8MHx8fDA%3D",
+    "https://media.istockphoto.com/id/1465157700/photo/brightly-red-colored-semi-truck-speeding-on-a-two-lane-highway-with-cars-in-background-under.jpg?s=612x612&w=0&k=20&c=cfbbPy2ylvFGRULNLGO_Ucm-C5DsOJMFHiZBdKGsq3c=",
+    "https://plus.unsplash.com/premium_photo-1664695368767-c42483a0bda1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dHJ1Y2t8ZW58MHx8MHx8fDA%3D",
   ],
   title: "Moskva–Bakı",
   contact: {
@@ -37,10 +37,50 @@ const mockElan = {
     "20 mart 2025 tarixində saat 13:00-da Moskvadan Bakıya yükləşmə reysi həyata keçiriləcək. Marşrut üzrə hər növ yük qəbul olunur. Təxmini çatdırılma vaxtı 21 mart saat 17:00-dir. Hazırda 5 ton boş yer mövcuddur. Yüklər təhlükəsiz şəkildə, vaxtında və məsuliyyətlə çatdırılır. Əlavə məlumat və sifariş üçün əlaqə saxlaya bilərsiniz.",
 };
 
+// Add this mock data for similar announcements
+const mockSimilarAnnouncements = [
+  {
+    id: 1,
+    image: "https://plus.unsplash.com/premium_photo-1664695368767-c42483a0bda1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dHJ1Y2t8ZW58MHx8MHx8fDA%3D",
+    title: "Kazan–Bakı",
+    desc: "Yük: Avtomobil hissələri, 3 ton, 22 mart 2025",
+  },
+  {
+    id: 2,
+    image: "https://media.istockphoto.com/id/1465157700/photo/brightly-red-colored-semi-truck-speeding-on-a-two-lane-highway-with-cars-in-background-under.jpg?s=612x612&w=0&k=20&c=cfbbPy2ylvFGRULNLGO_Ucm-C5DsOJMFHiZBdKGsq3c=",
+    title: "Sankt-Peterburq–Gəncə",
+    desc: "Yük: Məişət əşyaları, 2 ton, 25 mart 2025",
+  },
+  {
+    id: 3,
+    image: "https://plus.unsplash.com/premium_photo-1664695368767-c42483a0bda1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dHJ1Y2t8ZW58MHx8MHx8fDA%3D",
+    title: "Kiyev–Sumqayıt",
+    desc: "Yük: Elektronika, 1.5 ton, 28 mart 2025",
+  },
+  {
+    id: 4,
+    image: "https://media.istockphoto.com/id/1465157700/photo/brightly-red-colored-semi-truck-speeding-on-a-two-lane-highway-with-cars-in-background-under.jpg?s=612x612&w=0&k=20&c=cfbbPy2ylvFGRULNLGO_Ucm-C5DsOJMFHiZBdKGsq3c=",
+    title: "Tbilisi–Şəki",
+    desc: "Yük: Qida məhsulları, 4 ton, 30 mart 2025",
+  },
+];
+
 export const ElanDetail = () => {
   const { id } = useParams();
   const [selectedImage, setSelectedImage] = useState(0);
+  const [loadingSimilar, setLoadingSimilar] = useState(true);
+  const [similarAnnouncements, setSimilarAnnouncements] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setLoadingSimilar(true);
+    const timer = setTimeout(() => {
+      setSimilarAnnouncements(mockSimilarAnnouncements);
+      setLoadingSimilar(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="w-full flex items-center flex-col gap-y-[16px]">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-4 md:py-8 flex flex-col md:flex-row gap-8">
@@ -116,7 +156,7 @@ export const ElanDetail = () => {
                   AZ
                 </div>
               </div>
-              <div className="text-[#3F3F3F] flex items-center justify-center text-[30px] font-medium tracking-[5px]">
+              <div className="text-[#3F3F3F] flex items-center justify-center text-[30px] font-medium w-full text-center">
                 10-KA-663
               </div>
             </div>
@@ -135,16 +175,36 @@ export const ElanDetail = () => {
           Digər Elanlar
         </div>
         <div className="similar_announcements_list w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {[1,2,3,4].map((i) => (
-            <div key={i} className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col animate-pulse">
-              <div className="w-full h-[180px] bg-gray-200" />
-              <div className="p-4 flex flex-col flex-1 gap-2">
-                <div className="h-5 bg-gray-200 rounded w-2/3 mb-2" />
-                <div className="h-4 bg-gray-100 rounded w-1/2 mb-2" />
-                <div className="h-4 bg-gray-100 rounded w-1/3" />
-              </div>
-            </div>
-          ))}
+          {loadingSimilar
+            ? [1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col animate-pulse"
+                >
+                  <div className="w-full h-[180px] bg-gray-200" />
+                  <div className="p-4 flex flex-col flex-1 gap-2">
+                    <div className="h-5 bg-gray-200 rounded w-2/3 mb-2" />
+                    <div className="h-4 bg-gray-100 rounded w-1/2 mb-2" />
+                    <div className="h-4 bg-gray-100 rounded w-1/3" />
+                  </div>
+                </div>
+              ))
+            : similarAnnouncements.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col"
+                >
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-[180px] object-cover"
+                  />
+                  <div className="p-4 flex flex-col flex-1 gap-2">
+                    <div className="text-lg font-medium text-[#3F3F3F]">{item.title}</div>
+                    <div className="text-sm text-[#6B7280]">{item.desc}</div>
+                  </div>
+                </div>
+              ))}
         </div>
       </div>
     </div>

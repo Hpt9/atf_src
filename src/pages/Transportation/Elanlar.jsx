@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const mockData = [
   {
     id: 1,
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
+    image: 'https://plus.unsplash.com/premium_photo-1664695368767-c42483a0bda1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dHJ1Y2t8ZW58MHx8MHx8fDA%3D',
     title: 'Moskva – Bakı',
     subtitle: 'Bütün yüklərin daşınması',
     date: '20 Mart 2025 (13:00) – 21 Mart 2025 (17:00)',
@@ -17,7 +17,7 @@ const mockData = [
   },
   {
     id: 2,
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
+    image: 'https://media.istockphoto.com/id/1465157700/photo/brightly-red-colored-semi-truck-speeding-on-a-two-lane-highway-with-cars-in-background-under.jpg?s=612x612&w=0&k=20&c=cfbbPy2ylvFGRULNLGO_Ucm-C5DsOJMFHiZBdKGsq3c=',
     title: 'Bakı – Moskva',
     subtitle: 'Bütün yüklərin daşınması',
     date: '20 Mart 2025 (13:00) – 21 Mart 2025 (17:00)',

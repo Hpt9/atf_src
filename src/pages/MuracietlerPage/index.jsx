@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import useLanguageStore from "../../store/languageStore";
 import { getTokenCookie } from '../../utils/cookieUtils';
+import toast from 'react-hot-toast';
 const MuracietlerPage = () => {
   const navigate = useNavigate();
   const { setSearchBar } = useSearchBar();
@@ -269,7 +270,7 @@ const MuracietlerPage = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => toogleMuracietModal()}
         >
-          <span className="mr-2">{texts.apply[language] || texts.apply.az}</span>
+          <span className="mr-2 whitespace-nowrap">{texts.apply[language] || texts.apply.az}</span>
           <svg
             width="16"
             height="16"
@@ -392,6 +393,49 @@ const MuracietlerPage = () => {
     setModalStep(prevStep);
   };
 
+  // State for info popover
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [isInfoPopoverOpen, setIsInfoPopoverOpen] = useState(false);
+  const [popoverPosition, setPopoverPosition] = useState({ x: 0, y: 0 });
+
+  // Handle info popover
+  const handleInfoClick = (app, event) => {
+    const button = event.currentTarget;
+    const rect = button.getBoundingClientRect();
+    
+    setSelectedApp(app);
+    setPopoverPosition({
+      x: rect.left - 300, // Position to the left of the button
+      y: rect.bottom + 8
+    });
+    setIsInfoPopoverOpen(true);
+  };
+
+  const closeInfoPopover = () => {
+    setIsInfoPopoverOpen(false);
+    setSelectedApp(null);
+  };
+
+  // Handle PDF link click
+  const handlePDFLinkClick = (pdfSlug) => {
+    const pdfUrl = `https://atfplatform.tw1.ru/storage/${pdfSlug}`;
+    window.open(pdfUrl, '_blank');
+  };
+
+  // Close popover when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isInfoPopoverOpen && !event.target.closest('.popover-container')) {
+        closeInfoPopover();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isInfoPopoverOpen]);
+
   // Update the render logic to handle loading and empty states
   if (isLoading) {
     return (
@@ -509,9 +553,97 @@ const MuracietlerPage = () => {
               </div>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
-      <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
+                 )}
+       </AnimatePresence>
+
+               {/* Info Popover */}
+        <AnimatePresence>
+          {isInfoPopoverOpen && selectedApp && (
+            <motion.div
+              className="fixed z-[1001] popover-container"
+                             style={{
+                 left: popoverPosition.x,
+                 top: popoverPosition.y,
+                 transform: 'translateX(-100%)'
+               }}
+              initial={{ opacity: 0, scale: 0.95, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="bg-white rounded-lg shadow-lg border border-[#E7E7E7] p-4 min-w-[300px] max-w-[400px]">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[14px] font-medium text-[#3F3F3F]">HS Kod:</span>
+                    <span className="text-[14px] text-[#3F3F3F]">
+                      {selectedApp.code < 10 ? "0" + selectedApp.code : selectedApp.code}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-start gap-2">
+                    <span className="text-[14px] font-medium text-[#3F3F3F]">Sənədlər:</span>
+                    <div className="flex flex-col gap-1">
+                      {selectedApp.approval_titles && selectedApp.approval_titles.map((title, index) => (
+                        <span key={index} className="text-[14px] text-[#3F3F3F]">
+                          {title.az}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {selectedApp.pdf_slug && selectedApp.pdf_slug.length > 0 ? (
+                    <div className="space-y-2">
+                      <span className="text-[14px] font-medium text-[#3F3F3F]">PDF Sənədlər:</span>
+                      <div className="space-y-1">
+                        {selectedApp.pdf_slug.map((pdf) => (
+                          <button
+                            key={pdf.id}
+                            onClick={() => handlePDFLinkClick(pdf.slug)}
+                            className="w-full text-left p-2 border border-[#E7E7E7] rounded hover:bg-[#F5F5F5] transition-colors cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                                <path
+                                  d="M14 2V8H20"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                              <span className="text-[14px] text-[#2E92A0] hover:text-[#1E7A8A]">
+                                {pdf.slug.split('/').pop()}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-[14px] text-gray-500">
+                      No PDF files available for this application.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
         <div className="bg-white border border-[#E7E7E7] rounded-[8px] overflow-hidden">
           {/* Table Header */}
           <div className="p-[16px] flex justify-between items-center border-b border-[#E7E7E7] bg-white">
@@ -535,9 +667,9 @@ const MuracietlerPage = () => {
                 <p className="font-medium text-[#3F3F3F] text-[14px]">{texts.organization[language] || texts.organization.az}</p>
               </div>
             </div>
-            {/* <p className="font-medium text-[#3F3F3F] text-[14px] w-[40px] md-[80px] text-center">
-              {texts.download[language] || texts.download.az}
-            </p> */}
+                         <p className="font-medium text-[#3F3F3F] text-[14px] w-[40px] md:w-[80px] text-center">
+               Info
+             </p>
           </div>
 
           {/* Improved animated container */}
@@ -595,7 +727,7 @@ const MuracietlerPage = () => {
                     >
                       <div className="flex items-center gap-x-[8px]">
                         <p className="text-[#3F3F3F] text-[14px] w-[64px] md:w-[150px]">
-                          {app.code}
+                          {app.code<10 ? "0"+app.code : app.code}
                         </p>
                         <p className="text-[#3F3F3F] text-[14px] w-[75px] md:w-[150px]">
                         {app.approval_titles
@@ -610,6 +742,42 @@ const MuracietlerPage = () => {
                         {app.organization.az ? app.organization.az : texts.hello[language] || texts.hello.az}
                         </p>
                       </div>
+                                             <div className="w-[40px] md:w-[80px] flex justify-center">
+                                                   <button 
+                            className="text-[#2E92A0] hover:text-[#1E7A8A] transition-colors cursor-pointer"
+                            onClick={(e) => handleInfoClick(app, e)}
+                          >
+                           <svg
+                             width="24"
+                             height="24"
+                             viewBox="0 0 24 24"
+                             fill="none"
+                             xmlns="http://www.w3.org/2000/svg"
+                           >
+                             <path
+                               d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                               stroke="currentColor"
+                               strokeWidth="2"
+                               strokeLinecap="round"
+                               strokeLinejoin="round"
+                             />
+                             <path
+                               d="M12 16V12"
+                               stroke="currentColor"
+                               strokeWidth="2"
+                               strokeLinecap="round"
+                               strokeLinejoin="round"
+                             />
+                             <path
+                               d="M12 8H12.01"
+                               stroke="currentColor"
+                               strokeWidth="2"
+                               strokeLinecap="round"
+                               strokeLinejoin="round"
+                             />
+                           </svg>
+                         </button>
+                       </div>
                       {/* <div className="w-[40px] md:w-[80px] flex justify-end">
                         <button className="text-[#2E92A0] hover:text-[#1E7A8A] transition-colors cursor-pointer">
                           <svg

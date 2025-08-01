@@ -56,6 +56,12 @@ const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setMod
     setValidationError("");
   };
 
+  const handleKeyPress = function(e) {
+    if (e.key === 'Enter') {
+      handleNext();
+    }
+  };
+
   const handleNext = function() {
     // Blur active element to hide keyboard on mobile
     if (document.activeElement) {
@@ -92,6 +98,7 @@ const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setMod
           className={`w-full px-4 py-2 border ${validationError ? 'border-red-500' : 'border-[#E7E7E7]'} rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]`}
           value={selectedHsCode || ""}
           onChange={handleInputChange}
+          onKeyPress={handleKeyPress}
           inputMode="numeric" 
           pattern="[0-9]*"
         />
@@ -102,12 +109,6 @@ const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setMod
 
       <div className="flex flex-col gap-2">
         <button
-          onClick={closeModal}
-          className="w-full py-2 px-4 bg-white border border-[#E7E7E7] text-[#3F3F3F] rounded-lg hover:bg-[#F5F5F5] transition-colors"
-        >
-          {texts.cancel[language] || texts.cancel.az}
-        </button>
-        <button
           onClick={handleNext}
           className={`w-full py-2 px-4 rounded-lg transition-colors ${
             !selectedHsCode || !selectedHsCode.trim() || validationError
@@ -117,6 +118,12 @@ const HSCodeStep = ({ selectedHsCode = "", setSelectedHsCode, closeModal, setMod
           disabled={!selectedHsCode || !selectedHsCode.trim() || !!validationError}
         >
           {texts.next[language] || texts.next.az}
+        </button>
+        <button
+          onClick={closeModal}
+          className="w-full py-2 px-4 bg-white border border-[#E7E7E7] text-[#3F3F3F] rounded-lg hover:bg-[#F5F5F5] transition-colors"
+        >
+          {texts.cancel[language] || texts.cancel.az}
         </button>
       </div>
     </div>

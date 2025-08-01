@@ -37,12 +37,22 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
   // Helper to check if a menu item or any of its children matches the current path
   const isMenuItemActive = (item) => {
     const path = `/${item.url}`;
+    
+    // Check exact match
     if (location.pathname === path || (location.pathname === '/' && item.url === '')) {
       return true;
     }
+    
+    // Check if current path starts with the menu item path (for nested routes)
+    if (item.url && location.pathname.startsWith(path)) {
+      return true;
+    }
+    
+    // Check children recursively
     if (item.children && item.children.length > 0) {
       return item.children.some(isMenuItemActive);
     }
+    
     return false;
   };
 

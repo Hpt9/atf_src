@@ -283,7 +283,7 @@ export const NewUpdate = () => {
                             e.target.value
                           )
                         }
-                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-r-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-r-lg h-[50px] focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
                       >
                         <option value="">Seçin</option>
                         <option value="ton">Ton</option>
@@ -415,7 +415,7 @@ export const NewUpdate = () => {
                         handleKataloqInputChange("sirketAdi", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Şirkətin adını daxil edin"
+                      placeholder="Şirkətin adı"
                     />
                   </div>
 
@@ -430,7 +430,7 @@ export const NewUpdate = () => {
                         handleKataloqInputChange("neceBiriVar", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Neçə biri var"
+                      placeholder="Neçə tırı var"
                     />
                   </div>
 
@@ -448,7 +448,7 @@ export const NewUpdate = () => {
                         )
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="0"
+                      placeholder="Boş tırının sayı"
                     />
                   </div>
 
@@ -463,7 +463,7 @@ export const NewUpdate = () => {
                         handleKataloqInputChange("voen", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="VÖEN nömrəsi"
+                      placeholder="VÖEN"
                     />
                   </div>
 
@@ -478,7 +478,7 @@ export const NewUpdate = () => {
                         handleKataloqInputChange("elaqeNomresi", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="+994"
+                      placeholder="Əlaqə nömrəsi"
                     />
                   </div>
 
@@ -493,7 +493,7 @@ export const NewUpdate = () => {
                         handleKataloqInputChange("email", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="example@email.com"
+                      placeholder="E-poçt ünvanı"
                     />
                   </div>
 
@@ -507,8 +507,8 @@ export const NewUpdate = () => {
                       onChange={(e) =>
                         handleKataloqInputChange("vebsaytLinki", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="https://example.com"
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Vebsayt linki"
                     />
                   </div>
                 </div>

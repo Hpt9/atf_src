@@ -156,7 +156,7 @@ const FaqPage = () => {
                     className="border-t border-[#E7E7E7]"
                   >
                     <div 
-                      className="p-4 text-[#3F3F3F]"
+                      className="p-4 text-[#3F3F3F] [&>ul]:list-disc [&>ul]:pl-6 [&>ol]:list-decimal [&>ol]:pl-6 [&>li]:mb-1 [&>p]:mb-2"
                       dangerouslySetInnerHTML={{ __html: faq.answer[language] }}
                     />
                   </motion.div>

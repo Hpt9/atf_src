@@ -224,6 +224,18 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
     setFetchTrigger(prev => prev + 1);
   }
 
+  // Handle keyboard events for the entire component
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'Enter' && selectedApprovals.length > 0 && !isSubmitting) {
+        handleNext();
+      }
+    };
+
+    document.addEventListener('keypress', handleKeyPress);
+    return () => document.removeEventListener('keypress', handleKeyPress);
+  }, [selectedApprovals.length, isSubmitting]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
@@ -275,7 +287,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
                     (isSubmitting ? "cursor-not-allowed opacity-50" : "cursor-pointer")}
                 >
                   {approval.title}
-                  {hasPdfs && <span className="ml-2 text-xs text-green-600">(PDF included)</span>}
+                  {hasPdfs && <span className="ml-2 text-xs text-green-600">(Sənəd Mövcuddur.)</span>}
                 </label>
               </div>
             );
@@ -284,16 +296,6 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
       )}
 
       <div className="flex flex-col gap-2 mt-4">
-        <button
-          onClick={closeModal}
-          disabled={isSubmitting}
-          className={"w-full py-2 px-4 bg-white border border-[#E7E7E7] text-[#3F3F3F] rounded-lg " +
-            (isSubmitting
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-[#F5F5F5] transition-colors")}
-        >
-          {texts.cancel[language] || texts.cancel.az}
-        </button>
         <button
           onClick={handleNext}
           disabled={selectedApprovals.length === 0 || isSubmitting}
@@ -310,6 +312,16 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
           ) : (
             texts.next[language] || texts.next.az
           )}
+        </button>
+        <button
+          onClick={closeModal}
+          disabled={isSubmitting}
+          className={"w-full py-2 px-4 bg-white border border-[#E7E7E7] text-[#3F3F3F] rounded-lg " +
+            (isSubmitting
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-[#F5F5F5] transition-colors")}
+        >
+          {texts.cancel[language] || texts.cancel.az}
         </button>
       </div>
     </div>
