@@ -81,13 +81,23 @@ const HsCodesPage = () => {
     }
   }, [searchQuery]);
 
-  const fetchRootCategories = async () => {
+  const fetchRootCategories = async (page = 1) => {
     try {
       setLoading(true);
-      const response = await axios.post('https://atfplatform.tw1.ru/api/code-categories', {
+      const response = await axios.post(`https://atfplatform.tw1.ru/api/code-categories?page=${page}`, {
         parent_id: null
       });
-      setHsCodesData(response.data);
+      const list = Array.isArray(response?.data?.data) ? response.data.data : response.data;
+      setHsCodesData(list || []);
+      if (response?.data?.meta) {
+        const meta = response.data.meta;
+        setPagination({
+          currentPage: meta.current_page,
+          lastPage: meta.last_page,
+          perPage: meta.per_page,
+          total: meta.total,
+        });
+      }
     } catch (error) {
       if (error.response && error.response.status === 404) {
         setHsCodesData([]);
@@ -111,15 +121,16 @@ const HsCodesPage = () => {
       const response = await axios.post('https://atfplatform.tw1.ru/api/code-categories', {
         parent_id: parentId
       });
+      const children = Array.isArray(response?.data?.data) ? response.data.data : response.data;
       
-      console.log('Children data for parent ID', parentId, ':', response.data);
+      console.log('Children data for parent ID', parentId, ':', children);
       
       // Update the parent's children in the data
       setHsCodesData(prevData => {
         const updateChildren = (items) => {
           return items.map(item => {
             if (item.id === parentId) {
-              return { ...item, children: response.data || [] };
+              return { ...item, children: children || [] };
             }
             if (item.children) {
               return { ...item, children: updateChildren(item.children) };
@@ -174,7 +185,7 @@ const HsCodesPage = () => {
         q: query,
         include_children: true
       });
-      
+      const list = Array.isArray(response?.data?.data) ? response.data.data : response.data;
       const newExpandedGroups = {};
       const expandMatchedItems = (items, shouldExpand = false) => {
         items.forEach(item => {
@@ -187,9 +198,9 @@ const HsCodesPage = () => {
         });
       };
       
-      expandMatchedItems(response.data);
+      expandMatchedItems(list || []);
       setExpandedGroups(newExpandedGroups);
-      setHsCodesData(response.data);
+      setHsCodesData(list || []);
     } catch (error) {
       if (error.response && (error.response.status === 404 || error.response.status === 422)) {
         setHsCodesData([]);
@@ -310,7 +321,7 @@ const HsCodesPage = () => {
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= pagination.lastPage) {
-      fetchRootCategories();
+      fetchRootCategories(page);
     }
   };
 

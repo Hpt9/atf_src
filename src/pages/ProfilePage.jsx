@@ -16,6 +16,8 @@ const ProfilePage = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [avatarFile, setAvatarFile] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     surname: '',
@@ -135,7 +137,8 @@ const ProfilePage = () => {
       });
       
       console.log('User data fetched:', response.data);
-      return response.data;
+      // API returns shape { data: { ...user } }
+      return response.data?.data || null;
     } catch (error) {
       console.error('Error fetching user data:', error);
       toast.error(texts.toastMessages.loadError[language] || texts.toastMessages.loadError.az);
@@ -243,7 +246,11 @@ const ProfilePage = () => {
     }
   };
 
-  const validatePasswords = () => {
+  const validatePasswords = (requireOld = false) => {
+    if (requireOld && !formData.old_password) {
+      setPasswordError(texts.passwordErrors.tooShort[language] || texts.passwordErrors.tooShort.az);
+      return false;
+    }
     if (formData.password || formData.password_confirmation) {
       if (formData.password !== formData.password_confirmation) {
         setPasswordError(texts.passwordErrors.mismatch[language] || texts.passwordErrors.mismatch.az);
@@ -259,26 +266,27 @@ const ProfilePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validatePasswords()) return;
+    // Password change is handled via a separate endpoint in API; skip here
 
     setLoading(true);
     try {
-      const dataToSend = { ...formData };
-      
-      // Only include password fields if they are filled
-      if (!dataToSend.password) {
-        delete dataToSend.password;
-        delete dataToSend.password_confirmation;
+      const formDataToSend = new FormData();
+      if (avatarFile) {
+        formDataToSend.append('avatar', avatarFile);
       }
+      if (formData.name) formDataToSend.append('name', formData.name);
+      if (formData.surname) formDataToSend.append('surname', formData.surname);
+      if (formData.email) formDataToSend.append('email', formData.email);
+      if (formData.phone) formDataToSend.append('phone', formData.phone);
 
       const response = await axios.post(
         'https://atfplatform.tw1.ru/api/profile/edit',
-        dataToSend,
+        formDataToSend,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            'Accept': 'application/json'
+            // NOTE: Do not set Content-Type; the browser will set multipart boundaries
           }
         }
       );
@@ -290,12 +298,13 @@ const ProfilePage = () => {
         toast.success(texts.toastMessages.updateSuccess[language] || texts.toastMessages.updateSuccess.az);
         setIsEditing(false);
         
-        // Clear password fields
+        // Clear password fields locally (not sent in this request)
         setFormData(prev => ({
           ...prev,
           password: '',
           password_confirmation: ''
         }));
+        setAvatarFile(null);
       }
     } catch (error) {
       if (error.response?.data?.message) {
@@ -304,6 +313,49 @@ const ProfilePage = () => {
         toast.error(texts.toastMessages.validationError[language] || texts.toastMessages.validationError.az);
       } else {
         // toast.error('Xəta baş verdi');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    if (!validatePasswords(true)) return;
+
+    setLoading(true);
+    try {
+      await axios.post(
+        'https://atfplatform.tw1.ru/api/profile/password/edit',
+        {
+          old_password: formData.old_password,
+          password: formData.password,
+          password_confirmation: formData.password_confirmation,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      toast.success(texts.toastMessages.updateSuccess[language] || texts.toastMessages.updateSuccess.az);
+      setFormData(prev => ({
+        ...prev,
+        old_password: '',
+        password: '',
+        password_confirmation: ''
+      }));
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+      setShowOldPassword(false);
+    } catch (error) {
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else if (error.response?.status === 422) {
+        toast.error(texts.toastMessages.validationError[language] || texts.toastMessages.validationError.az);
       }
     } finally {
       setLoading(false);
@@ -357,6 +409,31 @@ const ProfilePage = () => {
           
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Avatar */}
+              <motion.div 
+                className="space-y-2 md:col-span-2"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.05 }}
+              >
+                <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <IoPerson className="text-[#2E92A0]" />
+                  Avatar
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={!isEditing}
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setAvatarFile(e.target.files[0]);
+                    } else {
+                      setAvatarFile(null);
+                    }
+                  }}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:border-gray-300"
+                />
+              </motion.div>
               {/* First Name */}
               <motion.div 
                 className="space-y-2"
@@ -440,6 +517,39 @@ const ProfilePage = () => {
                   className="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:border-gray-300"
                   placeholder="+994-xx-xxx-xx-xx"
                 />
+              </motion.div>
+
+              {/* Old Password (for password change) */}
+              <motion.div 
+                className="space-y-2"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.45 }}
+              >
+                <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <IoLockClosed className="text-[#2E92A0]" />
+                  Köhnə şifrə
+                </label>
+                <div className="relative">
+                  <input
+                    type={showOldPassword ? "text" : "password"}
+                    name="old_password"
+                    value={formData.old_password || ''}
+                    onChange={handleInputChange}
+                    disabled={!isEditing}
+                    className="w-full px-4 py-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:border-gray-300"
+                    placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
+                  />
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={() => setShowOldPassword(!showOldPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#2E92A0] transition-colors"
+                    >
+                      {showOldPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                    </button>
+                  )}
+                </div>
               </motion.div>
 
               {/* New Password */}
@@ -558,6 +668,7 @@ const ProfilePage = () => {
                       setPasswordError('');
                       setShowPassword(false);
                       setShowConfirmPassword(false);
+                      setShowOldPassword(false);
                     }}
                     className="px-8 py-4 text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-300 font-medium"
                     whileHover={{ scale: 1.02 }}
@@ -584,7 +695,31 @@ const ProfilePage = () => {
                     ) : (
                       <>
                         <IoCheckmarkCircle size={20} />
-                        {texts.save[language] || texts.save.az}
+                        Profili yadda saxla
+                      </>
+                    )}
+                  </motion.button>
+                  <motion.button
+                    type="button"
+                    onClick={handlePasswordSubmit}
+                    disabled={loading}
+                    className="px-8 py-4 bg-gradient-to-r from-[#6B7280] to-[#4B5563] text-white rounded-xl hover:from-[#4B5563] hover:to-[#374151] transition-all duration-300 font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {loading ? (
+                      <>
+                        <motion.div 
+                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        />
+                        {texts.updating[language] || texts.updating.az}
+                      </>
+                    ) : (
+                      <>
+                        <IoCheckmarkCircle size={20} />
+                        Şifrəni yenilə
                       </>
                     )}
                   </motion.button>

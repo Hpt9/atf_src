@@ -6,15 +6,8 @@ import { IoClose } from "react-icons/io5";
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const mockData = Array.from({ length: 12 }).map((_, i) => ({
-  id: i + 1,
-  logo: "https://img.icons8.com/ios-filled/100/2E92A0/truck.png", // truck icon from icons8
-  company: "Bridge Logistics",
-  description:
-    "Kabin nəqliyyatı və gömrük daxil olmaqla quru yükləşmə xidmətləri göstərir.",
-  phone: "+994(50) 289-34-45",
-  website: "bridgexapp.com",
-}));
+// API base URL; replace with env if available
+const API_BASE = 'https://atfplatform.tw1.ru';
 
 // Dropdown options for "Haradan gəlir"
 const sourceOptions = [
@@ -33,6 +26,11 @@ export const Kataloq = () => {
   const { language } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilter, setShowFilter] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [items, setItems] = useState([]);
+  const [meta, setMeta] = useState(null);
+  const [page, setPage] = useState(1);
   
   // Dropdown states
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -78,6 +76,29 @@ export const Kataloq = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [activeDropdown, showFilter]);
+
+  // Fetch legal entities adverts
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const url = `${API_BASE}/api/adverts/legal-entities?page=${page}`;
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        setItems(Array.isArray(json?.data) ? json.data : []);
+        setMeta(json?.meta || null);
+      } catch (e) {
+        if (e.name !== 'AbortError') setError('Verilər yüklənərkən xəta baş verdi');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+    return () => controller.abort();
+  }, [page]);
 
   useEffect(() => {
     setSearchBar(
@@ -223,58 +244,80 @@ export const Kataloq = () => {
               </motion.div>
             )}
           </AnimatePresence>
-          
-          {mockData.map((item) => (
-            <Link
-              key={item.id}
-              to={`/dasinma/kataloq/${item.id}`}
-              className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col hover:shadow transition"
-            >
-              <div className="flex items-center justify-center h-[120px] bg-white border-b border-[#E7E7E7]">
+          {loading && (
+            Array.from({ length: 8 }).map((_, idx) => (
+              <div key={idx} className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col animate-pulse">
+                <div className="w-full h-[180px] bg-gray-200" />
+                <div className="p-4 flex flex-col flex-1 gap-2">
+                  <div className="h-5 bg-gray-200 rounded w-2/3 mb-2" />
+                  <div className="h-4 bg-gray-100 rounded w-1/2 mb-2" />
+                  <div className="h-4 bg-gray-100 rounded w-1/3" />
+                </div>
+              </div>
+            ))
+          )}
+          {!loading && items.map((item) => {
+            const image = item?.photos?.[0] || 'https://via.placeholder.com/600x400?text=No+Image';
+            const title = item?.name?.az || `${item?.from?.az || ''} – ${item?.to?.az || ''}` || '—';
+            const subtitle = item?.load_type?.az || item?.description?.az || '';
+            const date = item?.reach_from_address || '';
+            return (
+              <Link
+                key={item.slug}
+                to={`/dasinma/kataloq/${item.slug}`}
+                className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col hover:shadow transition"
+              >
                 <img
-                  src={item.logo}
-                  alt={item.company}
-                  className="max-h-[80px] max-w-[160px] object-contain"
+                  src={image}
+                  alt={title}
+                  className="w-full h-[180px] object-cover"
                 />
-              </div>
-              <div className="p-4 flex flex-col flex-1">
-                <h3 className="font-medium text-[#3F3F3F] text-[18px] mb-1">
-                  {item.company}
-                </h3>
-                <p className="text-[#3F3F3F] text-[15px] mb-2">
-                  {item.description}
-                </p>
-                <p className="text-[#A0A0A0] text-[13px] mt-auto mb-1">
-                  {item.phone}
-                </p>
-                <a
-                  href={`https://${item.website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[#2E92A0] text-[13px] underline"
-                >
-                  {item.website}
-                </a>
-              </div>
-            </Link>
-          ))}
+                <div className="p-4 flex flex-col flex-1">
+                  <h3 className="font-medium text-[#3F3F3F] text-[18px] mb-1">{title}</h3>
+                  <p className="text-[#3F3F3F] text-[15px] mb-2">{subtitle}</p>
+                  <p className="text-[#A0A0A0] text-[13px] mt-auto">{date}</p>
+                </div>
+              </Link>
+            );
+          })}
+          {!loading && !items.length && !error && (
+            <div className="col-span-full text-center text-[#A0A0A0]">Nəticə tapılmadı</div>
+          )}
+          {error && (
+            <div className="col-span-full text-center text-red-500">{error}</div>
+          )}
         </div>
         {/* Pagination */}
         <div className="flex justify-center items-center gap-2 mt-8">
-          <button className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">
-            Geri
+          <button
+            className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
+            disabled={!meta || page <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            Geriye
           </button>
-          <button className="w-8 h-8 rounded bg-[#2E92A0] text-white font-medium">
-            1
-          </button>
-          <button className="w-8 h-8 rounded bg-white border border-[#E7E7E7] text-[#3F3F3F] font-medium">
-            2
-          </button>
-          <button className="w-8 h-8 rounded bg-white border border-[#E7E7E7] text-[#3F3F3F] font-medium">
-            3
-          </button>
-          <button className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium">
-            İrəli
+          {meta?.links?.filter(l => l.label && !l.label.includes('Əvvəl') && !l.label.includes('Sonra')).map((l, idx) => {
+            const label = l.label;
+            const url = l.url || '';
+            const match = url.match(/page=(\d+)/);
+            const pageNum = match ? Number(match[1]) : Number(label);
+            const isActive = l.active;
+            return (
+              <button
+                key={idx}
+                className={`w-8 h-8 rounded font-medium ${isActive ? 'bg-[#2E92A0] text-white' : 'bg-white border border-[#E7E7E7] text-[#3F3F3F]'}`}
+                onClick={() => !isActive && pageNum && setPage(pageNum)}
+              >
+                {label}
+              </button>
+            );
+          })}
+          <button
+            className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
+            disabled={!meta || page >= (meta?.last_page || 1)}
+            onClick={() => setPage((p) => (meta ? Math.min(meta.last_page || p + 1, p + 1) : p + 1))}
+          >
+            İreli
           </button>
         </div>
       </div>

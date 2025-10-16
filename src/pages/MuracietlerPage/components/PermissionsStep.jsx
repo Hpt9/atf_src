@@ -105,7 +105,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
             approval.pdfs.forEach(pdf => {
               pdfFilesData.push({
                 approvalId: approval.id,
-                approvalTitle: approval.title,
+                approvalTitle: (approval.title && (approval.title[language] || approval.title.az)) || String(approval.title || ''),
                 slug: pdf.slug,
                 title: pdf.title || 'Document'
               });
@@ -163,7 +163,8 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
         'Authorization': 'Bearer ' + token
       },
       data: {
-        hs_code: parseInt(selectedHsCode, 10),
+        // Preserve leading zeroes as shown in API example
+        hs_code: selectedHsCode,
         approval_ids: selectedApprovals
       }
     })
@@ -187,17 +188,24 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
         return;
       }
       
-      // Open PDFs in new tabs instead of direct download to avoid CORS issues
+      // Open PDFs in new tabs instead of direct download
       selectedApprovals.forEach(approvalId => {
         const pdfFilesForApproval = pdfFiles.filter(pdf => pdf.approvalId === approvalId);
         
         pdfFilesForApproval.forEach(pdf => {
-          // Ensure slug starts with a forward slash
-          const slugWithSlash = pdf.slug.startsWith('/') ? pdf.slug : '/' + pdf.slug;
-          const pdfUrl = `https://atfplatform.tw1.ru/storage${slugWithSlash}`;
-          
-          // Open PDF in new tab
-          window.open(pdfUrl, '_blank');
+          // Build absolute URL robustly based on API response
+          let pdfUrl = '';
+          const slug = String(pdf.slug || '');
+          if (/^https?:\/\//i.test(slug)) {
+            pdfUrl = slug;
+          } else if (slug.startsWith('/storage') || slug.startsWith('storage')) {
+            pdfUrl = `https://atfplatform.tw1.ru/${slug.replace(/^\//, '')}`;
+          } else {
+            pdfUrl = `https://atfplatform.tw1.ru/storage/${slug.replace(/^\//, '')}`;
+          }
+          // Encode spaces and special chars in URL path
+          const safeUrl = encodeURI(pdfUrl);
+          window.open(safeUrl, '_blank');
         });
       });
       
@@ -286,7 +294,7 @@ const PermissionsStep = ({ selectedHsCode, setModalStep, closeModal, refreshAppl
                   className={"text-[#3F3F3F] " +
                     (isSubmitting ? "cursor-not-allowed opacity-50" : "cursor-pointer")}
                 >
-                  {approval.title}
+                  {(approval.title && (approval.title[language] || approval.title.az)) || String(approval.title || '')}
                   {hasPdfs && <span className="ml-2 text-xs text-green-600">(Sənəd Mövcuddur.)</span>}
                 </label>
               </div>

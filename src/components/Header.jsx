@@ -53,12 +53,15 @@ const Header = () => {
     { code: "ru", label: "RU" },
   ];
 
-  // Fetch menu items from API
+  // Fetch menu items from API (new structure via POST)
   useEffect(() => {
     const fetchMenuItems = async () => {
+      // Build cache keys per language and position
+      const cacheKey = `menuItems_${language}_head`;
+      const cacheTsKey = `menuItemsTimestamp_${language}_head`;
       // Check if menu items exist in localStorage and are not expired
-      const cachedMenu = localStorage.getItem("menuItems");
-      const cachedTimestamp = localStorage.getItem("menuItemsTimestamp");
+      const cachedMenu = localStorage.getItem(cacheKey);
+      const cachedTimestamp = localStorage.getItem(cacheTsKey);
       const now = new Date().getTime();
 
       // Use cached menu if it exists and is less than 1 hour old
@@ -80,17 +83,38 @@ const Header = () => {
 
       setIsMenuLoading(true);
       try {
-        const response = await axios.get("https://atfplatform.tw1.ru/api/menu");
-        // Sort by order property
-        const sortedMenu = response.data.sort((a, b) => a.order - b.order);
-        setMenuItems(sortedMenu);
+        // Call new API with POST and required body
+        const response = await axios.post(
+          "https://atfplatform.tw1.ru/api/menu",
+          {
+            lang: language,
+            position: "head",
+          }
+        );
+
+        // Normalize API response to internal structure { id, title: {lang}, url, children }
+        const normalizeMenu = (items, langCode) => {
+          if (!Array.isArray(items)) return [];
+          return items.map((item, index) => {
+            const children = item.submenu
+              ? normalizeMenu(item.submenu, langCode)
+              : [];
+            const cleanUrl = (item.url || "").replace(/^\//, "");
+            return {
+              id: `${cleanUrl || "root"}-${index}`,
+              url: cleanUrl,
+              title: { [langCode]: item.title, az: item.title },
+              children,
+            };
+          });
+        };
+
+        const normalizedMenu = normalizeMenu(response.data, language);
+        setMenuItems(normalizedMenu);
 
         // Cache the menu items and timestamp
-        localStorage.setItem("menuItems", JSON.stringify(sortedMenu));
-        localStorage.setItem(
-          "menuItemsTimestamp",
-          new Date().getTime().toString()
-        );
+        localStorage.setItem(cacheKey, JSON.stringify(normalizedMenu));
+        localStorage.setItem(cacheTsKey, new Date().getTime().toString());
       } catch (error) {
         console.error("Error fetching menu items:", error);
       } finally {
@@ -99,7 +123,7 @@ const Header = () => {
     };
 
     fetchMenuItems();
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

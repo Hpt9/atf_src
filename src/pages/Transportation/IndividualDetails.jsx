@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { IoArrowBack, IoCall } from "react-icons/io5";
 import { useNavigate, useParams } from "react-router-dom";
 
+// API base URL; replace if you have an env var
+const API_BASE = 'https://atfplatform.tw1.ru';
+
 const mockElan = {
   images: [
     "https://media.istockphoto.com/id/1465157700/photo/brightly-red-colored-semi-truck-speeding-on-a-two-lane-highway-with-cars-in-background-under.jpg?s=612x612&w=0&k=20&c=cfbbPy2ylvFGRULNLGO_Ucm-C5DsOJMFHiZBdKGsq3c=",
@@ -66,18 +69,41 @@ const mockSimilarAnnouncements = [
 ];
 
 export const ElanDetail = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [selectedImage, setSelectedImage] = useState(0);
   const [loadingSimilar, setLoadingSimilar] = useState(true);
   const [similarAnnouncements, setSimilarAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchDetail = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch(`${API_BASE}/api/adverts/individuals/${slug}`, { signal: controller.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        setData(json?.data || null);
+      } catch (e) {
+        if (e.name !== 'AbortError') setError('Məlumat yüklənmədi');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (slug) fetchDetail();
+    return () => controller.abort();
+  }, [slug]);
 
   useEffect(() => {
     setLoadingSimilar(true);
     const timer = setTimeout(() => {
       setSimilarAnnouncements(mockSimilarAnnouncements);
       setLoadingSimilar(false);
-    }, 1000);
+    }, 800);
     return () => clearTimeout(timer);
   }, []);
 
@@ -96,13 +122,17 @@ export const ElanDetail = () => {
           {/* Gallery */}
           <div className="flex flex-col gap-4 mb-6">
             <div className="flex flex-col lg:flex-row gap-4">
-              <img
-                src={mockElan.images[selectedImage]}
-                alt="Main"
-                className="w-[288px] h-[260px] object-cover rounded-[16px] mx-auto"
-              />
+              {loading ? (
+                <div className="w-[288px] h-[260px] bg-gray-200 rounded-[16px] mx-auto animate-pulse" />
+              ) : (
+                <img
+                  src={(data?.photos && data.photos[selectedImage]) || data?.photos?.[0] || mockElan.images[0]}
+                  alt="Main"
+                  className="w-[288px] h-[260px] object-cover rounded-[16px] mx-auto"
+                />
+              )}
               <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-                {mockElan.images.map((img, idx) => (
+                {(data?.photos?.length ? data.photos : mockElan.images).map((img, idx) => (
                   <img
                     key={idx}
                     src={img}
@@ -120,29 +150,38 @@ export const ElanDetail = () => {
           </div>
           {/* Title */}
           <h2 className="text-2xl font-medium pb-4 border-b border-[#E7E7E7]">
-            {mockElan.title}
+            {data?.name?.az || mockElan.title}
           </h2>
           {/* Details Table */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2 pb-6 mt-4 border-b border-[#E7E7E7]">
-            {mockElan.details.map((d, i) => (
+            {/* Map API fields into the details grid */}
+            {[
+              { label: "Haradan gəlir", value: data?.from?.az || data?.exit_from_address?.az || '—' },
+              { label: "Hara gedir", value: data?.to?.az || '—' },
+              { label: "Na daşıyır", value: data?.load_type?.az || '—' },
+              { label: "Tutum", value: data?.capacity != null ? String(data.capacity) : '—' },
+              { label: "Boş yer", value: data?.empty_space != null ? String(data.empty_space) : '—' },
+              { label: "Çıxış vaxtı", value: data?.exit_from_address?.az || '—' },
+              { label: "Gəlmə vaxtı", value: data?.reach_from_address || '—' },
+              { label: "Nömrə", value: data?.truck_registration_number || '—' },
+            ].map((d, i) => (
               <React.Fragment key={i}>
                 <div className="text-[#3F3F3F] whitespace-nowrap">{d.label}</div>
-                <div className="text-right text-[#3F3F3F] text-[14px] font-medium">
-                  {d.value}
-                </div>
+                <div className="text-right text-[#3F3F3F] text-[14px] font-medium">{d.value}</div>
               </React.Fragment>
             ))}
           </div>
           {/* Description */}
-          <div className="pt-4 text-[#3F3F3F]">{mockElan.description}</div>
+          <div className="pt-4 text-[#3F3F3F]">{data?.description?.az || mockElan.description}</div>
         </div>
         {/* Right: Contact Card */}
         <div className="w-full md:w-[320px] pt-[56px] relative">
           <div className="bg-[#F6F6F6] rounded-lg p-6 flex flex-col items-start sticky top-[202px]">
             <div className="font-medium text-[#3F3F3F] mb-2">
-              {mockElan.contact.name}
+              {data?.user ? `${data.user.name || ''} ${data.user.surname || ''}`.trim() : mockElan.contact.name}
             </div>
             <div className="text-[#A0A0A0] text-sm mb-4">
+              {/* API does not provide created date text in example; keep placeholder */}
               {mockElan.contact.date}
             </div>
             <div className="car_number w-[270px] md:w-full flex items-center gap-[16px]  h-[56px] mb-[16px] rounded-[16px] border border-[#000000] font-medium text-[16px] hover:bg-[#267A85] transition py-[9px] px-[16px]">
@@ -170,6 +209,9 @@ export const ElanDetail = () => {
           </div>
         </div>
       </div>
+      {error && (
+        <div className="max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] text-red-500">{error}</div>
+      )}
       <div className="similar_announcements w-full flex flex-col gap-y-[16px]  max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] mb-[16px] md:mb-[32px]">
         <div className="similar_announcements_title text-[#3F3F3F] text-[20px] font-medium">
           Digər Elanlar

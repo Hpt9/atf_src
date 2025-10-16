@@ -20,8 +20,11 @@ export const AuthProvider = ({ children }) => {
       });
       
       if (response.data) {
-        setUser(response.data);
-        return response.data;
+        const userPayload = response.data?.data || null;
+        if (userPayload) {
+          setUser(userPayload);
+        }
+        return userPayload;
       }
       return null;
     } catch (error) {

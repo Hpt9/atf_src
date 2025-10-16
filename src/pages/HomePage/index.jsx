@@ -249,7 +249,7 @@ const HomePage = () => {
       <div className="w-full flex justify-center">
         <div className="services w-full max-w-[2136px] flex flex-col px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-[50px] gap-y-[27px]">
           <h1 className="text-[#3F3F3F] text-[16px] md:text-[24px] font-bold">
-            {data?.services_title?.[language] || "Loading..."}
+            {data?.services_title?.[language] || "Xidmətlərimiz"}
           </h1>
           <div className="services_container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {services.slice().reverse().map((service) => (

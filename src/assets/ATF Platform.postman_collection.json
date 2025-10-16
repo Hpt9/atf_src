@@ -1,0 +1,2952 @@
+{
+	"info": {
+		"_postman_id": "2e16c2aa-5c19-4255-88e3-eb638c9036ce",
+		"name": "ATF Platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33964253",
+		"_collection_link": "https://test99-8663.postman.co/workspace/Team-Workspace~7c349e77-5941-4167-881a-142d6ed9f339/collection/33964253-2e16c2aa-5c19-4255-88e3-eb638c9036ce?action=share&source=collection_link&creator=33964253"
+	},
+	"item": [
+		{
+			"name": "Approval",
+			"item": [
+				{
+					"name": "Approval All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/approvals",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"approvals"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approval Single",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/api/approvals/aa",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"approvals",
+								"aa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approval Search",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"q\": \"a\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/approval-search",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"approval-search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Code Categories",
+			"item": [
+				{
+					"name": "Code Category All",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"parent_id\": null\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/code-categories",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"code-categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Code Category Single",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "8|o9sh7EuiMaNKRUrVobg58QwRwrJS0POR5uorAzDP961ff9d0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/code-categories/01",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"code-categories",
+								"01"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Code Category Search",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"q\": \"0102294900\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/code-categories-search",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"code-categories-search"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Code Catgeory Documents",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "6|ck1cjYztRg44YK6Qr8RziwKhT54nYkOqT14X8yDI0cffae0c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"hs_code\" : 9705290000\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/code-categories-documents",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"code-categories-documents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PDF Download",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "6|ck1cjYztRg44YK6Qr8RziwKhT54nYkOqT14X8yDI0cffae0c",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"hs_code\": \"0101210000\",\r\n    \"approval_ids\": [1,2]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/code-categories-downloads",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"code-categories-downloads"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Declarations",
+			"item": [
+				{
+					"name": "Declaration All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/declarations",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"declarations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Declaration Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/declarations/2",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"declarations",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Documents",
+			"item": [
+				{
+					"name": "Document All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/api/documents",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"documents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Document Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/documents/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"documents",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "FAQ",
+			"item": [
+				{
+					"name": "FAQ All",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/api/faqs",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"faqs"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Parameters",
+			"item": [
+				{
+					"name": "Parameter All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/parameters",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"parameters"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Parameter Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/parameters/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"parameters",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "PDFS",
+			"item": [
+				{
+					"name": "Pdf All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/pdfs",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"pdfs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pdf Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/pdfs/2",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"pdfs",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Processes",
+			"item": [
+				{
+					"name": "Process All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/processes",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"processes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Process Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/processes/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"processes",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Process Documents",
+			"item": [
+				{
+					"name": "Process Document All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/process-documents",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"process-documents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Process Document Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/process-documents/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"process-documents",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Quotas",
+			"item": [
+				{
+					"name": "Quotas All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/quotas",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"quotas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Quotas Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/quotas/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"quotas",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Requests",
+			"item": [
+				{
+					"name": "Request All",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "9|7EZVDDTvO9NUXEyIEX1rXBFnz2e5I82A723UDUC58d8a6e6f",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/requests",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"requests"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Request Single",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "10|qciQUHpyjrlUi3a7kuzA8KEPi6ItPskCg0QfsVLx6da9aa52",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/requests/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"requests",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Request Search",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "9|7EZVDDTvO9NUXEyIEX1rXBFnz2e5I82A723UDUC58d8a6e6f",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"q\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/requests-search",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"requests-search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Restrictions",
+			"item": [
+				{
+					"name": "Restriction All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/restrictions",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"restrictions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restriction Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/restrictions/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"restrictions",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Restrictions Details",
+			"item": [
+				{
+					"name": "Restriction Detail All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/restriction-details",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"restriction-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restriction Detail Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/restriction-details/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"restriction-details",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Services",
+			"item": [
+				{
+					"name": "Service All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/services",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"services"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Service Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/services/elit-velit-repudian",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"services",
+								"elit-velit-repudian"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Taxes",
+			"item": [
+				{
+					"name": "Tax All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/taxes",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"taxes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tax Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/taxes/3",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"taxes",
+								"3"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tax Details",
+			"item": [
+				{
+					"name": "Tax Detail All",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/tax-details",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"tax-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tax Detail Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/tax-details/2",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"tax-details",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register Company",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Azad\",\r\n    \"surname\": null,\r\n    \"phone\": \"9455938756df8fff\",\r\n    \"email\": \"info@azadeyvazodv.nets\",\r\n    \"password\": \"azad1234\",\r\n    \"password_confirmation\": \"azad1234\",\r\n    \"website\": null,\r\n    \"voen\": \"3984983598\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/register-company",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"register-company"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register Individual",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Azad\",\r\n    \"surname\": \"Eyvazov\",\r\n    \"phone\": \"9455938756df8dff\",\r\n    \"email\": \"info@azadeyvazov.net\",\r\n    \"password\": \"azad1234\",\r\n    \"password_confirmation\": \"azad1234\",\r\n    \"website\": null,\r\n    \"voen\": \"3984983598\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/register-individual",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"register-individual"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register Entrepreneur",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Azad\",\r\n    \"surname\": \"Eyva\",\r\n    \"phone\": \"9455938756df8\",\r\n    \"email\": \"info@azadeyvazodv.net\",\r\n    \"password\": \"azad1234\",\r\n    \"password_confirmation\": \"azad1234\",\r\n    \"website\": null,\r\n    \"voen\": \"3984983598\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/register-entrepreneur",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"register-entrepreneur"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"info@azadeyvazov.net\",\r\n    \"password\": \"azad1234\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "Auth::check()",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/logout",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Email Verification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "7|BcyDQF6CBICbB1alTd6n8e68vYdvjlPkyqPD5EKEb55fe8de",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/email/verification-notification",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"email",
+								"verification-notification"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Email Verification Repeat",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/email/verify/{id}/{hash}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"email",
+								"verify",
+								"{id}",
+								"{hash}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Data",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/user",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"user"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Chat",
+			"item": [
+				{
+					"name": "Support All Messages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/support/users",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"support",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Support Single Messages",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "134|dZW3VU5x2TyCop9JDXasDyYJi3ygJQr1wLwbdp0I1c13e1d5",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/messages/1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"messages",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Support Send Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"user_id\": 1,\r\n    \"message\": \"Test\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/messages/send",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"messages",
+								"send"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "User Send Message",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "134|dZW3VU5x2TyCop9JDXasDyYJi3ygJQr1wLwbdp0I1c13e1d5",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"support_id\": 1,\r\n    \"message\": \"Test\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/messages/send-by-user",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"messages",
+								"send-by-user"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Home",
+			"item": [
+				{
+					"name": "Home All",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/home",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"home"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Home Single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/home/efretf",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"home",
+								"efretf"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Google",
+			"item": [
+				{
+					"name": "Google Redirect",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/auth/google/redirect",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"google",
+								"redirect"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Google Callback",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"azad\": \"eyvazov\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/auth/google",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"google"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Contact Post",
+			"item": [
+				{
+					"name": "Send",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name_surname\": \"Azad Eyvazov\",\r\n    \"email\": \"azad@azad.com\",\r\n    \"phone\": \"055\",\r\n    \"message\": \"test sdfjgbnfnj nedvnnwvv jcevwnskd\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/send",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"send"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Global Search",
+			"item": [
+				{
+					"name": "Search",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"q\": \"01\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/global-search",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"global-search"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Edit",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": "/home/azad/Downloads/aqta-logo-for-tetbiq.jpg"
+								},
+								{
+									"key": "phone",
+									"value": "055938",
+									"type": "text"
+								},
+								{
+									"key": "email",
+									"value": "info@azadeyvazov.net",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "Azad",
+									"type": "text"
+								},
+								{
+									"key": "surname",
+									"value": "Eyvazov2",
+									"type": "text"
+								},
+								{
+									"key": "truck_count",
+									"value": "10",
+									"type": "text"
+								},
+								{
+									"key": "empty_truck_count",
+									"value": "5",
+									"type": "text"
+								},
+								{
+									"key": "voen",
+									"value": "52fvs52",
+									"type": "text"
+								},
+								{
+									"key": "website",
+									"value": "azadeyvazov.net222",
+									"type": "text"
+								},
+								{
+									"key": "services.az",
+									"value": "Veb Sayt2222",
+									"type": "text"
+								},
+								{
+									"key": "services.en",
+									"value": "Web Site",
+									"type": "text"
+								},
+								{
+									"key": "services.ru",
+									"value": "Web ru",
+									"type": "text"
+								},
+								{
+									"key": "description.az",
+									"value": "Azad",
+									"type": "text"
+								},
+								{
+									"key": "description.en",
+									"value": "Free",
+									"type": "text"
+								},
+								{
+									"key": "description.ru",
+									"value": "Ruskiy",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/api/profile/edit",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								"edit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Password Edit",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\r\n    \"old_password\": \"azad12345\",\r\n    \"password\": \"azad1234\",\r\n    \"password_confirmation\": \"azad1234\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/profile/password/edit",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								"password",
+								"edit"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Menu",
+			"item": [
+				{
+					"name": "Menu",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"lang\": \"az\",\n    \"position\": \"head\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/api/menu",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"menu"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "New",
+			"item": [
+				{
+					"name": "Users",
+					"item": [
+						{
+							"name": "Companies",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "14|Naq3LptU4XIMyqf4zhtSS4XtabfqGq9jq8hb37HXbef56a4a",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/companies",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"companies"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Company Details",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "14|Naq3LptU4XIMyqf4zhtSS4XtabfqGq9jq8hb37HXbef56a4a",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/company-details/333",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"company-details",
+										"333"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Individuals",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "14|Naq3LptU4XIMyqf4zhtSS4XtabfqGq9jq8hb37HXbef56a4a",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/individuals",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"individuals"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Individual Details",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "14|Naq3LptU4XIMyqf4zhtSS4XtabfqGq9jq8hb37HXbef56a4a",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/individual-details/222",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"individual-details",
+										"222"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Entrepreneurs",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "14|Naq3LptU4XIMyqf4zhtSS4XtabfqGq9jq8hb37HXbef56a4a",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/entrepreneurs",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"entrepreneurs"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Entrepreneur Details",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "14|Naq3LptU4XIMyqf4zhtSS4XtabfqGq9jq8hb37HXbef56a4a",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/entrepreneur-details/2ghtb9nh5v",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"entrepreneur-details",
+										"2ghtb9nh5v"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Branches",
+					"item": [
+						{
+							"name": "Branch all",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "14|Naq3LptU4XIMyqf4zhtSS4XtabfqGq9jq8hb37HXbef56a4a",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Azad\",\r\n    \"surname\": \"Eyvazov\",\r\n    \"phone\": \"9455938756df8\",\r\n    \"email\": \"info@azadeyvazodv.net\",\r\n    \"role\": \"legal_entity\",\r\n    \"password\": \"azad1234\",\r\n    \"password_confirmation\": \"azad1234\"\r\n}"
+								},
+								"url": {
+									"raw": "{{url}}/api/branches",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"branches"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Branch Store",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "14|Naq3LptU4XIMyqf4zhtSS4XtabfqGq9jq8hb37HXbef56a4a",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{url}}/api/branches",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"branches"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Branch Update",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "14|Naq3LptU4XIMyqf4zhtSS4XtabfqGq9jq8hb37HXbef56a4a",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "tetst",
+											"type": "text"
+										},
+										{
+											"key": "photo",
+											"type": "file",
+											"src": "/home/azad/Downloads/78.png"
+										},
+										{
+											"key": "description",
+											"value": "ttttt",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "passive",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{url}}/api/branches/4",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"branches",
+										"4"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Branch Delete",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "14|Naq3LptU4XIMyqf4zhtSS4XtabfqGq9jq8hb37HXbef56a4a",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "tetst",
+											"type": "text"
+										},
+										{
+											"key": "photo",
+											"type": "file",
+											"src": "/home/azad/Downloads/78.png"
+										},
+										{
+											"key": "description",
+											"value": "ttttt",
+											"type": "text"
+										},
+										{
+											"key": "status",
+											"value": "passive",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{url}}/api/branches/3",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"branches",
+										"3"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Adverts",
+					"item": [
+						{
+							"name": "Individuals",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "5|4ztvB8XYZAlD5uZ6XbQ4Z78m6aAA12rWOwFWx3kS43dd44bc",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/adverts/individuals",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"adverts",
+										"individuals"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Entrepreneurs",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "5|4ztvB8XYZAlD5uZ6XbQ4Z78m6aAA12rWOwFWx3kS43dd44bc",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/adverts/entrepreneur",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"adverts",
+										"entrepreneur"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Legal Entities",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "5|4ztvB8XYZAlD5uZ6XbQ4Z78m6aAA12rWOwFWx3kS43dd44bc",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/adverts/legal-entities",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"adverts",
+										"legal-entities"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Individual Details",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "5|4ztvB8XYZAlD5uZ6XbQ4Z78m6aAA12rWOwFWx3kS43dd44bc",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/adverts/individuals/t8fod6KXzr",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"adverts",
+										"individuals",
+										"t8fod6KXzr"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Entrepreneurs Details",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "5|4ztvB8XYZAlD5uZ6XbQ4Z78m6aAA12rWOwFWx3kS43dd44bc",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/adverts/entrepreneur/{slug}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"adverts",
+										"entrepreneur",
+										"{slug}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Legal Entities Details",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "5|4ztvB8XYZAlD5uZ6XbQ4Z78m6aAA12rWOwFWx3kS43dd44bc",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/adverts/legal-entities/{slug}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"adverts",
+										"legal-entities",
+										"{slug}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Advert Store",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "driver_certificates[]",
+											"type": "file",
+											"src": [
+												"/home/azad/Downloads/registrations.pdf",
+												"/home/azad/Downloads/registrations (1).pdf",
+												"/home/azad/Downloads/registrations (2).pdf"
+											]
+										},
+										{
+											"key": "driver_photo",
+											"type": "file",
+											"src": "/home/azad/Downloads/196136948_padded_logo (2).png"
+										},
+										{
+											"key": "capacity",
+											"value": "10",
+											"type": "text"
+										},
+										{
+											"key": "unit_id",
+											"value": "3",
+											"type": "text"
+										},
+										{
+											"key": "reach_from_address",
+											"value": "2025-09-26 10:20:00",
+											"type": "text"
+										},
+										{
+											"key": "photos[]",
+											"type": "file",
+											"src": "/C:/Users/cingi/Desktop/balloons.jpg"
+										},
+										{
+											"key": "empty_space",
+											"value": "5",
+											"type": "text"
+										},
+										{
+											"key": "truck_type_id",
+											"value": "3",
+											"type": "text"
+										},
+										{
+											"key": "truck_registration_number",
+											"value": "10 ka 663",
+											"type": "text"
+										},
+										{
+											"key": "from_id",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "to_id",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "expires_at",
+											"value": "2025-09-25",
+											"type": "text"
+										},
+										{
+											"key": "driver_full_name.az",
+											"value": "Chingiz",
+											"type": "text"
+										},
+										{
+											"key": "driver_biography.az",
+											"value": "test az",
+											"type": "text"
+										},
+										{
+											"key": "name.az",
+											"value": "Elan",
+											"type": "text"
+										},
+										{
+											"key": "name.en",
+											"value": "Advert",
+											"type": "text"
+										},
+										{
+											"key": "name.ru",
+											"value": "tettss",
+											"type": "text"
+										},
+										{
+											"key": "load_type.az",
+											"value": "lll",
+											"type": "text"
+										},
+										{
+											"key": "load_type.en",
+											"value": "oo",
+											"type": "text"
+										},
+										{
+											"key": "load_type.ru",
+											"value": "aa",
+											"type": "text"
+										},
+										{
+											"key": "exit_from_address.az",
+											"value": "Baki",
+											"type": "text"
+										},
+										{
+											"key": "exit_from_address.en",
+											"value": "London",
+											"type": "text"
+										},
+										{
+											"key": "exit_from_address.ru",
+											"value": "Moskow",
+											"type": "text"
+										},
+										{
+											"key": "description.az",
+											"value": "Aciq",
+											"type": "text"
+										},
+										{
+											"key": "description.en",
+											"value": "Desc",
+											"type": "text"
+										},
+										{
+											"key": "description.ru",
+											"value": "Rus desc",
+											"type": "text"
+										},
+										{
+											"key": "driver_full_name.en",
+											"value": "Free",
+											"type": "text"
+										},
+										{
+											"key": "driver_full_name.ru",
+											"value": "dddd",
+											"type": "text"
+										},
+										{
+											"key": "driver_biography.en",
+											"value": "test en",
+											"type": "text"
+										},
+										{
+											"key": "driver_biography.ru",
+											"value": "test ru",
+											"type": "text"
+										},
+										{
+											"key": "driver_experience.az",
+											"value": "exp az",
+											"type": "text"
+										},
+										{
+											"key": "driver_experience.en",
+											"value": "exp en",
+											"type": "text"
+										},
+										{
+											"key": "driver_experience.ru",
+											"value": "exp ru",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{url}}/api/adverts/store",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"adverts",
+										"store"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Advert Update",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "driver_certificates[]",
+											"type": "file",
+											"src": [
+												"/home/azad/Downloads/registrations.pdf",
+												"/home/azad/Downloads/registrations (1).pdf",
+												"/home/azad/Downloads/registrations (2).pdf"
+											]
+										},
+										{
+											"key": "driver_photo",
+											"type": "file",
+											"src": "/home/azad/Downloads/196136948_padded_logo (2).png"
+										},
+										{
+											"key": "capacity",
+											"value": "10",
+											"type": "text"
+										},
+										{
+											"key": "unit_id",
+											"value": "3",
+											"type": "text"
+										},
+										{
+											"key": "reach_from_address",
+											"value": "2025-09-25 10:20:00",
+											"type": "text"
+										},
+										{
+											"key": "photos[]",
+											"type": "file",
+											"src": "/home/azad/Downloads/55.png"
+										},
+										{
+											"key": "empty_space",
+											"value": "5",
+											"type": "text"
+										},
+										{
+											"key": "truck_type_id",
+											"value": "3",
+											"type": "text"
+										},
+										{
+											"key": "truck_registration_number",
+											"value": "10 ka 663",
+											"type": "text"
+										},
+										{
+											"key": "from_id",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "to_id",
+											"value": "1",
+											"type": "text"
+										},
+										{
+											"key": "expires_at",
+											"value": "2025-09-25",
+											"type": "text"
+										},
+										{
+											"key": "driver_full_name",
+											"value": "Azad",
+											"type": "text"
+										},
+										{
+											"key": "driver_biography",
+											"value": "test",
+											"type": "text"
+										},
+										{
+											"key": "name.az",
+											"value": "Elan test",
+											"type": "text"
+										},
+										{
+											"key": "name.en",
+											"value": "Advert test",
+											"type": "text"
+										},
+										{
+											"key": "name.ru",
+											"value": "tettss test",
+											"type": "text"
+										},
+										{
+											"key": "load_type.az",
+											"value": "lll test",
+											"type": "text"
+										},
+										{
+											"key": "load_type.en",
+											"value": "oo test",
+											"type": "text"
+										},
+										{
+											"key": "load_type.ru",
+											"value": "aa test",
+											"type": "text"
+										},
+										{
+											"key": "exit_from_address.az",
+											"value": "Baki test",
+											"type": "text"
+										},
+										{
+											"key": "exit_from_address.en",
+											"value": "London",
+											"type": "text"
+										},
+										{
+											"key": "exit_from_address.ru",
+											"value": "Moskow",
+											"type": "text"
+										},
+										{
+											"key": "description.az",
+											"value": "Aciq",
+											"type": "text"
+										},
+										{
+											"key": "description.en",
+											"value": "Desc",
+											"type": "text"
+										},
+										{
+											"key": "description.ru",
+											"value": "Rus desc",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{url}}/api/adverts/update/6",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"adverts",
+										"update",
+										"6"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Advert Delete",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{url}}/api/adverts/destroy/16",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"api",
+										"adverts",
+										"destroy",
+										"16"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "29|iMDqOQUKN1HtVPmXOZVtzo82h5ON5eWxRXybu0JVba9746ae",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

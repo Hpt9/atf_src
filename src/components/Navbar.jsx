@@ -36,23 +36,35 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
 
   // Helper to check if a menu item or any of its children matches the current path
   const isMenuItemActive = (item) => {
-    const path = `/${item.url}`;
-    
-    // Check exact match
-    if (location.pathname === path || (location.pathname === '/' && item.url === '')) {
+    const hasChildren = item.children && item.children.length > 0;
+    const itemUrl = item.url || '';
+    const path = `/${itemUrl}`;
+
+    // Special handling for items with empty url
+    if (itemUrl === '') {
+      // If this is a parent/group (e.g., Daşınma) with children, it's active only when a child is active
+      if (hasChildren) {
+        return item.children.some(isMenuItemActive);
+      }
+      // Otherwise, this represents the homepage item
+      return location.pathname === '/';
+    }
+
+    // Check exact match for non-empty urls
+    if (location.pathname === path) {
       return true;
     }
-    
+
     // Check if current path starts with the menu item path (for nested routes)
-    if (item.url && location.pathname.startsWith(path)) {
+    if (location.pathname.startsWith(`${path}/`)) {
       return true;
     }
-    
+
     // Check children recursively
-    if (item.children && item.children.length > 0) {
+    if (hasChildren) {
       return item.children.some(isMenuItemActive);
     }
-    
+
     return false;
   };
 
@@ -112,7 +124,7 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
                         <AnimatePresence>
                         {openDropdownId === item.id && (
                           <div className="absolute left-0 top-full mt-2 z-50 transition-opacity duration-200"
-                            style={{ minWidth: '92px' }}
+                            style={{ minWidth: '170px' }}
                           >
                             <motion.div
                             initial={{ opacity: 0, y: -10 }}

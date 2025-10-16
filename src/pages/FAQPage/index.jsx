@@ -92,6 +92,7 @@ const FaqPage = () => {
     axios.get("https://atfplatform.tw1.ru/api/faqs")
       .then((res) => {
         setFaqData(res.data);
+        console.log(res.data);
         setError(null);
       })
       .catch((err) => {

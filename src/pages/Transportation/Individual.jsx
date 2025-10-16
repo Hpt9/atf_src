@@ -6,27 +6,8 @@ import { useSearchBar } from "../../context/SearchBarContext";
 import useLanguageStore from '../../store/languageStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const mockData = [
-  {
-    id: 1,
-    image: 'https://plus.unsplash.com/premium_photo-1664695368767-c42483a0bda1?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dHJ1Y2t8ZW58MHx8MHx8fDA%3D',
-    title: 'Moskva – Bakı',
-    subtitle: 'Bütün yüklərin daşınması',
-    date: '20 Mart 2025 (13:00) – 21 Mart 2025 (17:00)',
-    direction:"incoming"
-  },
-  {
-    id: 2,
-    image: 'https://media.istockphoto.com/id/1465157700/photo/brightly-red-colored-semi-truck-speeding-on-a-two-lane-highway-with-cars-in-background-under.jpg?s=612x612&w=0&k=20&c=cfbbPy2ylvFGRULNLGO_Ucm-C5DsOJMFHiZBdKGsq3c=',
-    title: 'Bakı – Moskva',
-    subtitle: 'Bütün yüklərin daşınması',
-    date: '20 Mart 2025 (13:00) – 21 Mart 2025 (17:00)',
-    direction:"outgoing"
-  }
-];
-while (mockData.length < 12) {
-  mockData.push({ ...mockData[0], id: mockData.length + 1 });
-}
+// API base URL; replace if you have an env var
+const API_BASE = 'https://atfplatform.tw1.ru';
 
 const tabs = [
   { label: 'Hamısı', value: 'all' },
@@ -58,18 +39,41 @@ export const Elanlar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState('all');
   const [showFilter, setShowFilter] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [items, setItems] = useState([]);
+  const [meta, setMeta] = useState(null);
+  const [page, setPage] = useState(1);
   
   // Dropdown states
   const [activeDropdown, setActiveDropdown] = useState(null); // 'unit' or 'truckType' or null
   const [selectedUnit, setSelectedUnit] = useState('Vahid');
   const [selectedTruckType, setSelectedTruckType] = useState('Tırın tipi');
   
-
-
-  // Filter data based on activeTab
-  const filteredData = activeTab === 'all'
-    ? mockData
-    : mockData.filter(item => item.direction === activeTab);
+  // Fetch individuals adverts
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const url = `${API_BASE}/api/adverts/individuals?page=${page}`;
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        setItems(Array.isArray(json?.data) ? json.data : []);
+        setMeta(json?.meta || null);
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          setError('Verilər yüklənərkən xəta baş verdi');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+    return () => controller.abort();
+  }, [page]);
 
   // Close dropdowns when filter modal closes
   useEffect(() => {
@@ -333,32 +337,82 @@ export const Elanlar = () => {
                          </motion.div>
           )}
         </AnimatePresence>
-          {filteredData.map((item) => (
-            <Link
-              key={item.id}
-              to={`/dasinma/elanlar/${item.id}`}
-              className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col hover:shadow transition"
-            >
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-full h-[180px] object-cover"
-              />
-              <div className="p-4 flex flex-col flex-1">
-                <h3 className="font-medium text-[#3F3F3F] text-[18px] mb-1">{item.title}</h3>
-                <p className="text-[#3F3F3F] text-[15px] mb-2">{item.subtitle}</p>
-                <p className="text-[#A0A0A0] text-[13px] mt-auto">{item.date}</p>
+          {loading && (
+            Array.from({ length: 8 }).map((_, idx) => (
+              <div key={idx} className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col animate-pulse">
+                <div className="w-full h-[180px] bg-gray-200" />
+                <div className="p-4 flex flex-col flex-1 gap-2">
+                  <div className="h-5 bg-gray-200 rounded w-2/3 mb-2" />
+                  <div className="h-4 bg-gray-100 rounded w-1/2 mb-2" />
+                  <div className="h-4 bg-gray-100 rounded w-1/3" />
+                </div>
               </div>
-            </Link>
-          ))}
+            ))
+          )}
+          {!loading && items.map((item) => {
+            const image = item?.photos?.[0] || 'https://via.placeholder.com/600x400?text=No+Image';
+            const title = item?.name?.az || `${item?.from?.az || ''} – ${item?.to?.az || ''}` || '—';
+            const subtitle = item?.load_type?.az || item?.description?.az || '';
+            const date = item?.reach_from_address || '';
+            return (
+              <Link
+                key={item.slug}
+                to={`/dasinma/fiziki-sexs-elanlari/${item.slug}`}
+                className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col hover:shadow transition"
+              >
+                <img
+                  src={image}
+                  alt={title}
+                  className="w-full h-[180px] object-cover"
+                />
+                <div className="p-4 flex flex-col flex-1">
+                  <h3 className="font-medium text-[#3F3F3F] text-[18px] mb-1">{title}</h3>
+                  <p className="text-[#3F3F3F] text-[15px] mb-2">{subtitle}</p>
+                  <p className="text-[#A0A0A0] text-[13px] mt-auto">{date}</p>
+                </div>
+              </Link>
+            );
+          })}
+          {!loading && !items.length && !error && (
+            <div className="col-span-full text-center text-[#A0A0A0]">Nəticə tapılmadı</div>
+          )}
+          {error && (
+            <div className="col-span-full text-center text-red-500">{error}</div>
+          )}
         </div>
         {/* Pagination */}
         <div className="flex justify-center items-center gap-2 mt-8">
-          <button className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">Geriye</button>
-          <button className="w-8 h-8 rounded bg-[#2E92A0] text-white font-medium">1</button>
-          <button className="w-8 h-8 rounded bg-white border border-[#E7E7E7] text-[#3F3F3F] font-medium">2</button>
-          <button className="w-8 h-8 rounded bg-white border border-[#E7E7E7] text-[#3F3F3F] font-medium">3</button>
-          <button className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium">İreli</button>
+          <button
+            className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
+            disabled={!meta || page <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            Geriye
+          </button>
+          {meta?.links?.filter(l => l.label && !l.label.includes('Əvvəl') && !l.label.includes('Sonra')).map((l, idx) => {
+            const label = l.label;
+            // Attempt to parse page from link url
+            const url = l.url || '';
+            const match = url.match(/page=(\d+)/);
+            const pageNum = match ? Number(match[1]) : Number(label);
+            const isActive = l.active;
+            return (
+              <button
+                key={idx}
+                className={`w-8 h-8 rounded font-medium ${isActive ? 'bg-[#2E92A0] text-white' : 'bg-white border border-[#E7E7E7] text-[#3F3F3F]'}`}
+                onClick={() => !isActive && pageNum && setPage(pageNum)}
+              >
+                {label}
+              </button>
+            );
+          })}
+          <button
+            className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
+            disabled={!meta || page >= (meta?.last_page || 1)}
+            onClick={() => setPage((p) => (meta ? Math.min(meta.last_page || p + 1, p + 1) : p + 1))}
+          >
+            İreli
+          </button>
         </div>
       </div>
     </div>

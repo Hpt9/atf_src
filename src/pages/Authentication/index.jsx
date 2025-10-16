@@ -290,6 +290,7 @@ const RegisterForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [userType, setUserType] = useState(''); // 'individual' | 'entrepreneur' | 'company'
   const [formData, setFormData] = useState({
     name: "",
     surname: "",
@@ -297,6 +298,8 @@ const RegisterForm = () => {
     email: "",
     password: "",
     password_confirmation: "",
+    website: "",
+    voen: "",
   });
   const [errors, setErrors] = useState({
     phone: "",
@@ -436,17 +439,23 @@ const RegisterForm = () => {
     // Prepare data for API - strip formatting from phone number
     const registerData = {
       name: formData.name,
-      surname: formData.surname,
-      phone: formData.phone.replace(/\D/g, ""), // Remove all non-digits
+      surname: formData.surname || null,
+      phone: formData.phone.replace(/\D/g, ""),
       email: formData.email,
       password: formData.password,
       password_confirmation: formData.confirmPassword,
+      website: formData.website || null,
+      voen: formData.voen || null,
     };
+
+    let endpoint = 'https://atfplatform.tw1.ru/api/register-individual';
+    if (userType === 'entrepreneur') endpoint = 'https://atfplatform.tw1.ru/api/register-entrepreneur';
+    if (userType === 'company') endpoint = 'https://atfplatform.tw1.ru/api/register-company';
 
     setIsLoading(true);
 
     axios
-      .post("https://atfplatform.tw1.ru/api/register", registerData)
+      .post(endpoint, registerData)
       .then((res) => {
         if (res.status === 200 || res.status === 201) {
           const { token } = res.data;
@@ -583,7 +592,52 @@ const RegisterForm = () => {
         </div>
       </div>
       <form onSubmit={handleRegister} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 2xl:grid-cols-1">
+        {/* User Type Selection */}
+        {/* Desktop/Tablet: button group */}
+        <div className="hidden md:grid md:grid-cols-3 gap-3">
+          <button
+            type="button"
+            onClick={() => setUserType('individual')}
+            className={`px-4 py-3 rounded-lg border ${userType === 'individual' ? 'border-[#2E92A0] text-[#2E92A0] bg-[#F0FCFD]' : 'border-[#E7E7E7] text-[#3F3F3F] bg-white'}`}
+          >
+            Fiziki şəxs
+          </button>
+          <button
+            type="button"
+            onClick={() => setUserType('entrepreneur')}
+            className={`px-4 py-3 rounded-lg border ${userType === 'entrepreneur' ? 'border-[#2E92A0] text-[#2E92A0] bg-[#F0FCFD]' : 'border-[#E7E7E7] text-[#3F3F3F] bg-white'}`}
+          >
+            Sahibkar
+          </button>
+          <button
+            type="button"
+            onClick={() => setUserType('company')}
+            className={`px-4 py-3 rounded-lg border ${userType === 'company' ? 'border-[#2E92A0] text-[#2E92A0] bg-[#F0FCFD]' : 'border-[#E7E7E7] text-[#3F3F3F] bg-white'}`}
+          >
+            Hüquqi şəxs (Şirkət)
+          </button>
+        </div>
+        {/* Mobile: Select dropdown */}
+        <div className="md:hidden">
+          <select
+            value={userType}
+            onChange={(e) => setUserType(e.target.value)}
+            className="w-full px-4 py-3 border border-[#E7E7E7] rounded-lg text-[#3F3F3F] focus:outline-none focus:border-[#2E92A0] bg-white"
+          >
+            <option value="" disabled>Qeydiyyat tipini seçin</option>
+            <option value="individual">Fiziki şəxs</option>
+            <option value="entrepreneur">Sahibkar</option>
+            <option value="company">Hüquqi şəxs (Şirkət)</option>
+          </select>
+        </div>
+
+        {/* Block form until user type is selected */}
+        {!userType && (
+          <div className="text-[#6B7280] text-sm">Zəhmət olmasa, qeydiyyat tipini seçin.</div>
+        )}
+
+        {userType && (
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-4 2xl:grid-cols-2">
           <input
             type="text"
             autoComplete="on"
@@ -602,7 +656,9 @@ const RegisterForm = () => {
             className="w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] border-[#E7E7E7] focus:border-[#2E92A0]"
           />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2  gap-4 2xl:grid-cols-1">
+        )}
+        {userType && (
+        <div className="grid grid-cols-2 md:grid-cols-2  gap-4 2xl:grid-cols-2">
           <div className="space-y-1">
             <input
               type="tel"
@@ -638,7 +694,29 @@ const RegisterForm = () => {
             )}
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2  gap-4 2xl:grid-cols-1">
+        )}
+        {userType && (
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-4 2xl:grid-cols-2">
+            <input
+              type="text"
+              name="website"
+              value={formData.website}
+              onChange={handleChange}
+              placeholder="Vebsayt (opsional)"
+              className="w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] border-[#E7E7E7] focus:border-[#2E92A0]"
+            />
+            <input
+              type="text"
+              name="voen"
+              value={formData.voen}
+              onChange={handleChange}
+              placeholder="VÖEN (opsional)"
+              className="w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] border-[#E7E7E7] focus:border-[#2E92A0]"
+            />
+          </div>
+        )}
+        {userType && (
+        <div className="grid grid-cols-2 md:grid-cols-2  gap-4 2xl:grid-cols-2">
         <div className="space-y-1">
           <div className="relative">
             <input
@@ -702,6 +780,7 @@ const RegisterForm = () => {
           )}
         </div>
         </div>
+        )}
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
@@ -736,7 +815,7 @@ const RegisterForm = () => {
               <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : (
-            "Qeydiyyatı tamamla"
+            (userType ? "Qeydiyyatı tamamla" : "Tip seçin")
           )}
         </button>
 

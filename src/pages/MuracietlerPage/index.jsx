@@ -730,16 +730,16 @@ const MuracietlerPage = () => {
                           {app.code<10 ? "0"+app.code : app.code}
                         </p>
                         <p className="text-[#3F3F3F] text-[14px] w-[75px] md:w-[150px]">
-                        {app.approval_titles
-                            ? app.approval_titles.map((title, index) => 
-                                index < app.approval_titles.length - 1 
-                                  ? title.az + ", " 
-                                  : title.az)
+                        {Array.isArray(app.approval_titles) && app.approval_titles.length > 0
+                            ? app.approval_titles.map((title, index) => {
+                                const text = (title && (title[language] || title.az)) || (typeof title === 'string' ? title : '');
+                                const suffix = index < app.approval_titles.length - 1 ? ', ' : '';
+                                return text + suffix;
+                              })
                             : texts.hello[language] || texts.hello.az}
-                          
                         </p>
                         <p className="text-[#3F3F3F] text-[14px] w-[55px] mobile-sm:w-[80px] xs:w-[100px] md:w-[150px]">
-                        {app.organization.az ? app.organization.az : texts.hello[language] || texts.hello.az}
+                        {app.organization?.[language] || app.organization?.az || (typeof app.organization === 'string' ? app.organization : (texts.hello[language] || texts.hello.az))}
                         </p>
                       </div>
                                              <div className="w-[40px] md:w-[80px] flex justify-center">

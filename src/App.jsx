@@ -1,6 +1,5 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import { useEffect } from "react";
 import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
 import HsCodesPage from "./pages/HsCodes";
@@ -17,15 +16,22 @@ import { Toaster } from 'react-hot-toast';
 import { RouteGuard } from './components/RouteGuard';
 import AdminRouteGuard from './components/AdminRouteGuard';
 import { VerifyEmail } from "./pages/VerifEmail";
-import { Elanlar } from "./pages/Transportation/Elanlar";
-import { ElanDetail } from "./pages/Transportation/ElanDetail";
-import { Kataloq } from "./pages/Transportation/Kataloq";
-import { KataloqDetail } from "./pages/Transportation/KataloqDetail";
+import { Elanlar } from "./pages/Transportation/Individual";
+import { ElanDetail } from "./pages/Transportation/IndividualDetails";
+import { Kataloq } from "./pages/Transportation/Legal";
+import { KataloqDetail } from "./pages/Transportation/LegalDetails";
 import { NewUpdate } from "./pages/NewUpdate";
-
+import SahibkarIndex from "./pages/Transportation/Sahibkar";
+import SahibkarDetailIndex from "./pages/Transportation/SahibkarDetail";
+import EntreperneurIndex from "./pages/Persons/Entreperneur";
+import IndividualIndex from "./pages/Persons/İndividual";
+import LegalIndex from "./pages/Persons/Legal";
+import IndividualDetailIndex from "./pages/Persons/İndividual/detailIndex";
+import LegalDetailIndex from "./pages/Persons/Legal/detailIndex";
+import EntreperneurDetailIndex from "./pages/Persons/Entreperneur/detailIndex";
 function App() {
   const location = useLocation();
-  
+
   return (
     <>
       <Toaster
@@ -62,11 +68,6 @@ function App() {
                 <IcazelerPage />
               </PageTransition>
             } />
-            <Route path="/dasinma/elanlar" element={
-              <PageTransition>
-                <Elanlar />
-              </PageTransition>
-            } />
             <Route path="/dasinma/yeni" element={
               <RouteGuard>
                 <PageTransition>
@@ -74,19 +75,66 @@ function App() {
                 </PageTransition>
               </RouteGuard>
             } />
-            <Route path="/dasinma/elanlar/:id" element={
+            <Route path="/dasinma/fiziki-sexs-elanlari" element={
+              <PageTransition>
+                <Elanlar />
+              </PageTransition>
+            } />
+            <Route path="/dasinma/fiziki-sexs-elanlari/:slug" element={
               <PageTransition>
                 <ElanDetail />
               </PageTransition>
             } />
-            <Route path="/dasinma/kataloq" element={
+            <Route path="/dasinma/huquqi-sexs-elanlari" element={
               <PageTransition>
                 <Kataloq />
               </PageTransition>
             } />
-            <Route path="/dasinma/kataloq/:id" element={
+            <Route path="/dasinma/huquqi-sexs-elanlari/:id" element={
               <PageTransition>
                 <KataloqDetail />
+              </PageTransition>
+            } />
+            <Route path="/dasinma/sahibkar-sexs-elanlari" element={
+              <PageTransition>
+                <SahibkarIndex />
+              </PageTransition>
+            } />
+            <Route path="/dasinma/sahibkar-sexs-elanlari/:slug" element={
+              <PageTransition>
+                <SahibkarDetailIndex />
+              </PageTransition>
+            } />
+
+
+            <Route path="/sexsler/fiziki-sexsler" element={
+              <PageTransition>
+                < IndividualIndex />
+              </PageTransition>
+            } />
+            <Route path="/sexsler/huquqi-sexsler" element={
+              <PageTransition>
+                < LegalIndex />
+              </PageTransition>
+            } />
+            <Route path="/sexsler/sahibkarlar" element={
+              <PageTransition>
+                < EntreperneurIndex />
+              </PageTransition>
+            } />
+            <Route path="/sexsler/fiziki-sexsler/:slug" element={
+              <PageTransition>
+                < IndividualDetailIndex />
+              </PageTransition>
+            } />
+            <Route path="/sexsler/huquqi-sexsler/:slug" element={
+              <PageTransition>
+                < LegalDetailIndex />
+              </PageTransition>
+            } />
+            <Route path="/sexsler/sahibkarlar/:slug" element={
+              <PageTransition>
+                < EntreperneurDetailIndex />
               </PageTransition>
             } />
             <Route path="/muracietler" element={
@@ -108,15 +156,15 @@ function App() {
             } />
             <Route path="/verify-email" element={
               <PageTransition>
-                <VerifyEmail/>
+                <VerifyEmail />
               </PageTransition>
             } />
             <Route path="/profile" element={
-                  <ProfilePage />
+              <ProfilePage />
             } />
           </Route>
           <Route path='*' element={<div>Not Found</div>}></Route>
-          <Route path="/giris" element={<Authentication/>}></Route>
+          <Route path="/giris" element={<Authentication />}></Route>
           <Route path="/admin/chat" element={
             <AdminRouteGuard>
               <AdminChatPage />

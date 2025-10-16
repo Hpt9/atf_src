@@ -311,7 +311,7 @@ const IcazelerPage = () => {
                           <div className="relative">
                             <div className="h-[180px] bg-[#FAFAFA] flex items-center justify-center px-[32px] py-[16px] border-b border-[#E7E7E7]">
                               <img 
-                                src={`https://atfplatform.tw1.ru/storage/${approval.logo}`} 
+                                src={`${approval.logo}`} 
                                 alt={approval.title[language]}
                                 className="max-h-full max-w-full object-contain"
                               />
@@ -409,7 +409,7 @@ const IcazelerPage = () => {
                 >
                   <div className="w-full h-[200px] bg-[#FAFAFA] flex justify-center items-center mb-4">
                     <img 
-                      src={`https://atfplatform.tw1.ru/storage/${selectedCard.logo}`}
+                      src={`${selectedCard.cover_photo}`}
                       alt={selectedCard.title[language]}
                       className="max-h-full max-w-full object-contain"
                     />
