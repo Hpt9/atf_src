@@ -52,7 +52,12 @@ const SahibkarIndex = () => {
         setPagination({ currentPage: res.data.meta.current_page, lastPage: res.data.meta.last_page });
       }
     } catch (e) {
-      setItems([]);
+      if (e.response?.status === 404) {
+        setItems([]);
+        setPagination({ currentPage: 1, lastPage: 1 });
+      } else {
+        setItems([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -99,13 +104,34 @@ const SahibkarIndex = () => {
               </Link>
             );
           })}
+          {!loading && items.length === 0 && (
+            <div className="col-span-full flex flex-col items-center justify-center p-8 bg-[#FAFAFA] border border-[#E7E7E7] rounded-lg text-center">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-12 h-12 text-[#A0A0A0] mb-3"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <div className="text-[#3F3F3F] text-[16px] font-medium mb-1">Nəticə tapılmadı</div>
+              <div className="text-[#6B7280] text-[14px]">Sorğunuzu dəyişdirin və ya daha sonra yenidən yoxlayın.</div>
+            </div>
+          )}
         </div>
-        {/* Pagination */}
-        <div className="flex justify-center items-center gap-2 mt-8">
-          <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage === 1} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">Geriye</button>
-          <span className="text-[#3F3F3F]">{pagination.currentPage} / {pagination.lastPage}</span>
-          <button onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={pagination.currentPage === pagination.lastPage} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">İreli</button>
-        </div>
+        {/* Pagination - only show when there are results */}
+        {!loading && items.length > 0 && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage === 1} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">Geriye</button>
+            <span className="text-[#3F3F3F]">{pagination.currentPage} / {pagination.lastPage}</span>
+            <button onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={pagination.currentPage === pagination.lastPage} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">İreli</button>
+          </div>
+        )}
       </div>
     </div>
   )

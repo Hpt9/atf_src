@@ -68,7 +68,7 @@ function App() {
                 <IcazelerPage />
               </PageTransition>
             } />
-            <Route path="/dasinma/yeni" element={
+            <Route path="/yeni-elan" element={
               <RouteGuard>
                 <PageTransition>
                   <NewUpdate />
@@ -90,7 +90,7 @@ function App() {
                 <Kataloq />
               </PageTransition>
             } />
-            <Route path="/dasinma/huquqi-sexs-elanlari/:id" element={
+            <Route path="/dasinma/huquqi-sexs-elanlari/:slug" element={
               <PageTransition>
                 <KataloqDetail />
               </PageTransition>

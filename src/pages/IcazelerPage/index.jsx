@@ -47,6 +47,7 @@ const IcazelerPage = () => {
         ]
       });
       setError(null);
+      
     } catch (err) {
         console.error("Error fetching approvals:", err);
         // Handle 404 errors (Not Found) by just showing "No results" instead of error

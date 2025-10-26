@@ -26,7 +26,7 @@ export const Kataloq = () => {
   const { language } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilter, setShowFilter] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [items, setItems] = useState([]);
   const [meta, setMeta] = useState(null);
@@ -150,6 +150,14 @@ export const Kataloq = () => {
     return () => setSearchBar(null);
   }, [setSearchBar, searchQuery, language]);
 
+  if (loading) {
+    return (
+      <div className="w-full flex justify-center items-center h-[calc(100vh-403px)]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2E92A0]"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-4 md:py-8">
@@ -264,7 +272,8 @@ export const Kataloq = () => {
             return (
               <Link
                 key={item.slug}
-                to={`/dasinma/kataloq/${item.slug}`}
+                // to={`/dasinma/kataloq/${item.slug}`}
+                to={`/dasinma/huquqi-sexs-elanlari/${item.slug}`}
                 className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col hover:shadow transition"
               >
                 <img
@@ -281,45 +290,63 @@ export const Kataloq = () => {
             );
           })}
           {!loading && !items.length && !error && (
-            <div className="col-span-full text-center text-[#A0A0A0]">Nəticə tapılmadı</div>
+            <div className="col-span-full flex flex-col items-center justify-center p-8 bg-[#FAFAFA] border border-[#E7E7E7] rounded-lg text-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-12 h-12 text-[#A0A0A0] mb-3"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <div className="text-[#3F3F3F] text-[16px] font-medium mb-1">Nəticə tapılmadı</div>
+            <div className="text-[#6B7280] text-[14px]">Sorğunuzu dəyişdirin və ya daha sonra yenidən yoxlayın.</div>
+          </div>
           )}
           {error && (
             <div className="col-span-full text-center text-red-500">{error}</div>
           )}
         </div>
-        {/* Pagination */}
-        <div className="flex justify-center items-center gap-2 mt-8">
-          <button
-            className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
-            disabled={!meta || page <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-          >
-            Geriye
-          </button>
-          {meta?.links?.filter(l => l.label && !l.label.includes('Əvvəl') && !l.label.includes('Sonra')).map((l, idx) => {
-            const label = l.label;
-            const url = l.url || '';
-            const match = url.match(/page=(\d+)/);
-            const pageNum = match ? Number(match[1]) : Number(label);
-            const isActive = l.active;
-            return (
-              <button
-                key={idx}
-                className={`w-8 h-8 rounded font-medium ${isActive ? 'bg-[#2E92A0] text-white' : 'bg-white border border-[#E7E7E7] text-[#3F3F3F]'}`}
-                onClick={() => !isActive && pageNum && setPage(pageNum)}
-              >
-                {label}
-              </button>
-            );
-          })}
-          <button
-            className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
-            disabled={!meta || page >= (meta?.last_page || 1)}
-            onClick={() => setPage((p) => (meta ? Math.min(meta.last_page || p + 1, p + 1) : p + 1))}
-          >
-            İreli
-          </button>
-        </div>
+        {/* Pagination - only show when there are results */}
+        {!loading && items.length > 0 && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <button
+              className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
+              disabled={!meta || page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              Geriye
+            </button>
+            {meta?.links?.filter(l => l.label && !l.label.includes('Əvvəl') && !l.label.includes('Sonra')).map((l, idx) => {
+              const label = l.label;
+              const url = l.url || '';
+              const match = url.match(/page=(\d+)/);
+              const pageNum = match ? Number(match[1]) : Number(label);
+              const isActive = l.active;
+              return (
+                <button
+                  key={idx}
+                  className={`w-8 h-8 rounded font-medium ${isActive ? 'bg-[#2E92A0] text-white' : 'bg-white border border-[#E7E7E7] text-[#3F3F3F]'}`}
+                  onClick={() => !isActive && pageNum && setPage(pageNum)}
+                >
+                  {label}
+                </button>
+              );
+            })}
+            <button
+              className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed"
+              disabled={!meta || page >= (meta?.last_page || 1)}
+              onClick={() => setPage((p) => (meta ? Math.min(meta.last_page || p + 1, p + 1) : p + 1))}
+            >
+              İreli
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -369,7 +369,7 @@ const Header = () => {
                     </span>
                   </div>
                   <button
-                    onClick={() => navigate("/dasinma/yeni")}
+                    onClick={() => navigate("/yeni-elan")}
                     className="px-4 py-[10px] font-semibold text-white hover:text-[#2E92A0] rounded-[8px] bg-[#2E92A0] hover:bg-white transition-colors border border-[#2E92A0] hover:cursor-pointer flex items-center gap-2">
                     Elan Yerləşdir
                     <FaPlus size={20} />

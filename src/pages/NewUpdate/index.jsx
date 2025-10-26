@@ -4,106 +4,284 @@ import { IoCamera } from "react-icons/io5";
 import { AnimatePresence, motion } from "framer-motion";
 
 export const NewUpdate = () => {
-  const [activeTab, setActiveTab] = useState("elan"); // 'elan' or 'kataloq'
+  const [activeTab, setActiveTab] = useState("individual"); // 'individual', 'legal', or 'entrepreneur'
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Separate state for Elan (Announcement) form
-  const [elanFormData, setElanFormData] = useState({
-    elanAdi: "",
-    haradanGelir: "",
-    haraGelir: "",
-    neDasir: "",
-    neQederDasir: "",
-    neVaxCixir: "",
-    neVaxCatir: "",
-    yukTutumu: "",
-    yukTutumuVahid: "",
-    yukGatirenAdi: "",
-    yukGatirenMobil: "",
-    elaveMelumat: "",
-    sekil: null,
+  // Individual (Fiziki şəxs) form state
+  const [individualFormData, setIndividualFormData] = useState({
+    capacity: "",
+    unit_id: "",
+    reach_from_address: "",
+    photos: [],
+    empty_space: "",
+    truck_type_id: "",
+    truck_registration_number: "",
+    from_id: "",
+    to_id: "",
+    expires_at: "",
+    name_az: "",
+    load_type_az: "",
+    exit_from_address_az: "",
+    description_az: "",
   });
 
-  // Separate state for Kataloq (Catalog) form
-  const [kataloqFormData, setKataloqFormData] = useState({
-    sirketAdi: "",
-    neceBiriVar: "",
-    bosTirininSayi: "",
-    voen: "",
-    elaqeNomresi: "",
-    email: "",
-    vebsaytLinki: "",
-    filiallar: [],
-    kataloqElaveMelumat: "",
-    sekil: null,
+  // Legal (Hüquqi şəxs) form state
+  const [legalFormData, setLegalFormData] = useState({
+    driver_certificates: [],
+    driver_photo: null,
+    capacity: "",
+    unit_id: "",
+    reach_from_address: "",
+    photos: [],
+    empty_space: "",
+    truck_type_id: "",
+    truck_registration_number: "",
+    from_id: "",
+    to_id: "",
+    expires_at: "",
+    driver_full_name_az: "",
+    driver_biography_az: "",
+    name_az: "",
+    load_type_az: "",
+    exit_from_address_az: "",
+    description_az: "",
+    driver_experience_az: "",
   });
 
-  const handleElanInputChange = (field, value) => {
-    setElanFormData((prev) => ({
+  // Entrepreneur (Sahibkar) form state
+  const [entrepreneurFormData, setEntrepreneurFormData] = useState({
+    capacity: "",
+    unit_id: "",
+    reach_from_address: "",
+    photos: [],
+    from_id: "",
+    to_id: "",
+    truck_type_id: "",
+    expires_at: "",
+    name_az: "",
+    load_type_az: "",
+    exit_from_address_az: "",
+    description_az: "",
+  });
+
+  // Individual form handlers
+  const handleIndividualInputChange = (field, value) => {
+    setIndividualFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handleKataloqInputChange = (field, value) => {
-    setKataloqFormData((prev) => ({
+  const handleIndividualFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setIndividualFormData((prev) => ({
+      ...prev,
+      photos: [...prev.photos, ...files],
+    }));
+  };
+
+  const handleIndividualSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await submitAdvert(individualFormData, "individual");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Legal form handlers
+  const handleLegalInputChange = (field, value) => {
+    setLegalFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const handleElanFileChange = (e) => {
+  const handleLegalFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setLegalFormData((prev) => ({
+        ...prev,
+      photos: [...prev.photos, ...files],
+      }));
+  };
+
+  const handleLegalDriverPhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setElanFormData((prev) => ({
+      setLegalFormData((prev) => ({
         ...prev,
-        sekil: file,
+        driver_photo: file,
       }));
     }
   };
 
-  const handleKataloqFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setKataloqFormData((prev) => ({
-        ...prev,
-        sekil: file,
-      }));
+  const handleLegalCertificatesChange = (e) => {
+    const files = Array.from(e.target.files);
+    setLegalFormData((prev) => ({
+      ...prev,
+      driver_certificates: [...prev.driver_certificates, ...files],
+    }));
+  };
+
+  const handleLegalSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await submitAdvert(legalFormData, "legal");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleElanSubmit = (e) => {
+  // Entrepreneur form handlers
+  const handleEntrepreneurInputChange = (field, value) => {
+    setEntrepreneurFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleEntrepreneurFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setEntrepreneurFormData((prev) => ({
+      ...prev,
+      photos: [...prev.photos, ...files],
+    }));
+  };
+
+  const handleEntrepreneurSubmit = async (e) => {
     e.preventDefault();
-    console.log("Elan form data:", elanFormData);
-    // Handle Elan form submission here
+    setIsSubmitting(true);
+    try {
+      await submitAdvert(entrepreneurFormData, "entrepreneur");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleKataloqSubmit = (e) => {
-    e.preventDefault();
-    console.log("Kataloq form data:", kataloqFormData);
-    // Handle Kataloq form submission here
-  };
+  // API Integration Functions
+  const submitAdvert = async (formData, userType) => {
+    const API_URL = "https://atfplatform.tw1.ru/api/adverts/store";
+    
+    // Create FormData object
+    const formDataToSend = new FormData();
+    
+    if (userType === "individual") {
+      // Individual form - only fill relevant fields, others null
+      formDataToSend.append("capacity", formData.capacity || "");
+      formDataToSend.append("unit_id", formData.unit_id || "");
+      formDataToSend.append("reach_from_address", formData.reach_from_address || "");
+      formDataToSend.append("empty_space", formData.empty_space || "");
+      formDataToSend.append("truck_type_id", formData.truck_type_id || "");
+      formDataToSend.append("truck_registration_number", formData.truck_registration_number || "");
+      formDataToSend.append("from_id", formData.from_id || "");
+      formDataToSend.append("to_id", formData.to_id || "");
+      formDataToSend.append("expires_at", formData.expires_at || "");
+      formDataToSend.append("name.az", formData.name_az || "");
+      formDataToSend.append("load_type.az", formData.load_type_az || "");
+      formDataToSend.append("exit_from_address.az", formData.exit_from_address_az || "");
+      formDataToSend.append("description.az", formData.description_az || "");
+      
+      // Add photos
+      formData.photos.forEach((photo, index) => {
+        formDataToSend.append("photos[]", photo);
+      });
+      
+      // Set null for fields not used in individual
+      formDataToSend.append("driver_certificates[]", null);
+      formDataToSend.append("driver_photo", null);
+      formDataToSend.append("driver_full_name.az", null);
+      formDataToSend.append("driver_biography.az", null);
+      formDataToSend.append("driver_experience.az", null);
+      
+    } else if (userType === "legal") {
+      // Legal form - fill all fields
+      formDataToSend.append("capacity", formData.capacity || "");
+      formDataToSend.append("unit_id", formData.unit_id || "");
+      formDataToSend.append("reach_from_address", formData.reach_from_address || "");
+      formDataToSend.append("empty_space", formData.empty_space || "");
+      formDataToSend.append("truck_type_id", formData.truck_type_id || "");
+      formDataToSend.append("truck_registration_number", formData.truck_registration_number || "");
+      formDataToSend.append("from_id", formData.from_id || "");
+      formDataToSend.append("to_id", formData.to_id || "");
+      formDataToSend.append("expires_at", formData.expires_at || "");
+      formDataToSend.append("name.az", formData.name_az || "");
+      formDataToSend.append("load_type.az", formData.load_type_az || "");
+      formDataToSend.append("exit_from_address.az", formData.exit_from_address_az || "");
+      formDataToSend.append("description.az", formData.description_az || "");
+      formDataToSend.append("driver_full_name.az", formData.driver_full_name_az || "");
+      formDataToSend.append("driver_biography.az", formData.driver_biography_az || "");
+      formDataToSend.append("driver_experience.az", formData.driver_experience_az || "");
+      
+      // Add driver photo
+      if (formData.driver_photo) {
+        formDataToSend.append("driver_photo", formData.driver_photo);
+      }
+      
+      // Add driver certificates
+      formData.driver_certificates.forEach((cert, index) => {
+        formDataToSend.append("driver_certificates[]", cert);
+      });
+      
+      // Add photos
+      formData.photos.forEach((photo, index) => {
+        formDataToSend.append("photos[]", photo);
+      });
+      
+    } else if (userType === "entrepreneur") {
+      // Entrepreneur form - only fill relevant fields, others null
+      formDataToSend.append("capacity", formData.capacity || "");
+      formDataToSend.append("unit_id", formData.unit_id || "");
+      formDataToSend.append("reach_from_address", formData.reach_from_address || "");
+      formDataToSend.append("truck_type_id", formData.truck_type_id || "");
+      formDataToSend.append("from_id", formData.from_id || "");
+      formDataToSend.append("to_id", formData.to_id || "");
+      formDataToSend.append("expires_at", formData.expires_at || "");
+      formDataToSend.append("name.az", formData.name_az || "");
+      formDataToSend.append("load_type.az", formData.load_type_az || "");
+      formDataToSend.append("exit_from_address.az", formData.exit_from_address_az || "");
+      formDataToSend.append("description.az", formData.description_az || "");
+      
+      // Add photos
+      formData.photos.forEach((photo, index) => {
+        formDataToSend.append("photos[]", photo);
+      });
+      
+      // Set null for fields not used in entrepreneur
+      formDataToSend.append("driver_certificates[]", null);
+      formDataToSend.append("driver_photo", null);
+      formDataToSend.append("empty_space", null);
+      formDataToSend.append("truck_registration_number", null);
+      formDataToSend.append("driver_full_name.az", null);
+      formDataToSend.append("driver_biography.az", null);
+      formDataToSend.append("driver_experience.az", null);
+    }
 
-  const addFilial = () => {
-    setKataloqFormData((prev) => ({
-      ...prev,
-      filiallar: [...prev.filiallar, ""],
-    }));
-  };
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: formDataToSend,
+        headers: {
+          // Don't set Content-Type header, let browser set it with boundary for FormData
+        },
+      });
 
-  const updateFilial = (index, value) => {
-    setKataloqFormData((prev) => ({
-      ...prev,
-      filiallar: prev.filiallar.map((filial, i) =>
-        i === index ? value : filial
-      ),
-    }));
-  };
-
-  const removeFilial = (index) => {
-    setKataloqFormData((prev) => ({
-      ...prev,
-      filiallar: prev.filiallar.filter((_, i) => i !== index),
-    }));
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Success:", result);
+        // Handle success (show success message, redirect, etc.)
+        alert("Elan uğurla yaradıldı!");
+        // Reset form or redirect
+      } else {
+        const error = await response.json();
+        console.error("Error:", error);
+        alert("Xəta baş verdi: " + (error.message || "Naməlum xəta"));
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+      alert("Şəbəkə xətası: " + error.message);
+    }
   };
 
   return (
@@ -118,32 +296,42 @@ export const NewUpdate = () => {
           {/* Tabs */}
           <div className="flex border-b border-[#E7E7E7] mb-6">
             <button
-              onClick={() => setActiveTab("elan")}
+              onClick={() => setActiveTab("individual")}
               className={`px-6 py-3 font-medium transition-colors ${
-                activeTab === "elan"
+                activeTab === "individual"
                   ? "text-[#2E92A0] border-b-2 border-[#2E92A0]"
                   : "text-[#6B7280] hover:text-[#2E92A0]"
               }`}
             >
-              Elan
+              Fiziki şəxs
             </button>
             <button
-              onClick={() => setActiveTab("kataloq")}
+              onClick={() => setActiveTab("legal")}
               className={`px-6 py-3 font-medium transition-colors ${
-                activeTab === "kataloq"
+                activeTab === "legal"
                   ? "text-[#2E92A0] border-b-2 border-[#2E92A0]"
                   : "text-[#6B7280] hover:text-[#2E92A0]"
               }`}
             >
-              Kataloq
+              Hüquqi şəxs
+            </button>
+            <button
+              onClick={() => setActiveTab("entrepreneur")}
+              className={`px-6 py-3 font-medium transition-colors ${
+                activeTab === "entrepreneur"
+                  ? "text-[#2E92A0] border-b-2 border-[#2E92A0]"
+                  : "text-[#6B7280] hover:text-[#2E92A0]"
+              }`}
+            >
+              Sahibkar
             </button>
           </div>
           <AnimatePresence mode="wait">
-            {/* Elan Form */}
-            {activeTab === "elan" && (
+            {/* Individual Form */}
+            {activeTab === "individual" && (
               <motion.form 
-                key="elan-form"
-                onSubmit={handleElanSubmit} 
+                key="individual-form"
+                onSubmit={handleIndividualSubmit} 
                 className="space-y-6"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -154,214 +342,188 @@ export const NewUpdate = () => {
                 {/* Left Column */}
                 <div className="space-y-4">
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Elanın adı
-                    </label> */}
                     <input
                       type="text"
-                      value={elanFormData.elanAdi}
+                      value={individualFormData.name_az}
                       onChange={(e) =>
-                        handleElanInputChange("elanAdi", e.target.value)
+                        handleIndividualInputChange("name_az", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Elanın adını daxil edin"
+                      placeholder="Elanın adı"
                     />
                   </div>
 
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Haradan gəlir
-                    </label> */}
                     <input
                       type="text"
-                      value={elanFormData.haradanGelir}
+                      value={individualFormData.load_type_az}
                       onChange={(e) =>
-                        handleElanInputChange("haradanGelir", e.target.value)
+                        handleIndividualInputChange("load_type_az", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Haradan gəlir"
+                      placeholder="Yük növü"
                     />
                   </div>
 
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Hara gəlir
-                    </label> */}
                     <input
                       type="text"
-                      value={elanFormData.haraGelir}
+                      value={individualFormData.exit_from_address_az}
                       onChange={(e) =>
-                        handleElanInputChange("haraGelir", e.target.value)
+                        handleIndividualInputChange("exit_from_address_az", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Hara gəlir"
+                      placeholder="Çıxış ünvanı"
                     />
                   </div>
 
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Nə daşıyır
-                    </label> */}
                     <input
                       type="text"
-                      value={elanFormData.neDasir}
+                      value={individualFormData.reach_from_address}
                       onChange={(e) =>
-                        handleElanInputChange("neDasir", e.target.value)
+                        handleIndividualInputChange("reach_from_address", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Nə daşıyır"
-                    />
-                  </div>
-
-                  <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Nə qədər daşıyır
-                    </label> */}
-                    <input
-                      type="text"
-                      value={elanFormData.neQederDasir}
-                      onChange={(e) =>
-                        handleElanInputChange("neQederDasir", e.target.value)
-                      }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Nə qədər daşıyır"
-                    />
-                  </div>
-
-                  <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Nə vaxt çıxır
-                    </label> */}
-                    <input
-                      type="datetime-local"
-                      value={elanFormData.neVaxCixir}
-                      onChange={(e) =>
-                        handleElanInputChange("neVaxCixir", e.target.value)
-                      }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                    />
-                  </div>
-
-                  <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Nə vaxt çatır (təxmini)
-                    </label> */}
-                    <input
-                      type="datetime-local"
-                      value={elanFormData.neVaxCatir}
-                      onChange={(e) =>
-                        handleElanInputChange("neVaxCatir", e.target.value)
-                      }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Çatış ünvanı"
                     />
                   </div>
 
                   <div className="flex w-full">
                     <div className="w-[80%]">
-                      {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                        Yük tutumu
-                      </label> */}
-                      <input
-                        type="text"
-                        value={elanFormData.yukTutumu}
-                        onChange={(e) =>
-                          handleElanInputChange("yukTutumu", e.target.value)
+                    <input
+                      type="text"
+                        value={individualFormData.capacity}
+                      onChange={(e) =>
+                          handleIndividualInputChange("capacity", e.target.value)
                         }
-                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-l-lgfocus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Yük tutumu"
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-l-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Tutum"
                       />
                     </div>
                     <div className="w-[20%]">
-                      {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                        Vahid
-                      </label> */}
                       <select
-                        value={elanFormData.yukTutumuVahid}
+                        value={individualFormData.unit_id}
                         onChange={(e) =>
-                          handleElanInputChange(
-                            "yukTutumuVahid",
-                            e.target.value
-                          )
+                          handleIndividualInputChange("unit_id", e.target.value)
                         }
-                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-r-lg h-[50px] focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-r-lg h-[50px] focus:outline-none focus:border-[#2E92A0]"
                       >
-                        <option value="">Seçin</option>
-                        <option value="ton">Ton</option>
-                        <option value="kq">Kq</option>
-                        <option value="litr">Litr</option>
-                        <option value="metr">Metr</option>
+                        <option value="">Vahid</option>
+                        <option value="1">Ton</option>
+                        <option value="2">Kq</option>
+                        <option value="3">Litr</option>
+                        <option value="4">Metr</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      value={individualFormData.empty_space}
+                      onChange={(e) =>
+                        handleIndividualInputChange("empty_space", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Boş yer"
+                    />
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      value={individualFormData.truck_type_id}
+                      onChange={(e) =>
+                        handleIndividualInputChange("truck_type_id", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Tır növü"
+                    />
+                  </div>
+
+                  <div>
+                      <input
+                        type="text"
+                      value={individualFormData.truck_registration_number}
+                        onChange={(e) =>
+                        handleIndividualInputChange("truck_registration_number", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Tır qeydiyyat nömrəsi"
+                    />
                   </div>
                 </div>
 
                 {/* Right Column */}
                 <div className="space-y-4">
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Yük gətirənin adı soyadı
-                    </label> */}
                     <input
                       type="text"
-                      value={elanFormData.yukGatirenAdi}
+                      value={individualFormData.from_id}
                       onChange={(e) =>
-                        handleElanInputChange("yukGatirenAdi", e.target.value)
+                        handleIndividualInputChange("from_id", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Adı və soyadı"
+                      placeholder="Haradan ID"
                     />
                   </div>
 
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Yük gətirənin mobil nömrəsi
-                    </label> */}
                     <input
-                      type="tel"
-                      value={elanFormData.yukGatirenMobil}
+                      type="text"
+                      value={individualFormData.to_id}
                       onChange={(e) =>
-                        handleElanInputChange("yukGatirenMobil", e.target.value)
+                        handleIndividualInputChange("to_id", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="+994"
+                      placeholder="Hara ID"
                     />
                   </div>
 
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Əlavə məlumat
-                    </label> */}
-                    <textarea
-                      value={elanFormData.elaveMelumat}
+                    <input
+                      type="datetime-local"
+                      value={individualFormData.expires_at}
                       onChange={(e) =>
-                        handleElanInputChange("elaveMelumat", e.target.value)
+                        handleIndividualInputChange("expires_at", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Bitmə tarixi"
+                    />
+                  </div>
+
+                  <div>
+                    <textarea
+                      value={individualFormData.description_az}
+                      onChange={(e) =>
+                        handleIndividualInputChange("description_az", e.target.value)
                       }
                       rows={4}
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
-                      placeholder="Əlavə məlumatlar..."
+                      placeholder="Təsvir..."
                     />
                   </div>
-                  <div className="mt-6">
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                  Şəkil əlavə edin
-                </label> */}
-                    <div className="border-2 border-dashed border-[#2E92A0] rounded-lg p-6 text-center hover:border-[#2E92A0] transition-colors cursor-pointer">
+
+                  <div className="mt-[18px]">
+                    <div className="border-2 h-[116px] flex items-center justify-center border-dashed border-[#2E92A0] rounded-lg p-6 text-center hover:border-[#2E92A0] transition-colors cursor-pointer">
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={handleElanFileChange}
+                        multiple
+                        onChange={handleIndividualFileChange}
                         className="hidden"
-                        id="elan-image-upload"
+                        id="individual-photos-upload"
                       />
                       <label
-                        htmlFor="elan-image-upload"
+                        htmlFor="individual-photos-upload"
                         className="cursor-pointer"
                       >
                         <IoCamera className="mx-auto text-4xl text-[#2E92A0] mb-2" />
-                        <p className="text-[#2E92A0] font-medium">Şəkil əlavə edin</p>
-                        {elanFormData.sekil && (
+                        <p className="text-[#2E92A0] font-medium">Şəkillər əlavə edin</p>
+                        {individualFormData.photos.length > 0 && (
                           <p className="text-sm text-[#2E92A0] mt-2">
-                            Seçilmiş: {elanFormData.sekil.name}
+                            Seçilmiş: {individualFormData.photos.length} şəkil
                           </p>
                         )}
                       </label>
@@ -370,31 +532,31 @@ export const NewUpdate = () => {
                 </div>
               </div>
 
-              {/* Image Upload Section */}
-
               {/* Action Buttons */}
               <div className="flex justify-end gap-4 pt-6 border-t border-[#E7E7E7] w-full">
                 <button
                   type="button"
-                  className="px-6 py-3 border border-[#2E92A0] text-[#2E92A0] rounded-lg hover:bg-[#F0F9FA] transition-colors w-1/2"
+                  disabled={isSubmitting}
+                  className="px-6 py-3 border border-[#2E92A0] text-[#2E92A0] rounded-lg hover:bg-[#F0F9FA] transition-colors w-1/2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Ləğv et
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors w-1/2"
+                  disabled={isSubmitting}
+                  className="px-6 py-3 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors w-1/2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Tamamla
+                  {isSubmitting ? "Göndərilir..." : "Tamamla"}
                 </button>
               </div>
             </motion.form>
           )}
 
-          {/* Kataloq Form */}
-          {activeTab === "kataloq" && (
+          {/* Legal Form */}
+          {activeTab === "legal" && (
             <motion.form 
-              key="kataloq-form"
-              onSubmit={handleKataloqSubmit} 
+              key="legal-form"
+              onSubmit={handleLegalSubmit} 
               className="space-y-6"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -405,249 +567,494 @@ export const NewUpdate = () => {
                 {/* Left Column */}
                 <div className="space-y-4">
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Şirkətin adı
-                    </label> */}
                     <input
                       type="text"
-                      value={kataloqFormData.sirketAdi}
+                      value={legalFormData.name_az}
                       onChange={(e) =>
-                        handleKataloqInputChange("sirketAdi", e.target.value)
+                        handleLegalInputChange("name_az", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Şirkətin adı"
+                      placeholder="Elanın adı"
                     />
                   </div>
 
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Neçə biri var
-                    </label> */}
                     <input
                       type="text"
-                      value={kataloqFormData.neceBiriVar}
+                      value={legalFormData.load_type_az}
                       onChange={(e) =>
-                        handleKataloqInputChange("neceBiriVar", e.target.value)
+                        handleLegalInputChange("load_type_az", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Neçə tırı var"
+                      placeholder="Yük növü"
                     />
                   </div>
 
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Boş tırının sayı
-                    </label> */}
-                    <input
-                      type="number"
-                      value={kataloqFormData.bosTirininSayi}
-                      onChange={(e) =>
-                        handleKataloqInputChange(
-                          "bosTirininSayi",
-                          e.target.value
-                        )
-                      }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Boş tırının sayı"
-                    />
-                  </div>
-
-                  <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      VÖEN
-                    </label> */}
                     <input
                       type="text"
-                      value={kataloqFormData.voen}
+                      value={legalFormData.exit_from_address_az}
                       onChange={(e) =>
-                        handleKataloqInputChange("voen", e.target.value)
+                        handleLegalInputChange("exit_from_address_az", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="VÖEN"
+                      placeholder="Çıxış ünvanı"
                     />
                   </div>
 
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Əlaqə nömrəsi
-                    </label> */}
                     <input
-                      type="tel"
-                      value={kataloqFormData.elaqeNomresi}
+                      type="text"
+                      value={legalFormData.reach_from_address}
                       onChange={(e) =>
-                        handleKataloqInputChange("elaqeNomresi", e.target.value)
+                        handleLegalInputChange("reach_from_address", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Əlaqə nömrəsi"
+                      placeholder="Çatış ünvanı"
+                    />
+                  </div>
+
+                  <div className="flex w-full">
+                    <div className="w-[80%]">
+                      <input
+                        type="text"
+                        value={legalFormData.capacity}
+                        onChange={(e) =>
+                          handleLegalInputChange("capacity", e.target.value)
+                        }
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-l-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Tutum"
+                      />
+                    </div>
+                    <div className="w-[20%]">
+                      <select
+                        value={legalFormData.unit_id}
+                        onChange={(e) =>
+                          handleLegalInputChange("unit_id", e.target.value)
+                        }
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-r-lg h-[50px] focus:outline-none focus:border-[#2E92A0]"
+                      >
+                        <option value="">Vahid</option>
+                        <option value="1">Ton</option>
+                        <option value="2">Kq</option>
+                        <option value="3">Litr</option>
+                        <option value="4">Metr</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      value={legalFormData.empty_space}
+                      onChange={(e) =>
+                        handleLegalInputChange("empty_space", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Boş yer"
                     />
                   </div>
 
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      E-poçt ünvanı
-                    </label> */}
                     <input
-                      type="email"
-                      value={kataloqFormData.email}
+                      type="text"
+                      value={legalFormData.truck_type_id}
                       onChange={(e) =>
-                        handleKataloqInputChange("email", e.target.value)
+                        handleLegalInputChange("truck_type_id", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="E-poçt ünvanı"
+                      placeholder="Tır növü"
                     />
                   </div>
 
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Vebsayt linki
-                    </label> */}
                     <input
-                      type="url"
-                      value={kataloqFormData.vebsaytLinki}
+                      type="text"
+                      value={legalFormData.truck_registration_number}
                       onChange={(e) =>
-                        handleKataloqInputChange("vebsaytLinki", e.target.value)
+                        handleLegalInputChange("truck_registration_number", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Vebsayt linki"
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Tır qeydiyyat nömrəsi"
                     />
+                  </div>
+                  <div className="border-2 h-[116px] flex items-center justify-center border-dashed border-[#2E92A0] rounded-lg p-4 text-center hover:border-[#2E92A0] transition-colors cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleLegalCertificatesChange}
+                      className="hidden"
+                      id="legal-certificates-upload"
+                    />
+                    <label
+                      htmlFor="legal-certificates-upload"
+                      className="cursor-pointer"
+                    >
+                      <IoCamera className="mx-auto text-2xl text-[#2E92A0] mb-2" />
+                      <p className="text-[#2E92A0] font-medium text-sm">Sürücü sertifikatları</p>
+                      {legalFormData.driver_certificates.length > 0 && (
+                        <p className="text-xs text-[#2E92A0] mt-1">
+                          Seçilmiş: {legalFormData.driver_certificates.length} sənəd
+                        </p>
+                      )}
+                    </label>
+                  </div>
+
+                  {/* Photos Upload */}
+                  <div className="border-2 border-dashed border-[#2E92A0] rounded-lg p-4 text-center hover:border-[#2E92A0] transition-colors cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleLegalFileChange}
+                      className="hidden"
+                      id="legal-photos-upload"
+                    />
+                    <label
+                      htmlFor="legal-photos-upload"
+                      className="cursor-pointer"
+                    >
+                      <IoCamera className="mx-auto text-2xl text-[#2E92A0] mb-2" />
+                      <p className="text-[#2E92A0] font-medium text-sm">Şəkillər</p>
+                      {legalFormData.photos.length > 0 && (
+                        <p className="text-xs text-[#2E92A0] mt-1">
+                          Seçilmiş: {legalFormData.photos.length} şəkil
+                        </p>
+                      )}
+                    </label>
                   </div>
                 </div>
 
                 {/* Right Column */}
                 <div className="space-y-4">
                   <div>
-                    {/* Filiallar Header */}
-                    <div className="bg-white border border-[#E7E7E7] rounded-lg px-4 py-3 mb-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#2E92A0] font-medium">
-                          Filiallar
-                        </span>
-                        <button
-                          type="button"
-                          onClick={addFilial}
-                          className="text-[#2E92A0] hover:text-[#267A85] transition-colors"
-                        >
-                          <IoAdd size={24} />
-                        </button>
+                    <input
+                      type="text"
+                      value={legalFormData.from_id}
+                      onChange={(e) =>
+                        handleLegalInputChange("from_id", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Haradan ID"
+                    />
                       </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      value={legalFormData.to_id}
+                      onChange={(e) =>
+                        handleLegalInputChange("to_id", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Hara ID"
+                    />
                     </div>
 
-                    {/* Filiallar List */}
-                    <div className="space-y-3">
-                      <AnimatePresence>
-                        {kataloqFormData.filiallar.map((filial, index) => (
-                          <motion.div
-                            key={index}
-                            initial={{ opacity: 0, height: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, height: "auto", scale: 1 }}
-                            exit={{ opacity: 0, height: 0, scale: 0.8 }}
-                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="flex items-center gap-3"
-                          >
-                            {/* Remove Button */}
-                            <button
-                              type="button"
-                              onClick={() => removeFilial(index)}
-                              className="text-gray-500 hover:text-red-500 transition-colors p-1"
-                            >
-                              <span className="text-xl font-bold">−</span>
-                            </button>
-
-                            {/* Filial Name Input */}
-                            <input
-                              type="text"
-                              value={filial}
-                              onChange={(e) =>
-                                updateFilial(index, e.target.value)
-                              }
-                              className="flex-1 px-4 py-3 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] bg-white"
-                              placeholder="Filialın adı"
-                            />
-
-                            {/* Image Upload Button */}
-                            <div className="border-2 border-dashed border-[#2E92A0] rounded-lg p-3 cursor-pointer hover:border-[#267A85] transition-colors">
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => {
-                                  const file = e.target.files[0];
-                                  if (file) {
-                                    // Handle filial image upload here
-                                    console.log(`Filial ${index} image:`, file);
-                                  }
-                                }}
-                                className="hidden"
-                                id={`filial-image-${index}`}
-                              />
-                              <label
-                                htmlFor={`filial-image-${index}`}
-                                className="cursor-pointer flex items-center gap-2 text-[#2E92A0]"
-                              >
-                                <IoCamera size={16} />
-                                <span className="text-sm">Şəkil əlavə edin</span>
-                              </label>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </AnimatePresence>
-                    </div>
+                  <div>
+                    <input
+                      type="datetime-local"
+                      value={legalFormData.expires_at}
+                      onChange={(e) =>
+                        handleLegalInputChange("expires_at", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Bitmə tarixi"
+                    />
                   </div>
 
                   <div>
-                    {/* <label className="block text-sm font-medium text-[#3F3F3F] mb-2">
-                      Əlavə məlumat
-                    </label> */}
-                    <textarea
-                      value={kataloqFormData.kataloqElaveMelumat}
+                    <input
+                      type="text"
+                      value={legalFormData.driver_full_name_az}
                       onChange={(e) =>
-                        handleKataloqInputChange(
-                          "kataloqElaveMelumat",
-                          e.target.value
-                        )
+                        handleLegalInputChange("driver_full_name_az", e.target.value)
                       }
-                      rows={4}
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                      placeholder="Əlavə məlumatlar..."
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Sürücünün adı soyadı"
                     />
                   </div>
-                  <div className="border-2 border-dashed border-[#2E92A0] rounded-lg p-6 text-center hover:border-[#2E92A0] transition-colors cursor-pointer">
+
+                  <div>
+                    <textarea
+                      value={legalFormData.driver_biography_az}
+                      onChange={(e) =>
+                        handleLegalInputChange("driver_biography_az", e.target.value)
+                      }
+                      rows={3}
+                      className="w-full h-[116px] px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                      placeholder="Sürücünün bioqrafiyası"
+                    />
+                  </div>
+
+                  <div>
+                    <textarea
+                      value={legalFormData.driver_experience_az}
+                      onChange={(e) =>
+                        handleLegalInputChange("driver_experience_az", e.target.value)
+                      }
+                      rows={3}
+                      className="w-full h-[116px] px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                      placeholder="Sürücünün təcrübəsi"
+                    />
+                  </div>
+
+                  <div>
+                    <textarea
+                      value={legalFormData.description_az}
+                      onChange={(e) =>
+                        handleLegalInputChange("description_az", e.target.value)
+                      }
+                      rows={3}
+                      className="w-full h-[116px] px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                      placeholder="Təsvir"
+                    />
+                  </div>
+
+                  {/* Driver Photo Upload */}
+                  <div className="border-2 border-dashed border-[#2E92A0] rounded-lg p-4 text-center hover:border-[#2E92A0] transition-colors cursor-pointer">
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleKataloqFileChange}
+                      onChange={handleLegalDriverPhotoChange}
                       className="hidden"
-                      id="kataloq-image-upload"
+                      id="legal-driver-photo-upload"
                     />
                     <label
-                      htmlFor="kataloq-image-upload"
+                      htmlFor="legal-driver-photo-upload"
                       className="cursor-pointer"
                     >
-                      <IoCamera className="mx-auto text-4xl text-[#2E92A0] mb-2" />
-                      <p className="text-[#2E92A0] font-medium">Şəkil əlavə edin</p>
-                      {kataloqFormData.sekil && (
-                        <p className="text-sm text-[#2E92A0] mt-2">
-                          Seçilmiş: {kataloqFormData.sekil.name}
+                      <IoCamera className="mx-auto text-2xl text-[#2E92A0] mb-2" />
+                      <p className="text-[#2E92A0] font-medium text-sm">Sürücü şəkli</p>
+                      {legalFormData.driver_photo && (
+                        <p className="text-xs text-[#2E92A0] mt-1">
+                          Seçilmiş: {legalFormData.driver_photo.name}
                         </p>
                       )}
                     </label>
                   </div>
+
+                  {/* Driver Certificates Upload */}
+                  
                 </div>
               </div>
 
 
               {/* Action Buttons */}
               <div className="flex justify-end gap-4 pt-6 border-t border-[#E7E7E7] w-full">
-                <button
-                  type="button"
+                            <button
+                              type="button"
                   className="px-6 py-3 border border-[#2E92A0] text-[#2E92A0] rounded-lg hover:bg-[#F0F9FA] transition-colors w-1/2"
-                >
+                            >
                   Ləğv et
-                </button>
+                            </button>
                 <button
                   type="submit"
                   className="px-6 py-3 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors w-1/2"
                 >
                   Tamamla
+                </button>
+              </div>
+            </motion.form>
+          )}
+
+          {/* Entrepreneur Form */}
+          {activeTab === "entrepreneur" && (
+            <motion.form 
+              key="entrepreneur-form"
+              onSubmit={handleEntrepreneurSubmit} 
+              className="space-y-6"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column */}
+                <div className="space-y-4">
+                  <div>
+                            <input
+                              type="text"
+                      value={entrepreneurFormData.name_az}
+                              onChange={(e) =>
+                        handleEntrepreneurInputChange("name_az", e.target.value)
+                              }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Elanın adı"
+                            />
+                  </div>
+
+                  <div>
+                              <input
+                      type="text"
+                      value={entrepreneurFormData.load_type_az}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("load_type_az", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Yük növü"
+                    />
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      value={entrepreneurFormData.exit_from_address_az}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("exit_from_address_az", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Çıxış ünvanı"
+                    />
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      value={entrepreneurFormData.reach_from_address}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("reach_from_address", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Çatış ünvanı"
+                    />
+                  </div>
+
+                  <div className="flex w-full">
+                    <div className="w-[80%]">
+                      <input
+                        type="text"
+                        value={entrepreneurFormData.capacity}
+                        onChange={(e) =>
+                          handleEntrepreneurInputChange("capacity", e.target.value)
+                        }
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-l-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Tutum"
+                      />
+                    </div>
+                    <div className="w-[20%]">
+                      <select
+                        value={entrepreneurFormData.unit_id}
+                        onChange={(e) =>
+                          handleEntrepreneurInputChange("unit_id", e.target.value)
+                        }
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-r-lg h-[50px] focus:outline-none focus:border-[#2E92A0]"
+                      >
+                        <option value="">Vahid</option>
+                        <option value="1">Ton</option>
+                        <option value="2">Kq</option>
+                        <option value="3">Litr</option>
+                        <option value="4">Metr</option>
+                      </select>
+                            </div>
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      value={entrepreneurFormData.truck_type_id}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("truck_type_id", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Tır növü"
+                    />
+                    </div>
+                  </div>
+
+                {/* Right Column */}
+                <div className="space-y-4">
+                  <div>
+                    <input
+                      type="text"
+                      value={entrepreneurFormData.from_id}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("from_id", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Haradan ID"
+                    />
+                  </div>
+
+                  <div>
+                    <input
+                      type="text"
+                      value={entrepreneurFormData.to_id}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("to_id", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Hara ID"
+                    />
+                  </div>
+
+                  <div>
+                    <input
+                      type="datetime-local"
+                      value={entrepreneurFormData.expires_at}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("expires_at", e.target.value)
+                      }
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Bitmə tarixi"
+                    />
+                  </div>
+
+                  <div>
+                    <textarea
+                      value={entrepreneurFormData.description_az}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("description_az", e.target.value)
+                      }
+                      rows={4}
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
+                      placeholder="Təsvir..."
+                    />
+                  </div>
+
+                  <div className="mt-[18px]">
+                  <div className="border-2 border-dashed border-[#2E92A0] rounded-lg p-6 text-center hover:border-[#2E92A0] transition-colors cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                        multiple
+                        onChange={handleEntrepreneurFileChange}
+                      className="hidden"
+                        id="entrepreneur-photos-upload"
+                    />
+                    <label
+                        htmlFor="entrepreneur-photos-upload"
+                      className="cursor-pointer"
+                    >
+                      <IoCamera className="mx-auto text-4xl text-[#2E92A0] mb-2" />
+                        <p className="text-[#2E92A0] font-medium">Şəkillər əlavə edin</p>
+                        {entrepreneurFormData.photos.length > 0 && (
+                        <p className="text-sm text-[#2E92A0] mt-2">
+                            Seçilmiş: {entrepreneurFormData.photos.length} şəkil
+                        </p>
+                      )}
+                    </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-4 pt-6 border-t border-[#E7E7E7] w-full">
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  className="px-6 py-3 border border-[#2E92A0] text-[#2E92A0] rounded-lg hover:bg-[#F0F9FA] transition-colors w-1/2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Ləğv et
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-3 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors w-1/2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "Göndərilir..." : "Tamamla"}
                 </button>
               </div>
             </motion.form>
