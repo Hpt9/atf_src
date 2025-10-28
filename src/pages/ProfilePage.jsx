@@ -9,6 +9,12 @@ import { IoPerson, IoMail, IoCall, IoLockClosed, IoEye, IoEyeOff, IoCheckmarkCir
 import { FaPlus } from "react-icons/fa";
 
 const ProfilePage = () => {
+  const getPhotoUrl = (path) => {
+    if (!path) return null;
+    if (/^https?:\/\//i.test(path)) return path;
+    const cleaned = path.replace(/^\/?(storage\/)?/, '');
+    return `https://atfplatform.tw1.ru/storage/${cleaned}`;
+  };
   const navigate = useNavigate();
   const { token } = useAuth();
   const { language } = useLanguageStore();
@@ -653,7 +659,7 @@ const ProfilePage = () => {
 
     try {
       const response = await fetch(API_URL, {
-        method: "PUT",
+        method: "POST",
         body: formDataToSend,
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -1800,6 +1806,16 @@ const ProfilePage = () => {
                     </div>
                     
                     <div className="space-y-3">
+                      {branch.photo && (
+                        <div className="w-full h-36 overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
+                          <img
+                            src={getPhotoUrl(branch.photo)}
+                            alt={branch.name?.[language] || branch.name?.az || 'Branch photo'}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
                       <h4 className="font-bold text-gray-800 text-lg">
                         {branch.name?.[language] || branch.name?.az || 'Unnamed Branch'}
                       </h4>
@@ -1886,6 +1902,24 @@ const ProfilePage = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Şəkil
                       </label>
+                      {(() => {
+                        const branch = userData?.branches?.find(
+                          (b) => b.id === isEditingBranch || b.slug === isEditingBranch
+                        );
+                        const photoUrl = getPhotoUrl(branch?.photo);
+                        return photoUrl ? (
+                          <div className="mb-3">
+                            <div className="w-full h-36 overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
+                              <img
+                                src={photoUrl}
+                                alt={branch?.name?.[language] || branch?.name?.az || 'Branch photo'}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">Mövcud şəkil</p>
+                          </div>
+                        ) : null;
+                      })()}
                       <input
                         type="file"
                         accept="image/*"
