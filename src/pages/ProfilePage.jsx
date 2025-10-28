@@ -6,6 +6,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import useLanguageStore from '../store/languageStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoPerson, IoMail, IoCall, IoLockClosed, IoEye, IoEyeOff, IoCheckmarkCircle, IoBusiness, IoCar, IoLocation, IoCreate, IoTrash } from 'react-icons/io5';
+import { FaPlus } from "react-icons/fa";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -20,6 +21,26 @@ const ProfilePage = () => {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [userData, setUserData] = useState(null);
+  
+  // Advert editing states
+  const [editingAdvertData, setEditingAdvertData] = useState(null);
+  const [isSubmittingAdvert, setIsSubmittingAdvert] = useState(false);
+  
+  // Branch editing states
+  const [editingBranchData, setEditingBranchData] = useState(null);
+  const [isEditingBranch, setIsEditingBranch] = useState(null);
+  const [isSubmittingBranch, setIsSubmittingBranch] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  
+  // Add branch states
+  const [showAddBranchModal, setShowAddBranchModal] = useState(false);
+  const [addBranchData, setAddBranchData] = useState({
+    name: '',
+    description: '',
+    status: 'active',
+    photo: null
+  });
+  const [isSubmittingAddBranch, setIsSubmittingAddBranch] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     surname: '',
@@ -429,6 +450,493 @@ const ProfilePage = () => {
     }
   };
 
+  // Advert update functions
+  const updateAdvert = async (advertData, userType, advertSlug) => {
+    const API_URL = `https://atfplatform.tw1.ru/api/adverts/update/${advertSlug}`;
+    
+    console.log("=== ADVERT UPDATE DEBUG ===");
+    console.log("API URL:", API_URL);
+    console.log("User Type:", userType);
+    console.log("Advert Slug:", advertSlug);
+    console.log("Full Advert Data:", advertData);
+    
+    // Create FormData object
+    const formDataToSend = new FormData();
+    
+    if (userType === "individual") {
+      // Individual form - only fill relevant fields, others null
+      formDataToSend.append("capacity", advertData.capacity || "0");
+      formDataToSend.append("unit_id", advertData.unit_id || "");
+      formDataToSend.append("reach_from_address", advertData.reach_from_address || "");
+      formDataToSend.append("empty_space", advertData.empty_space || "");
+      formDataToSend.append("truck_type_id", advertData.truck_type_id || "");
+      formDataToSend.append("truck_registration_number", advertData.truck_registration_number || "");
+      formDataToSend.append("from_id", advertData.from_id || "");
+      formDataToSend.append("to_id", advertData.to_id || "");
+      formDataToSend.append("expires_at", advertData.expires_at || "");
+      formDataToSend.append("name_az", advertData.name_az || "");
+      formDataToSend.append("name_en", advertData.name_en || "");
+      formDataToSend.append("name_ru", advertData.name_ru || "");
+      formDataToSend.append("load_type_az", advertData.load_type_az || "");
+      formDataToSend.append("load_type_en", advertData.load_type_en || "");
+      formDataToSend.append("load_type_ru", advertData.load_type_ru || "");
+      formDataToSend.append("exit_from_address_az", advertData.exit_from_address_az || "");
+      formDataToSend.append("exit_from_address_en", advertData.exit_from_address_en || "");
+      formDataToSend.append("exit_from_address_ru", advertData.exit_from_address_ru || "");
+      formDataToSend.append("description_az", advertData.description_az || "");
+      formDataToSend.append("description_en", advertData.description_en || "");
+      formDataToSend.append("description_ru", advertData.description_ru || "");
+      
+      // Add photos
+      advertData.photos.forEach((photo, index) => {
+        formDataToSend.append("photos[]", photo);
+      });
+      
+      // Set null for fields not used in individual
+      // Note: Don't append null values, just skip them for nullable fields
+      
+    } else if (userType === "legal_entity") {
+      // Legal form - fill all fields
+      formDataToSend.append("capacity", advertData.capacity || "0");
+      formDataToSend.append("unit_id", advertData.unit_id || "");
+      formDataToSend.append("reach_from_address", advertData.reach_from_address || "");
+      formDataToSend.append("empty_space", advertData.empty_space || "");
+      formDataToSend.append("truck_type_id", advertData.truck_type_id || "");
+      formDataToSend.append("truck_registration_number", advertData.truck_registration_number || "");
+      formDataToSend.append("from_id", advertData.from_id || "");
+      formDataToSend.append("to_id", advertData.to_id || "");
+      formDataToSend.append("expires_at", advertData.expires_at || "");
+      formDataToSend.append("name_az", advertData.name_az || "");
+      formDataToSend.append("name_en", advertData.name_en || "");
+      formDataToSend.append("name_ru", advertData.name_ru || "");
+      formDataToSend.append("load_type_az", advertData.load_type_az || "");
+      formDataToSend.append("load_type_en", advertData.load_type_en || "");
+      formDataToSend.append("load_type_ru", advertData.load_type_ru || "");
+      formDataToSend.append("exit_from_address_az", advertData.exit_from_address_az || "");
+      formDataToSend.append("exit_from_address_en", advertData.exit_from_address_en || "");
+      formDataToSend.append("exit_from_address_ru", advertData.exit_from_address_ru || "");
+      formDataToSend.append("description_az", advertData.description_az || "");
+      formDataToSend.append("description_en", advertData.description_en || "");
+      formDataToSend.append("description_ru", advertData.description_ru || "");
+      formDataToSend.append("driver_full_name_az", advertData.driver_full_name_az || "");
+      formDataToSend.append("driver_biography_az", advertData.driver_biography_az || "");
+      formDataToSend.append("driver_experience_az", advertData.driver_experience_az || "");
+      
+      // Add driver photo
+      if (advertData.driver_photo) {
+        formDataToSend.append("driver_photo", advertData.driver_photo);
+      }
+      
+      // Add driver certificates
+      advertData.driver_certificates.forEach((cert, index) => {
+        formDataToSend.append("driver_certificates[]", cert);
+      });
+      
+      // Add photos
+      advertData.photos.forEach((photo, index) => {
+        formDataToSend.append("photos[]", photo);
+      });
+      
+    } else if (userType === "entrepreneur") {
+      // Entrepreneur form - only fill relevant fields, others null
+      formDataToSend.append("capacity", advertData.capacity || "0");
+      formDataToSend.append("unit_id", advertData.unit_id || "");
+      formDataToSend.append("reach_from_address", advertData.reach_from_address || "");
+      formDataToSend.append("truck_type_id", advertData.truck_type_id || "");
+      formDataToSend.append("from_id", advertData.from_id || "");
+      formDataToSend.append("to_id", advertData.to_id || "");
+      formDataToSend.append("expires_at", advertData.expires_at || "");
+      formDataToSend.append("name_az", advertData.name_az || "");
+      formDataToSend.append("name_en", advertData.name_en || "");
+      formDataToSend.append("name_ru", advertData.name_ru || "");
+      formDataToSend.append("load_type_az", advertData.load_type_az || "");
+      formDataToSend.append("load_type_en", advertData.load_type_en || "");
+      formDataToSend.append("load_type_ru", advertData.load_type_ru || "");
+      formDataToSend.append("exit_from_address_az", advertData.exit_from_address_az || "");
+      formDataToSend.append("exit_from_address_en", advertData.exit_from_address_en || "");
+      formDataToSend.append("exit_from_address_ru", advertData.exit_from_address_ru || "");
+      formDataToSend.append("description_az", advertData.description_az || "");
+      formDataToSend.append("description_en", advertData.description_en || "");
+      formDataToSend.append("description_ru", advertData.description_ru || "");
+      
+      // Add photos
+      advertData.photos.forEach((photo, index) => {
+        formDataToSend.append("photos[]", photo);
+      });
+      
+      // Set null for fields not used in entrepreneur
+      // Note: Don't append null values, just skip them for nullable fields
+    }
+
+    // Validate required fields
+    if (!advertData.capacity || advertData.capacity === "0") {
+      toast.error("Tutum mütləq doldurulmalıdır");
+      return;
+    }
+    
+    if (!advertData.name_az || advertData.name_az.trim() === "") {
+      toast.error("Elanın adı (AZ) mütləq doldurulmalıdır");
+      return;
+    }
+    
+    if (!advertData.load_type_az || advertData.load_type_az.trim() === "") {
+      toast.error("Yük növü (AZ) mütləq doldurulmalıdır");
+      return;
+    }
+    
+    if (!advertData.exit_from_address_az || advertData.exit_from_address_az.trim() === "") {
+      toast.error("Çıxış ünvanı (AZ) mütləq doldurulmalıdır");
+      return;
+    }
+    
+    if (!advertData.description_az || advertData.description_az.trim() === "") {
+      toast.error("Təsvir (AZ) mütləq doldurulmalıdır");
+      return;
+    }
+
+    // Log FormData contents
+    console.log("=== FORMDATA CONTENTS ===");
+    for (let [key, value] of formDataToSend.entries()) {
+      console.log(`${key}:`, value);
+    }
+    console.log("=== END FORMDATA ===");
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: formDataToSend,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+      });
+      console.log("Response:", response);
+      console.log("Response status:", response.data);
+      console.log("Response headers:", Object.fromEntries(response.headers.entries()));
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Advert updated successfully:", result);
+        toast.success("Elan uğurla yeniləndi!");
+        // Refresh user data to get updated adverts
+        await fetchUserData();
+        setIsEditingAdvert(null);
+        setEditingAdvertData(null);
+      } else {
+        const error = await response.json();
+        console.error("Error updating advert:", error);
+        console.error("Response status:", response.status);
+        console.error("Response text:", await response.text());
+        toast.error("Xəta baş verdi: " + (error.message || "Naməlum xəta"));
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+      toast.error("Şəbəkə xətası: " + error.message);
+    }
+  };
+
+  // Branch update and delete functions
+  const updateBranch = async (branchData, branchSlug) => {
+    const API_URL = `https://atfplatform.tw1.ru/api/branches/${branchSlug}`;
+    
+    // Create FormData object
+    const formDataToSend = new FormData();
+    
+    formDataToSend.append("name", branchData.name || "");
+    formDataToSend.append("description", branchData.description || "");
+    formDataToSend.append("status", branchData.status || "active");
+    
+    // Add photo if provided
+    if (branchData.photo) {
+      formDataToSend.append("photo", branchData.photo);
+    }
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "PUT",
+        body: formDataToSend,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Branch updated successfully:", result);
+        toast.success("Filial uğurla yeniləndi!");
+        // Refresh user data to get updated branches
+        await fetchUserData();
+        setIsEditingBranch(null);
+        setEditingBranchData(null);
+      } else {
+        const error = await response.json();
+        console.error("Error updating branch:", error);
+        toast.error("Xəta baş verdi: " + (error.message || "Naməlum xəta"));
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+      toast.error("Şəbəkə xətası: " + error.message);
+    }
+  };
+
+  const deleteBranch = async (branchSlug) => {
+    const API_URL = `https://atfplatform.tw1.ru/api/branches/${branchSlug}`;
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "DELETE",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+      });
+
+      if (response.ok) {
+        toast.success("Filial uğurla silindi!");
+        // Refresh user data to get updated branches
+        await fetchUserData();
+        setShowDeleteConfirm(null);
+      } else {
+        const error = await response.json();
+        console.error("Error deleting branch:", error);
+        toast.error("Xəta baş verdi: " + (error.message || "Naməlum xəta"));
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+      toast.error("Şəbəkə xətası: " + error.message);
+    }
+  };
+
+  const addBranch = async (branchData) => {
+    const API_URL = 'https://atfplatform.tw1.ru/api/branches';
+    
+    // Create FormData object
+    const formDataToSend = new FormData();
+    
+    formDataToSend.append("name", branchData.name || "");
+    formDataToSend.append("description", branchData.description || "");
+    formDataToSend.append("status", branchData.status || "active");
+    
+    // Add photo if provided
+    if (branchData.photo) {
+      formDataToSend.append("photo", branchData.photo);
+    }
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: formDataToSend,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Branch added successfully:", result);
+        toast.success("Filial uğurla əlavə edildi!");
+        // Refresh user data to get updated branches
+        await fetchUserData();
+        setShowAddBranchModal(false);
+        setAddBranchData({
+          name: '',
+          description: '',
+          status: 'active',
+          photo: null
+        });
+      } else {
+        const error = await response.json();
+        console.error("Error adding branch:", error);
+        toast.error("Xəta baş verdi: " + (error.message || "Naməlum xəta"));
+      }
+    } catch (error) {
+      console.error("Network error:", error);
+      toast.error("Şəbəkə xətası: " + error.message);
+    }
+  };
+
+  // Initialize branch editing form
+  const initializeBranchEdit = (branch) => {
+    setEditingBranchData({
+      name: branch.name?.az || "",
+      description: branch.description?.az || "",
+      status: branch.status || "active",
+      photo: null,
+    });
+  };
+
+  // Handle branch edit button click
+  const handleEditBranch = (branch) => {
+    console.log("Edit branch clicked:", branch);
+    const branchId = branch.id || branch.slug; // Use slug as fallback if no id
+    console.log("Setting isEditingBranch to:", branchId);
+    setIsEditingBranch(branchId);
+    initializeBranchEdit(branch);
+    console.log("Branch edit initialized");
+  };
+
+  // Handle branch form submission
+  const handleBranchSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingBranchData) return;
+
+    setIsSubmittingBranch(true);
+    try {
+      const branch = userData?.branches?.find(b => (b.id === isEditingBranch) || (b.slug === isEditingBranch));
+      if (branch) {
+        await updateBranch(editingBranchData, branch.slug);
+      }
+    } finally {
+      setIsSubmittingBranch(false);
+    }
+  };
+
+  // Handle branch form input changes
+  const handleBranchInputChange = (field, value) => {
+    setEditingBranchData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Handle branch file changes
+  const handleBranchFileChange = (field, files) => {
+    setEditingBranchData(prev => ({
+      ...prev,
+      [field]: files[0],
+    }));
+  };
+
+  // Handle add branch form submission
+  const handleAddBranchSubmit = async (e) => {
+    e.preventDefault();
+    if (!addBranchData.name.trim()) {
+      toast.error("Filialın adı mütləq doldurulmalıdır");
+      return;
+    }
+
+    setIsSubmittingAddBranch(true);
+    try {
+      await addBranch(addBranchData);
+    } finally {
+      setIsSubmittingAddBranch(false);
+    }
+  };
+
+  // Handle add branch form input changes
+  const handleAddBranchInputChange = (field, value) => {
+    setAddBranchData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Handle add branch file changes
+  const handleAddBranchFileChange = (field, files) => {
+    setAddBranchData(prev => ({
+      ...prev,
+      [field]: files[0],
+    }));
+  };
+
+  // Initialize advert editing form
+  const initializeAdvertEdit = (advert) => {
+    const baseData = {
+      capacity: advert.capacity || "",
+      unit_id: advert.unit_id || "",
+      reach_from_address: advert.reach_from_address || "",
+      photos: [],
+      from_id: advert.from_id || "",
+      to_id: advert.to_id || "",
+      expires_at: advert.expires_at || "",
+      name_az: advert.name?.az || "",
+      name_en: advert.name?.en || "",
+      name_ru: advert.name?.ru || "",
+      load_type_az: advert.load_type?.az || "",
+      load_type_en: advert.load_type?.en || "",
+      load_type_ru: advert.load_type?.ru || "",
+      exit_from_address_az: advert.exit_from_address?.az || "",
+      exit_from_address_en: advert.exit_from_address?.en || "",
+      exit_from_address_ru: advert.exit_from_address?.ru || "",
+      description_az: advert.description?.az || "",
+      description_en: advert.description?.en || "",
+      description_ru: advert.description?.ru || "",
+    };
+
+    if (userData?.role === "individual") {
+      setEditingAdvertData({
+        ...baseData,
+        empty_space: advert.empty_space || "",
+        truck_type_id: advert.truck_type_id || "",
+        truck_registration_number: advert.truck_registration_number || "",
+      });
+    } else if (userData?.role === "legal_entity") {
+      setEditingAdvertData({
+        ...baseData,
+        empty_space: advert.empty_space || "",
+        truck_type_id: advert.truck_type_id || "",
+        truck_registration_number: advert.truck_registration_number || "",
+        driver_full_name_az: advert.driver_full_name || "",
+        driver_biography_az: advert.driver_biography || "",
+        driver_experience_az: advert.driver_experience || "",
+        driver_photo: null,
+        driver_certificates: [],
+      });
+    } else if (userData?.role === "entrepreneur") {
+      setEditingAdvertData({
+        ...baseData,
+        truck_type_id: advert.truck_type_id || "",
+      });
+    }
+  };
+
+  // Handle advert edit button click
+  const handleEditAdvert = (advert) => {
+    setIsEditingAdvert(advert.id);
+    initializeAdvertEdit(advert);
+  };
+
+  // Handle advert form submission
+  const handleAdvertSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingAdvertData) return;
+
+    setIsSubmittingAdvert(true);
+    try {
+      const advert = userData?.adverts?.find(a => a.id === isEditingAdvert);
+      if (advert) {
+        await updateAdvert(editingAdvertData, userData?.role, advert.slug);
+      }
+    } finally {
+      setIsSubmittingAdvert(false);
+    }
+  };
+
+  // Handle advert form input changes
+  const handleAdvertInputChange = (field, value) => {
+    setEditingAdvertData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Handle advert file changes
+  const handleAdvertFileChange = (field, files) => {
+    if (field === "photos" || field === "driver_certificates") {
+      setEditingAdvertData(prev => ({
+        ...prev,
+        [field]: [...prev[field], ...Array.from(files)],
+      }));
+    } else {
+      setEditingAdvertData(prev => ({
+        ...prev,
+        [field]: files[0],
+      }));
+    }
+  };
+
   if (initialLoading) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-303px)]">
@@ -593,6 +1101,9 @@ const ProfilePage = () => {
                 />
               </motion.div>
 
+              {/* Password fields - only show in edit mode */}
+              {isEditingProfile && (
+                <>
               {/* Old Password (for password change) */}
               <motion.div 
                 className="space-y-2"
@@ -610,11 +1121,9 @@ const ProfilePage = () => {
                     name="old_password"
                     value={formData.old_password || ''}
                     onChange={handleInputChange}
-                    disabled={!isEditingProfile}
-                    className="w-full px-4 py-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:border-gray-300"
+                        className="w-full px-4 py-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 hover:border-gray-300"
                     placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
                   />
-                  {isEditingProfile && (
                     <button
                       type="button"
                       onClick={() => setShowOldPassword(!showOldPassword)}
@@ -622,7 +1131,6 @@ const ProfilePage = () => {
                     >
                       {showOldPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
                     </button>
-                  )}
                 </div>
               </motion.div>
 
@@ -643,11 +1151,9 @@ const ProfilePage = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    disabled={!isEditingProfile}
-                    className="w-full px-4 py-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:border-gray-300"
+                        className="w-full px-4 py-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 hover:border-gray-300"
                     placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
                   />
-                  {isEditingProfile && (
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
@@ -655,7 +1161,6 @@ const ProfilePage = () => {
                     >
                       {showPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
                     </button>
-                  )}
                 </div>
               </motion.div>
 
@@ -676,11 +1181,9 @@ const ProfilePage = () => {
                     name="password_confirmation"
                     value={formData.password_confirmation}
                     onChange={handleInputChange} 
-                    disabled={!isEditingProfile}
-                    className="w-full px-4 py-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:border-gray-300"
+                        className="w-full px-4 py-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 hover:border-gray-300"
                     placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
                   />
-                  {isEditingProfile && (
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -688,9 +1191,10 @@ const ProfilePage = () => {
                     >
                       {showConfirmPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
                     </button>
-                  )}
                 </div>
               </motion.div>
+                </>
+              )}
             </div>
 
             {/* Password Error */}
@@ -897,7 +1401,7 @@ const ProfilePage = () => {
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          setIsEditingAdvert(advert.id);
+                          handleEditAdvert(advert);
                         }}
                       >
                         <IoCreate size={18} />
@@ -915,7 +1419,7 @@ const ProfilePage = () => {
           )}
           
           {/* Advert Edit Form */}
-          {isEditingAdvert && (
+          {isEditingAdvert && editingAdvertData && (
             <motion.div 
               className="mt-6 bg-blue-50 rounded-xl p-6"
               initial={{ opacity: 0, y: 20 }}
@@ -923,17 +1427,321 @@ const ProfilePage = () => {
               transition={{ delay: 0.1 }}
             >
               <h3 className="text-lg font-bold text-gray-800 mb-4">Elanı redaktə et</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Elan redaktə funksiyası tezliklə əlavə ediləcək
-              </p>
-              <div className="flex gap-2">
+              
+              <form onSubmit={handleAdvertSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Common fields for all user types */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Elanın adı (AZ)
+                    </label>
+                    <input
+                      type="text"
+                      value={editingAdvertData.name_az || ""}
+                      onChange={(e) => handleAdvertInputChange("name_az", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Elanın adı"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Elanın adı (EN)
+                    </label>
+                    <input
+                      type="text"
+                      value={editingAdvertData.name_en || ""}
+                      onChange={(e) => handleAdvertInputChange("name_en", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Advert name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Elanın adı (RU)
+                    </label>
+                    <input
+                      type="text"
+                      value={editingAdvertData.name_ru || ""}
+                      onChange={(e) => handleAdvertInputChange("name_ru", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Название объявления"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Yük növü (AZ)
+                    </label>
+                    <input
+                      type="text"
+                      value={editingAdvertData.load_type_az || ""}
+                      onChange={(e) => handleAdvertInputChange("load_type_az", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Yük növü"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tutum
+                    </label>
+                    <input
+                      type="text"
+                      value={editingAdvertData.capacity || ""}
+                      onChange={(e) => handleAdvertInputChange("capacity", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Tutum"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Vahid ID
+                    </label>
+                    <input
+                      type="text"
+                      value={editingAdvertData.unit_id || ""}
+                      onChange={(e) => handleAdvertInputChange("unit_id", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Vahid ID"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Çatış ünvanı
+                    </label>
+                    <input
+                      type="text"
+                      value={editingAdvertData.reach_from_address || ""}
+                      onChange={(e) => handleAdvertInputChange("reach_from_address", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Çatış ünvanı"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Haradan ID
+                    </label>
+                    <input
+                      type="text"
+                      value={editingAdvertData.from_id || ""}
+                      onChange={(e) => handleAdvertInputChange("from_id", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Haradan ID"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Hara ID
+                    </label>
+                    <input
+                      type="text"
+                      value={editingAdvertData.to_id || ""}
+                      onChange={(e) => handleAdvertInputChange("to_id", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Hara ID"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bitmə tarixi
+                    </label>
+                    <input
+                      type="date"
+                      value={editingAdvertData.expires_at || ""}
+                      onChange={(e) => handleAdvertInputChange("expires_at", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                    />
+                  </div>
+
+                  {/* Individual and Legal specific fields */}
+                  {(userData?.role === "individual" || userData?.role === "legal_entity") && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Boş yer
+                        </label>
+                        <input
+                          type="text"
+                          value={editingAdvertData.empty_space || ""}
+                          onChange={(e) => handleAdvertInputChange("empty_space", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                          placeholder="Boş yer"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Tır növü ID
+                        </label>
+                        <input
+                          type="text"
+                          value={editingAdvertData.truck_type_id || ""}
+                          onChange={(e) => handleAdvertInputChange("truck_type_id", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                          placeholder="Tır növü ID"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Tır qeydiyyat nömrəsi
+                        </label>
+                        <input
+                          type="text"
+                          value={editingAdvertData.truck_registration_number || ""}
+                          onChange={(e) => handleAdvertInputChange("truck_registration_number", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                          placeholder="Tır qeydiyyat nömrəsi"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Legal entity specific fields */}
+                  {userData?.role === "legal_entity" && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Sürücünün adı soyadı
+                        </label>
+                        <input
+                          type="text"
+                          value={editingAdvertData.driver_full_name_az || ""}
+                          onChange={(e) => handleAdvertInputChange("driver_full_name_az", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                          placeholder="Sürücünün adı soyadı"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Sürücünün bioqrafiyası
+                        </label>
+                        <textarea
+                          value={editingAdvertData.driver_biography_az || ""}
+                          onChange={(e) => handleAdvertInputChange("driver_biography_az", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                          rows={3}
+                          placeholder="Sürücünün bioqrafiyası"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Sürücünün təcrübəsi
+                        </label>
+                        <textarea
+                          value={editingAdvertData.driver_experience_az || ""}
+                          onChange={(e) => handleAdvertInputChange("driver_experience_az", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                          rows={3}
+                          placeholder="Sürücünün təcrübəsi"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Entrepreneur specific fields */}
+                  {userData?.role === "entrepreneur" && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tır növü ID
+                      </label>
+                      <input
+                        type="text"
+                        value={editingAdvertData.truck_type_id || ""}
+                        onChange={(e) => handleAdvertInputChange("truck_type_id", e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                        placeholder="Tır növü ID"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* File uploads */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Şəkillər
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => handleAdvertFileChange("photos", e.target.files)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                    />
+                    {editingAdvertData.photos.length > 0 && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        Seçilmiş: {editingAdvertData.photos.length} şəkil
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Legal entity specific file uploads */}
+                  {userData?.role === "legal_entity" && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Sürücü şəkli
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleAdvertFileChange("driver_photo", e.target.files)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Sürücü sertifikatları
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => handleAdvertFileChange("driver_certificates", e.target.files)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                        />
+                        {editingAdvertData.driver_certificates.length > 0 && (
+                          <p className="text-sm text-gray-600 mt-1">
+                            Seçilmiş: {editingAdvertData.driver_certificates.length} sənəd
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex justify-end gap-4">
                 <button
-                  onClick={() => setIsEditingAdvert(null)}
-                  className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  Bağla
+                    type="button"
+                    onClick={() => {
+                      setIsEditingAdvert(null);
+                      setEditingAdvertData(null);
+                    }}
+                    className="px-6 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Ləğv et
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingAdvert}
+                    className="px-6 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmittingAdvert ? "Yenilənir..." : "Yadda saxla"}
                 </button>
               </div>
+              </form>
             </motion.div>
           )}
         </motion.div>
@@ -946,14 +1754,28 @@ const ProfilePage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
           >
-            <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-              <IoLocation className="text-[#2E92A0]" />
-              {texts.branches[language] || texts.branches.az}
-            </h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <IoLocation className="text-[#2E92A0]" />
+                {texts.branches[language] || texts.branches.az}
+              </h3>
+              {/* <motion.button
+                type="button"
+                onClick={() => setShowAddBranchModal(true)}
+                className="px-4 py-2 bg-gradient-to-r from-[#2E92A0] to-[#267A85] text-white rounded-lg hover:from-[#267A85] hover:to-[#1E6A75] transition-all duration-300 shadow-lg hover:shadow-xl flex items-center gap-2"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span className="text-lg">+</span>
+                <span className="text-sm font-medium">Filial əlavə et</span>
+              </motion.button> */}
+            </div>
             
             {userData?.branches && userData.branches.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {userData.branches.map((branch, index) => (
+                {userData.branches.map((branch, index) => {
+                  console.log("Branch data:", branch);
+                  return (
                   <motion.div
                     key={branch.slug}
                     className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow relative"
@@ -961,13 +1783,19 @@ const ProfilePage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 * index }}
                   >
-                    {/* Edit Icon */}
-                    <div className="absolute top-4 right-4">
+                    {/* Edit and Delete Icons */}
+                    <div className="absolute top-4 right-4 flex gap-2">
                       <button 
-                        className="p-2 text-gray-400 hover:text-[#2E92A0] transition-colors"
-                        onClick={() => console.log('Edit branch:', branch.slug)}
+                        className="p-2 text-gray-400 hover:text-[#2E92A0] transition-colors bg-white rounded-full shadow-sm"
+                        onClick={() => handleEditBranch(branch)}
                       >
                         <IoCreate size={18} />
+                      </button>
+                      <button 
+                        className="p-2 text-gray-400 hover:text-red-500 transition-colors bg-white rounded-full shadow-sm"
+                        onClick={() => setShowDeleteConfirm(branch)}
+                      >
+                        <IoTrash size={18} />
                       </button>
                     </div>
                     
@@ -983,7 +1811,16 @@ const ProfilePage = () => {
                       )}
                     </div>
                   </motion.div>
-                ))}
+                  );
+                })}
+                <motion.div
+                    className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow relative flex justify-center items-center"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    onClick={() => setShowAddBranchModal(true)}
+                  >
+                    <FaPlus className='text-[#2E92A0] h-5 w-5'/>
+                  </motion.div>
               </div>
             ) : (
               <div className="text-center py-12 bg-gray-50 rounded-xl">
@@ -991,6 +1828,300 @@ const ProfilePage = () => {
                 <p className="text-gray-600">{texts.noBranches[language] || texts.noBranches.az}</p>
               </div>
             )}
+
+            {/* Branch Edit Form */}
+            {console.log("Branch edit form check:", { isEditingBranch, editingBranchData, userRole: userData?.role })}
+            {isEditingBranch && editingBranchData && (
+              <motion.div 
+                className="mt-6 bg-blue-50 rounded-xl p-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <h3 className="text-lg font-bold text-gray-800 mb-4">Filialı redaktə et</h3>
+                
+                <form onSubmit={handleBranchSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Filialın adı
+                      </label>
+                      <input
+                        type="text"
+                        value={editingBranchData.name || ""}
+                        onChange={(e) => handleBranchInputChange("name", e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                        placeholder="Filialın adı"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Status
+                      </label>
+                      <select
+                        value={editingBranchData.status || "active"}
+                        onChange={(e) => handleBranchInputChange("status", e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      >
+                        <option value="active">Aktiv</option>
+                        <option value="passive">Passiv</option>
+                      </select>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Təsvir
+                      </label>
+                      <textarea
+                        value={editingBranchData.description || ""}
+                        onChange={(e) => handleBranchInputChange("description", e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                        rows={4}
+                        placeholder="Filialın təsviri"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Şəkil
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleBranchFileChange("photo", e.target.files)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      />
+                      {editingBranchData.photo && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          Seçilmiş: {editingBranchData.photo.name}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex justify-end gap-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingBranch(null);
+                        setEditingBranchData(null);
+                      }}
+                      className="px-6 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                    >
+                      Ləğv et
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmittingBranch}
+                      className="px-6 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmittingBranch ? "Yenilənir..." : "Yadda saxla"}
+                    </button>
+                  </div>
+                </form>
+          </motion.div>
+        )}
+          </motion.div>
+        )}
+
+        {/* Delete Confirmation Dialog */}
+        {showDeleteConfirm && (
+          <motion.div 
+            className="fixed inset-0 bg-[rgba(0,0,0,0.3)] flex items-center justify-center z-[1002]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="bg-white rounded-xl p-6 max-w-md w-full mx-4"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <h3 className="text-lg font-bold text-gray-800 mb-4">Filialı sil</h3>
+              <p className="text-gray-600 mb-6">
+                "{showDeleteConfirm.name?.[language] || showDeleteConfirm.name?.az}" filialını silmək istədiyinizə əminsiniz? 
+                Bu əməliyyat geri alına bilməz.
+              </p>
+              
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={() => setShowDeleteConfirm(null)}
+                  className="px-6 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Ləğv et
+                </button>
+                <button
+                  onClick={() => {
+                    deleteBranch(showDeleteConfirm.slug);
+                  }}
+                  className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Sil
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Add Branch Modal */}
+        {showAddBranchModal && (
+          <motion.div 
+            className="fixed inset-0 bg-[rgba(0,0,0,0.3)] flex items-center justify-center z-[1002] p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <IoLocation className="text-[#2E92A0]" />
+                Filial Əlavə Et
+              </h3>
+              
+              <form onSubmit={handleAddBranchSubmit} className="space-y-6">
+                {/* Image Section */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Şəkil
+                  </label>
+                  <div className="flex gap-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleAddBranchFileChange("photo", e.target.files)}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                    />
+                    {addBranchData.photo && (
+                      <button
+                        type="button"
+                        onClick={() => handleAddBranchFileChange("photo", [])}
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                      >
+                        Şəkli Silin
+                      </button>
+                    )}
+                  </div>
+                  {addBranchData.photo && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      Seçilmiş: {addBranchData.photo.name}
+                    </p>
+                  )}
+                </div>
+
+                {/* Status Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Status
+                  </label>
+                  <select
+                    value={addBranchData.status}
+                    onChange={(e) => handleAddBranchInputChange("status", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                  >
+                    <option value="active">Aktiv</option>
+                    <option value="passive">Passiv</option>
+                  </select>
+                </div>
+
+                {/* Language Tabs */}
+                <div className="flex gap-2 border-b border-gray-200">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm font-medium text-[#2E92A0] border-b-2 border-[#2E92A0]"
+                  >
+                    AZƏRBAYCAN
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700"
+                  >
+                    İNGİLİS
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700"
+                  >
+                    RUS
+                  </button>
+                </div>
+
+                {/* Branch Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Filial Adı (AZƏRBAYCAN)
+                  </label>
+                  <input
+                    type="text"
+                    value={addBranchData.name}
+                    onChange={(e) => handleAddBranchInputChange("name", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                    placeholder="Filial Adı (AZƏRBAYCAN)"
+                    required
+                  />
+                </div>
+
+                {/* Branch Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Açıqlama (AZƏRBAYCAN)
+                  </label>
+                  <textarea
+                    value={addBranchData.description}
+                    onChange={(e) => handleAddBranchInputChange("description", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                    rows={4}
+                    placeholder="Açıqlama (AZƏRBAYCAN)"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddBranchModal(false);
+                      setAddBranchData({
+                        name: '',
+                        description: '',
+                        status: 'active',
+                        photo: null
+                      });
+                    }}
+                    className="px-6 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Ləğv et
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmittingAddBranch}
+                    className="px-6 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isSubmittingAddBranch ? (
+                      <>
+                        <motion.div 
+                          className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        />
+                        Əlavə edilir...
+                      </>
+                    ) : (
+                      <>
+                        <IoCheckmarkCircle size={16} />
+                        Əlavə Et
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </motion.div>
         )}
       </div>

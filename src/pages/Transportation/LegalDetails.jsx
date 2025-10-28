@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { IoArrowBack, IoCall } from "react-icons/io5";
+import { IoArrowBack, IoInformationCircle } from "react-icons/io5";
 import { useNavigate, useParams } from "react-router-dom";
 
 // API base URL
@@ -99,20 +99,20 @@ export const KataloqDetail = () => {
           <div className="pt-4 text-[#3F3F3F]">{data?.description?.az || ''}</div>
         </div>
         {/* Right: Contact Card (without car number block) */}
-        {/* <div className="w-full md:w-[320px] pt-[56px] relative">
+        <div className="w-full md:w-[320px] pt-[56px] relative">
           <div className="bg-[#F6F6F6] rounded-lg p-6 flex flex-col items-start sticky top-[202px]">
             <div className="font-medium text-[#3F3F3F] mb-2">
               {data?.user ? `${data.user.name || ''} ${data.user.surname || ''}`.trim() : ''}
             </div>
-            <a
-              href={`tel:${(data?.truck_registration_number || '').replace(/[^0-9+]/g, "")}`}
+            <span
+              onClick={() => {navigate(`/sexsler/huquqi-sexsler/${data?.user?.slug}`)}}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-[8px] bg-[#2E92A0] text-white font-medium text-[16px] hover:bg-[#267A85] transition"
             >
-              <IoCall className="text-[20px]" />
-              Zəng et
-            </a>
+              <IoInformationCircle className="text-[20px]" /> 
+              Ətraflı
+            </span>
           </div>
-        </div> */}
+        </div>
       </div>
       {error && (
         <div className="max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] text-red-500">{error}</div>

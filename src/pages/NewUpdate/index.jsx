@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { IoAdd } from "react-icons/io5";
 import { IoCamera } from "react-icons/io5";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -283,6 +282,7 @@ export const NewUpdate = () => {
       alert("Şəbəkə xətası: " + error.message);
     }
   };
+
 
   return (
     <div className="w-full flex justify-center">

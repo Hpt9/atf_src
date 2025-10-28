@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { IoArrowBack, IoCall } from "react-icons/io5";
+import { IoArrowBack, IoInformationCircle } from "react-icons/io5";
 import { useNavigate, useParams } from "react-router-dom";
 
 // API base URL; replace if you have an env var
@@ -119,13 +119,13 @@ export const ElanDetail = () => {
             <div className="font-medium text-[#3F3F3F] mb-2">
               {data?.user ? `${data.user.name || ''} ${data.user.surname || ''}`.trim() : ''}
             </div>
-            <a
-              href={`tel:${(data?.user?.phone || '').replace(/[^0-9+]/g, "")}`}
+            <span
               className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-[8px] bg-[#2E92A0] text-white font-medium text-[16px] hover:bg-[#267A85] transition"
+              onClick={() => {navigate(`/sexsler/fiziki-sexsler/${data?.user?.slug}`)}}
             >
-              <IoCall className="text-[20px]" />
-              {data?.user?.phone || 'Zəng et'}
-            </a>
+              <IoInformationCircle className="text-[20px]" />
+              Ətraflı
+            </span>
           </div>
         </div>
       </div>

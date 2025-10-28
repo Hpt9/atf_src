@@ -249,6 +249,7 @@ export const Kataloq = () => {
                   </button>
                 </form>
               </div>
+              
               </motion.div>
             )}
           </AnimatePresence>
