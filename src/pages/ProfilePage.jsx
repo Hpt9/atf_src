@@ -965,7 +965,7 @@ const ProfilePage = () => {
           transition={{ duration: 0.5 }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col gap-y-[16px] md:gap-y-0 md:flex-row items-start md:items-center justify-between mb-8">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-r from-[#2E92A0] to-[#267A85] rounded-full flex items-center justify-center">
                 {userData?.role === 'legal_entity' ? <IoBusiness className="text-white text-xl" /> : 

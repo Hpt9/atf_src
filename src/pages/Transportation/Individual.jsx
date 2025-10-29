@@ -5,6 +5,7 @@ import { IoClose } from 'react-icons/io5';
 import { useSearchBar } from "../../context/SearchBarContext";
 import useLanguageStore from '../../store/languageStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from "../../context/AuthContext";
 
 // API base URL; replace if you have an env var
 const API_BASE = 'https://atfplatform.tw1.ru';
@@ -36,6 +37,7 @@ const truckTypeOptions = [
 export const Elanlar = () => {
   const { setSearchBar } = useSearchBar();
   const { language } = useLanguageStore();
+  const { token } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState('all');
   const [showFilter, setShowFilter] = useState(false);
@@ -49,11 +51,55 @@ export const Elanlar = () => {
   const [activeDropdown, setActiveDropdown] = useState(null); // 'unit' or 'truckType' or null
   const [selectedUnit, setSelectedUnit] = useState('Vahid');
   const [selectedTruckType, setSelectedTruckType] = useState('Tırın tipi');
+  // Dynamic lists
+  const [areas, setAreas] = useState([]);
+  const [units, setUnits] = useState([]);
+  const [truckTypes, setTruckTypes] = useState([]);
+  const [listsLoading, setListsLoading] = useState(false);
+  const [noResultsMsg, setNoResultsMsg] = useState("");
+  // Filter values
+  const [fromId, setFromId] = useState("");
+  const [toId, setToId] = useState("");
+  const [unitId, setUnitId] = useState("");
+  const [truckTypeId, setTruckTypeId] = useState("");
+  const [capacity, setCapacity] = useState("");
+
+  // Fetch filter lists
+  useEffect(() => {
+    const fetchLists = async () => {
+      try {
+        setListsLoading(true);
+        const headers = token ? { Authorization: `Bearer ${token}`, Accept: 'application/json' } : {};
+        const [areasRes, unitsRes, trucksRes] = await Promise.all([
+          fetch('https://atfplatform.tw1.ru/api/areas', { headers }),
+          fetch('https://atfplatform.tw1.ru/api/units', { headers }),
+          fetch('https://atfplatform.tw1.ru/api/truck-types', { headers })
+        ]);
+        const [areasJson, unitsJson, trucksJson] = await Promise.all([
+          areasRes.ok ? areasRes.json() : Promise.resolve({ data: [] }),
+          unitsRes.ok ? unitsRes.json() : Promise.resolve({ data: [] }),
+          trucksRes.ok ? trucksRes.json() : Promise.resolve({ data: [] })
+        ]);
+        setAreas(Array.isArray(areasJson?.data) ? areasJson.data : []);
+        setUnits(Array.isArray(unitsJson?.data) ? unitsJson.data : []);
+        setTruckTypes(Array.isArray(trucksJson?.data) ? trucksJson.data : []);
+        // Debug logs
+        console.log('Areas(list):', areasJson?.data);
+        console.log('Units(list):', unitsJson?.data);
+        console.log('TruckTypes(list):', trucksJson?.data);
+      } catch (e) {
+        console.error('Error fetching filter lists', e);
+      } finally {
+        setListsLoading(false);
+      }
+    };
+    fetchLists();
+  }, [token]);
   
   // Fetch individuals adverts
   useEffect(() => {
     const controller = new AbortController();
-    const fetchData = async () => {
+    const fetchData = async (body = {}) => {
       try {
         setLoading(true);
         setError(null);
@@ -63,7 +109,7 @@ export const Elanlar = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({}),
+          body: JSON.stringify(body || {}),
           signal: controller.signal 
         });
         if (!res.ok) {
@@ -75,8 +121,10 @@ export const Elanlar = () => {
           throw new Error(`HTTP ${res.status}`);
         }
         const json = await res.json();
-        setItems(Array.isArray(json?.data) ? json.data : []);
+        const list = Array.isArray(json?.data) ? json.data : [];
+        setItems(list);
         setMeta(json?.meta || null);
+        setNoResultsMsg("");
       } catch (e) {
         if (e.name !== 'AbortError') {
           setError('Verilər yüklənərkən xəta baş verdi');
@@ -85,7 +133,8 @@ export const Elanlar = () => {
         setLoading(false);
       }
     };
-    fetchData();
+    // initial load without filters
+    fetchData({});
     return () => controller.abort();
   }, [page]);
 
@@ -220,113 +269,107 @@ export const Elanlar = () => {
                 <IoClose size={24} />
               </button>
               <form className="flex flex-col gap-4 mt-4">
-                                 <div className="flex w-full">
-                   <input type="datetime-local" placeholder="Çıxma vaxtı" className="h-[48px] px-4 py-2 w-1/2 rounded-l-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
-                   <input type="datetime-local" placeholder="Gəlmə vaxtı" className="h-[48px] px-4 py-2 w-1/2 rounded-r-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
-                 </div>
-                 <div className="flex w-full">
-                   <input type="text" placeholder="Haradan" className="h-[48px] px-4 py-2 w-1/2 rounded-l-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
-                   <input type="text" placeholder="Hara" className="h-[48px] px-4 py-2 w-1/2 rounded-r-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
-                 </div>
-                 <input type="text" placeholder="Yükün miqdarı" className="h-[48px] px-4 py-2 rounded-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#A0A0A0] text-[15px] focus:outline-none focus:border-[#2E92A0] focus:bg-white"  />
-                
-                                 {/* Tırın tutumu custom select */}
-                 <div className="w-full relative dropdown-container">
-                   <div className="w-full flex items-center border border-[#E7E7E7] rounded-[8px] overflow-hidden h-[48px] bg-[#FAFAFA]">
-                     <div className="w-[228px] flex items-center justify-start h-full text-[#A0A0A0] text-[16px] font-semibold pl-[16px]">Tırın tutumu</div>
-                     <button 
-                       type="button" 
-                       className="w-[calc(100%-228px)] min-w-[110px] flex items-center justify-end h-full text-[#2E92A0] text-[16px] font-semibold pr-[16px] gap-2 focus:outline-none border-l border-[#E7E7E7] hover:bg-[#F0F0F0]"
-                       onClick={() => setActiveDropdown(activeDropdown === 'unit' ? null : 'unit')}
-                     >
-                       {selectedUnit}
-                       <svg 
-                         width="24" 
-                         height="24" 
-                         fill="none" 
-                         xmlns="http://www.w3.org/2000/svg"
-                         className={`transition-transform duration-200 ${activeDropdown === 'unit' ? 'rotate-180' : ''}`}
-                       >
-                         <path d="M7 10l5 5 5-5" stroke="#2E92A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                       </svg>
-                     </button>
-                   </div>
-                   
-                   {/* Unit Dropdown Menu */}
-                   <AnimatePresence>
-                     {activeDropdown === 'unit' && (
-                       <motion.div 
-                         className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E7E7E7] rounded-[8px] shadow-lg z-50 max-h-[200px] overflow-y-auto"
-                         initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                         transition={{ duration: 0.2 }}
-                       >
-                       {unitOptions.map((option, index) => (
-                         <button
-                           key={index}
-                           type="button"
-                           className="w-full px-4 py-3 text-left text-[#3F3F3F] text-[15px] hover:bg-[#F5F5F5] focus:outline-none focus:bg-[#F5F5F5]"
-                           onClick={() => {
-                             setSelectedUnit(option);
-                             setActiveDropdown(null);
-                           }}
-                         >
-                           {option}
-                         </button>
-                       ))}
-                       </motion.div>
-                     )}
-                   </AnimatePresence>
+                                 
+                <div className="flex flex-col w-full gap-4">
+                  <select value={fromId} onChange={(e)=>setFromId(e.target.value)} disabled={listsLoading} className="w-full h-[48px] px-4 py-2 rounded-lg border border-[#E7E7E7] bg-white text-[#3F3F3F] text-[15px] focus:outline-none focus:border-[#2E92A0]">
+                    <option value="">Haradan</option>
+                    {areas.map((a, idx) => (
+                      <option key={a.id || idx} value={a.id}>
+                        {(a.country?.[language] || a.country?.az || '') + (a.city?.[language] ? `, ${a.city?.[language]}` : a.city?.az ? `, ${a.city.az}` : '') + (a.region?.[language] ? `, ${a.region?.[language]}` : a.region?.az ? `, ${a.region.az}` : '')}
+                      </option>
+                    ))}
+                  </select>
+                  <select value={toId} onChange={(e)=>setToId(e.target.value)} disabled={listsLoading} className="w-full h-[48px] px-4 py-2 rounded-lg border border-[#E7E7E7] bg-white text-[#3F3F3F] text-[15px] focus:outline-none focus:border-[#2E92A0]">
+                    <option value="">Hara</option>
+                    {areas.map((a, idx) => (
+                      <option key={a.id || idx} value={a.id}>
+                        {(a.country?.[language] || a.country?.az || '') + (a.city?.[language] ? `, ${a.city?.[language]}` : a.city?.az ? `, ${a.city.az}` : '') + (a.region?.[language] ? `, ${a.region?.[language]}` : a.region?.az ? `, ${a.region.az}` : '')}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                {/* Tırın tipi dropdown */}
-                 <div className="w-full relative dropdown-container">
-                   <button
-                     type="button"
-                     className="w-full h-[48px] px-4 py-2 rounded-lg border border-[#E7E7E7] bg-[#FAFAFA] text-[#2E92A0] text-[15px] font-medium flex items-center justify-between focus:outline-none hover:bg-[#F0F0F0]"
-                     onClick={() => setActiveDropdown(activeDropdown === 'truckType' ? null : 'truckType')}
-                   >
-                     <span>{selectedTruckType}</span>
-                     <svg 
-                       width="24" 
-                       height="24" 
-                       fill="none" 
-                       xmlns="http://www.w3.org/2000/svg"
-                       className={`transition-transform duration-200 ${activeDropdown === 'truckType' ? 'rotate-180' : ''}`}
-                     >
-                       <path d="M7 10l5 5 5-5" stroke="#2E92A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                     </svg>
-                   </button>
-                   
-                   {/* Truck Type Dropdown Menu */}
-                   <AnimatePresence>
-                     {activeDropdown === 'truckType' && (
-                       <motion.div 
-                         className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#E7E7E7] rounded-[8px] shadow-lg z-50 max-h-[200px] overflow-y-auto"
-                         initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                         animate={{ opacity: 1, y: 0, scale: 1 }}
-                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                         transition={{ duration: 0.2 }}
-                       >
-                       {truckTypeOptions.map((option, index) => (
-                         <button
-                           key={index}
-                           type="button"
-                           className="w-full px-4 py-3 text-left text-[#3F3F3F] text-[15px] hover:bg-[#F5F5F5] focus:outline-none focus:bg-[#F5F5F5]"
-                           onClick={() => {
-                             setSelectedTruckType(option);
-                             setActiveDropdown(null);
-                           }}
-                         >
-                           {option}
-                         </button>
-                       ))}
-                       </motion.div>
-                     )}
-                   </AnimatePresence>
+                {/* Tırın tutumu combined input */}
+                <div className="w-full">
+                  <div className="flex items-center border border-[#E7E7E7] rounded-lg overflow-hidden h-[48px] bg-white">
+                    <input 
+                      type="number" 
+                      placeholder="Tutum" 
+                      value={capacity}
+                      onChange={(e)=>setCapacity(e.target.value)}
+                      className="flex-1 h-full px-4 py-2 text-[#3F3F3F] text-[15px] focus:outline-none border-none"
+                    />
+                    <div className="w-px h-6 bg-[#E7E7E7]"></div>
+                    <select 
+                      disabled={listsLoading} 
+                      value={unitId}
+                      onChange={(e)=>setUnitId(e.target.value)}
+                      className="flex-1 h-full px-4 py-2 text-[#3F3F3F] text-[15px] focus:outline-none border-none bg-transparent"
+                    >
+                      <option value="">Vahid</option>
+                      {units.map((u, idx) => (
+                        <option key={u.id || idx} value={u.id}>
+                          {u.type?.[language] || u.type?.az || u.type || '-'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-                <button type="button" className="w-full mt-2 py-3 rounded-[8px] bg-[#2E92A0] text-white border font-medium text-[18px] hover:bg-[#fff] hover:cursor-pointer hover:text-[#2E92A0] hover:border-[#2E92A0] transition-colors duration-150">Göstər</button>
+
+                {/* Truck type select */}
+                <div className="w-full">
+                  <select value={truckTypeId} onChange={(e)=>setTruckTypeId(e.target.value)} disabled={listsLoading} className="w-full h-[48px] px-4 py-2 rounded-lg border border-[#E7E7E7] bg-white text-[#3F3F3F] text-[15px] focus:outline-none focus:border-[#2E92A0]">
+                    <option value="">Tırın tipi</option>
+                    {truckTypes.map((t, idx) => (
+                      <option key={t.id || idx} value={t.id}>
+                        {t.type?.[language] || t.type?.az || t.type || '-'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button 
+                  type="button" 
+                  className="w-full mt-2 py-3 rounded-[8px] bg-[#2E92A0] text-white border font-medium text-[18px] hover:bg-[#fff] hover:cursor-pointer hover:text-[#2E92A0] hover:border-[#2E92A0] transition-colors duration-150"
+                  onClick={async ()=>{
+                    const body = {};
+                    if (fromId) body.from_id = Number(fromId);
+                    if (toId) body.to_id = Number(toId);
+                    if (unitId) body.unit_id = Number(unitId);
+                    if (truckTypeId) body.truck_type_id = Number(truckTypeId);
+                    if (capacity) body.capacity = Number(capacity);
+                    try {
+                      setLoading(true);
+                      setError(null);
+                      const res = await fetch(`${API_BASE}/api/adverts/individuals`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                      });
+                      if (!res.ok) {
+                        if (res.status === 404) {
+                          setItems([]);
+                          setMeta(null);
+                          setNoResultsMsg('Filterə uyğun nəticə tapılmadı');
+                          setShowFilter(false);
+                          return;
+                        }
+                        throw new Error(`HTTP ${res.status}`);
+                      }
+                      const json = await res.json();
+                      const list = Array.isArray(json?.data) ? json.data : [];
+                      setItems(list);
+                      setMeta(json?.meta || null);
+                      setNoResultsMsg(list.length ? '' : 'Filterə uyğun nəticə tapılmadı');
+                      setShowFilter(false);
+                    } catch (e) {
+                      setError('Verilər yüklənərkən xəta baş verdi');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                >
+                  Göstər
+                </button>
               </form>
             </div>
                          </motion.div>
@@ -383,7 +426,7 @@ export const Elanlar = () => {
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
-              <div className="text-[#3F3F3F] text-[16px] font-medium mb-1">Nəticə tapılmadı</div>
+              <div className="text-[#3F3F3F] text-[16px] font-medium mb-1">{noResultsMsg || 'Nəticə tapılmadı'}</div>
               <div className="text-[#6B7280] text-[14px]">Sorğunuzu dəyişdirin və ya daha sonra yenidən yoxlayın.</div>
             </div>
           )}
