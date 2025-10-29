@@ -705,12 +705,11 @@ const RegisterForm = () => {
               placeholder="Vebsayt (opsional)"
               className="w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] border-[#E7E7E7] focus:border-[#2E92A0]"
             />
-<input
+            <input
               type="text"
               inputMode="numeric"
-              pattern="\\d*"
-              min={100000000}
-              max={999999999}
+              pattern="^[0-9]{9}$"
+              maxLength={9}
               title="VÖEN 9 rəqəmdən ibarət olmalıdır"
               required
               name="voen"
