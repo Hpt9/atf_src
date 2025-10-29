@@ -7,6 +7,7 @@ import useLanguageStore from '../store/languageStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IoPerson, IoMail, IoCall, IoLockClosed, IoEye, IoEyeOff, IoCheckmarkCircle, IoBusiness, IoCar, IoLocation, IoCreate, IoTrash } from 'react-icons/io5';
 import { FaPlus } from "react-icons/fa";
+import DEFAULT_AVATAR from '../assets/images/user_avatar.avif';
 
 const ProfilePage = () => {
   const getPhotoUrl = (path) => {
@@ -967,10 +968,13 @@ const ProfilePage = () => {
           {/* Header */}
           <div className="flex flex-col gap-y-[16px] md:gap-y-0 md:flex-row items-start md:items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-[#2E92A0] to-[#267A85] rounded-full flex items-center justify-center">
-                {userData?.role === 'legal_entity' ? <IoBusiness className="text-white text-xl" /> : 
-                 userData?.role === 'entrepreneur' ? <IoPerson className="text-white text-xl" /> : 
-                 <IoCar className="text-white text-xl" />}
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
+                <img
+                  src={userData?.avatar ? getPhotoUrl(userData.avatar) : DEFAULT_AVATAR}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                  onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
+                />
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-800">
@@ -1008,6 +1012,15 @@ const ProfilePage = () => {
                   <IoPerson className="text-[#2E92A0]" />
                   Avatar
                 </label>
+                <div className="flex items-center gap-4">
+                  {/* <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
+                    <img
+                      src={avatarFile ? URL.createObjectURL(avatarFile) : (userData?.avatar ? getPhotoUrl(userData.avatar) : DEFAULT_AVATAR)}
+                      alt="Avatar preview"
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
+                    />
+                  </div> */}
                 <input
                   type="file"
                   accept="image/*"
@@ -1021,6 +1034,7 @@ const ProfilePage = () => {
                   }}
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:border-gray-300"
                 />
+                </div>
               </motion.div>
               {/* First Name */}
               <motion.div 
