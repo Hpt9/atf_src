@@ -57,8 +57,15 @@ export const Elanlar = () => {
       try {
         setLoading(true);
         setError(null);
-        const url = `${API_BASE}/api/adverts/individuals?page=${page}`;
-        const res = await fetch(url, { signal: controller.signal });
+        const url = `${API_BASE}/api/adverts/individuals`;
+        const res = await fetch(url, { 
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({}),
+          signal: controller.signal 
+        });
         if (!res.ok) {
           if (res.status === 404) {
             setItems([]);
@@ -129,7 +136,7 @@ export const Elanlar = () => {
         <div className="relative w-full md:w-[300px] pl-[16px] hidden md:block">
           <input
             type="text"
-            placeholder={language === 'az' ? 'Axtar' : language === 'en' ? 'Search' : 'Поиск'}
+            placeholder={language === 'az' ? 'Axtar' : language === 'en' ? 'Axtar' : 'Поиск'}
             className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
             value={searchQuery}
             onChange={(e) => {
@@ -149,43 +156,24 @@ export const Elanlar = () => {
 
   return (
     <div className="w-full flex justify-center">
-      <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-4 md:py-8">
+      <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-4 md:py-8 h-[calc(100vh-303px)] min-h-[calc(100vh-203px)]">
         {/* Search and Filter Row (responsive) */}
         <div className="flex flex-col md:flex-row-reverse md:items-center md:justify-between gap-4 mb-6">
           {/* Tabs (bottom on mobile, left on desktop) */}
-          <div className="flex  md:order-1 order-2 w-full md:w-auto justify-center md:justify-start">
-            {tabs.map((tab, index) => (
-              <button
-                key={tab.value}
-                className={`px-6 py-2 font-medium text-[16px] w-1/3 md:w-fit border transition-colors duration-150 ${
-                  activeTab === tab.value
-                    ? 'bg-[#2E92A0] text-white border-[#2E92A0]'
-                    : 'bg-white text-[#2E92A0] border-[#2E92A0] hover:bg-[#2E92A0] hover:text-white'
-                }`}
-                onClick={() => setActiveTab(tab.value)}
-                style={{
-                    borderRadius: index === 0 ? '8px 0 0 8px' : index === tabs.length - 1 ? '0 8px 8px 0' : '0',
-                }}
-              >
-                {tab.label}
-              </button>
-            
-            ))}
-            {/* Filter button */}
-          </div>
+          
             <button
               className="flex-shrink-0 hidden md:flex items-center gap-2 px-6 py-2 rounded-[8px] bg-[#2E92A0] text-white font-medium text-[16px] "
               onClick={() => setShowFilter(true)}
             >
               <IoFilter className="text-[20px]" />
-              Filter
+              Filtr
             </button>
           {/* Search and Filter (top on mobile, right on desktop) */}
           <div className="flex w-full md:w-auto gap-2 md:order-2 order-1 md:hidden">
             <div className="relative flex-1 min-w-0">
               <input
                 type="text"
-                placeholder={language === 'az' ? 'Axtar' : language === 'en' ? 'Search' : 'Поиск'}
+                placeholder={language === 'az' ? 'Axtar' : language === 'en' ? 'Axtar' : 'Поиск'}
                 className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
@@ -201,14 +189,14 @@ export const Elanlar = () => {
               onClick={() => setShowFilter(true)}
             >
               <IoFilter className="text-[20px]" />
-              Filter
+              Filtr
             </button>
           </div>
         </div>
-        {/* Filter Modal */}
+        {/* Filtr Modal */}
         
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 relative overflow-x-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 relative overflow-x-hidden h-full">
         <AnimatePresence>
           {showFilter && (
                          <motion.div 
@@ -338,7 +326,7 @@ export const Elanlar = () => {
                      )}
                    </AnimatePresence>
                 </div>
-                <button type="button" className="w-full mt-2 py-3 rounded-[8px] bg-[#2E92A0] text-white border font-medium text-[18px] hover:bg-[#fff] hover:cursor-pointer hover:text-[#2E92A0] hover:border-[#2E92A0] transition-colors duration-150">Göster</button>
+                <button type="button" className="w-full mt-2 py-3 rounded-[8px] bg-[#2E92A0] text-white border font-medium text-[18px] hover:bg-[#fff] hover:cursor-pointer hover:text-[#2E92A0] hover:border-[#2E92A0] transition-colors duration-150">Göstər</button>
               </form>
             </div>
                          </motion.div>
@@ -365,7 +353,7 @@ export const Elanlar = () => {
               <Link
                 key={item.slug}
                 to={`/dasinma/fiziki-sexs-elanlari/${item.slug}`}
-                className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col hover:shadow transition"
+                className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col hover:shadow transition h-fit"
               >
                 <img
                   src={image}
@@ -403,8 +391,8 @@ export const Elanlar = () => {
             <div className="col-span-full text-center text-red-500">{error}</div>
           )}
         </div>
-        {/* Pagination - only show when there are results */}
-        {!loading && items.length > 0 && (
+        {/* Pagination - only show when there are results and more than 1 page */}
+        {!loading && items.length > 0 && (meta?.last_page || 1) > 1 && (
           <div className="flex justify-center items-center gap-2 mt-8">
             <button
               className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed"

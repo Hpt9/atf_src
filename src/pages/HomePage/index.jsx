@@ -120,6 +120,7 @@ const HomePage = () => {
         ]);
 
         if (homeRes.data) {
+          //console.log(homeRes.data);
           setData(homeRes.data);
         }
         if (servicesRes.data) {
@@ -167,6 +168,10 @@ const HomePage = () => {
 
   return (
     <div className="">
+      {/* Mobile Page Header */}
+      <div className="md:hidden px-[16px] py-4">
+        <h1 className="text-[18px] font-semibold text-[#2E92A0]">Ana səhifə</h1>
+      </div>
       <div
         className="w-full h-[220px] md:h-[457px] bg-no-repeat bg-cover bg-center"
         style={{ backgroundImage: `url(${IMG})` }}
@@ -175,7 +180,7 @@ const HomePage = () => {
           <div className="cover w-[100%] h-[100%] bg-[rgba(5,32,75,0.72)] absolute top-0 left-0"></div>
           <div className="text_container w-[100%] max-w-[2136px] h-[100%] flex flex-col relative z-10 px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] pt-[64px] md:pt-[80px]">
             <h1 className="text-[white] text-[24px] md:text-[48px] font-bold w-fit md:w-[698px] mb-[30px]">
-              {data?.slider_title?.[language] || "Loading..."}
+              {data.find(item => item.key === "header")?.value || "Loading..."}
             </h1>
             <div ref={searchContainerRef} className="search_container w-[496px] hidden md:flex flex-col relative z-10">
               <div className="w-full flex items-center gap-x-[8px] rounded-[8px] bg-white px-[16px] py-[12px]">
@@ -249,7 +254,7 @@ const HomePage = () => {
       <div className="w-full flex justify-center">
         <div className="services w-full max-w-[2136px] flex flex-col px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-[50px] gap-y-[27px]">
           <h1 className="text-[#3F3F3F] text-[16px] md:text-[24px] font-bold">
-            {data?.services_title?.[language] || "Xidmətlərimiz"}
+            {data?.find(item => item.key === "services_title")?.value || "Xidmətlərimiz"}
           </h1>
           <div className="services_container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {services.slice().reverse().map((service) => (

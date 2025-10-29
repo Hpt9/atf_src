@@ -169,6 +169,8 @@ const ElaqePage = () => {
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
+        {/* Mobile Page Header */}
+        
         <div className="grid md:grid-cols-2 gap-8 bg-[transparent] md:bg-[#FAFAFA] p-0 md:p-[64px] rounded-[24px]">
           {/* Left Side - Contact Info */}
           <div className="space-y-6">

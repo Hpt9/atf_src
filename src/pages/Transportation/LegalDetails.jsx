@@ -12,6 +12,7 @@ export const KataloqDetail = () => {
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -57,7 +58,8 @@ export const KataloqDetail = () => {
                 <img
                   src={mainImage}
                   alt="Main"
-                  className="w-[288px] h-[260px] object-cover rounded-[16px] mx-auto"
+                  className="w-[288px] h-[260px] object-cover rounded-[16px] mx-auto cursor-pointer"
+                  onClick={() => setIsFullscreen(true)}
                 />
               )}
               <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
@@ -69,12 +71,21 @@ export const KataloqDetail = () => {
                     className={`w-[198px] h-[126px] object-cover rounded-[16px] cursor-pointer ${
                       selectedImage === idx ? "border-[#2E92A0]" : "border-[#E7E7E7]"
                     }`}
-                    onClick={() => setSelectedImage(idx)}
+                    onClick={() => { setSelectedImage(idx); setIsFullscreen(true); }}
                   />
                 ))}
               </div>
             </div>
           </div>
+          {/* Fullscreen overlay for mobile */}
+          {isFullscreen && (
+            <div
+              className="fixed inset-0 z-[1001] bg-black/90 flex items-center justify-center md:hidden"
+              onClick={() => setIsFullscreen(false)}
+            >
+              <img src={mainImage} alt="Fullscreen" className="max-w-full max-h-full object-contain" />
+            </div>
+          )}
           {/* Title */}
           <h2 className="text-2xl font-medium pb-4 border-b border-[#E7E7E7]">{title}</h2>
           {/* Stats / Details */}

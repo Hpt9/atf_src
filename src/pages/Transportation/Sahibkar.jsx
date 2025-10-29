@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useSearchBar } from '../../context/SearchBarContext'
 import useLanguageStore from '../../store/languageStore'
 import { useAuth } from '../../context/AuthContext'
+import { motion, AnimatePresence } from 'framer-motion'
+import { IoFilter, IoClose } from 'react-icons/io5'
 
 const SahibkarIndex = () => {
   const { setSearchBar } = useSearchBar();
@@ -15,13 +17,18 @@ const SahibkarIndex = () => {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
   const [pagination, setPagination] = useState({ currentPage: 1, lastPage: 1 });
+  // Unified filter states
+  const [showFilter, setShowFilter] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null); // 'unit' | 'truckType' | null
+  const [selectedUnit, setSelectedUnit] = useState('Vahid');
+  const [selectedTruckType, setSelectedTruckType] = useState('Tırın tipi');
 
   useEffect(() => {
     setSearchBar(
       <div className="relative w-full md:w-[300px] pl-[16px] hidden md:block">
         <input
           type="text"
-          placeholder={language === 'az' ? 'Axtar' : language === 'en' ? 'Search' : 'Поиск'}
+          placeholder={language === 'az' ? 'Axtar' : language === 'en' ? 'Axtar' : 'Поиск'}
           className="w-full px-4 py-2 border border-[#E7E7E7] rounded-lg focus:outline-none focus:border-[#2E92A0] text-[#3F3F3F]"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
@@ -37,14 +44,18 @@ const SahibkarIndex = () => {
   }, [setSearchBar, searchQuery, language]);
 
   const fetchPage = async (page = 1) => {
-    if (!token) {
-      navigate('/giris?type=login');
-      return;
-    }
+    // if (!token) {
+    //   navigate('/giris?type=login');
+    //   return;
+    // }
     try {
       setLoading(true);
-      const res = await axios.get(`https://atfplatform.tw1.ru/api/adverts/entrepreneur?page=${page}` ,{
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }
+      const res = await axios.post(`https://atfplatform.tw1.ru/api/adverts/entrepreneur`, {}, {
+        headers: { 
+          Authorization: `Bearer ${token}`, 
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        }
       });
       const list = Array.isArray(res?.data?.data) ? res.data.data : [];
       setItems(list);
@@ -80,6 +91,8 @@ const SahibkarIndex = () => {
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-4 md:py-8">
+        {/* Filter removed by request */}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {items.map((item, idx) => {
             const title = item.name?.[language] || item.name?.az || '-';
@@ -124,12 +137,12 @@ const SahibkarIndex = () => {
             </div>
           )}
         </div>
-        {/* Pagination - only show when there are results */}
-        {!loading && items.length > 0 && (
+        {/* Pagination - only show when there are results and more than 1 page */}
+        {!loading && items.length > 0 && pagination.lastPage > 1 && (
           <div className="flex justify-center items-center gap-2 mt-8">
-            <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage === 1} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">Geriye</button>
+            <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage === 1} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">Geri</button>
             <span className="text-[#3F3F3F]">{pagination.currentPage} / {pagination.lastPage}</span>
-            <button onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={pagination.currentPage === pagination.lastPage} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">İreli</button>
+            <button onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={pagination.currentPage === pagination.lastPage} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">İrəli</button>
           </div>
         )}
       </div>

@@ -96,7 +96,7 @@ const MuracietlerPage = () => {
     hello: {
       en: "hello",
       ru: "привет",
-      az: "salam"
+      az: "Yoxdur"
     }
   };
 
@@ -104,6 +104,7 @@ const MuracietlerPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [documentName, setDocumentName] = useState();
+  const searchDebounceRef = useRef(null);
   // console.log(documentName);
   const fetchApplications = async () => {
     setIsLoading(true);
@@ -139,6 +140,71 @@ const MuracietlerPage = () => {
   useEffect(() => {
     fetchApplications();
   }, []);
+
+  // Server-side search by code using POST /api/requests-search
+  useEffect(() => {
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+
+    // If no query, load default list
+    if (!searchQuery.trim()) {
+      searchDebounceRef.current = setTimeout(() => {
+        fetchApplications();
+      }, 300);
+      return;
+    }
+
+    // Debounced search
+    searchDebounceRef.current = setTimeout(async () => {
+      setIsLoading(true);
+      try {
+        // API expects number type; coerce to number and validate
+        const numeric = Number(searchQuery.trim());
+        if (!Number.isFinite(numeric)) {
+          setApplications([]);
+          setIsLoading(false);
+          return;
+        }
+        const response = await axios.post(
+          "https://atfplatform.tw1.ru/api/requests-search",
+          { q: numeric },
+          {
+            headers: {
+              Authorization: `Bearer ${getTokenCookie()}`,
+            },
+          }
+        );
+
+        const list = Array.isArray(response?.data?.data)
+          ? response.data.data
+          : Array.isArray(response?.data)
+          ? response.data
+          : [];
+
+        if (Array.isArray(list)) {
+          setApplications(list);
+        } else {
+          setApplications([]);
+        }
+        setError(null);
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          setApplications([]);
+          setError(null);
+        } else {
+          setError(texts.loadingError[language] || texts.loadingError.az);
+          console.error("Error searching applications:", error);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }, 500);
+
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, [searchQuery, language]);
 
   // Filter applications based on search query
   const filteredApplications = applications.filter((app) => {
@@ -462,7 +528,11 @@ const MuracietlerPage = () => {
   }
 
   return (
-    <div className="w-full flex justify-center">
+    <div className="w-full flex flex-col justify-center">
+      {/* Mobile Page Header */}
+      <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-4 md:hidden">
+        <h1 className="text-[18px] font-semibold text-[#2E92A0]">Müraciətlər</h1>
+      </div>
       <AnimatePresence>
         {isMuracietModalOpen && (
           <motion.div
@@ -634,7 +704,7 @@ const MuracietlerPage = () => {
                     </div>
                   ) : (
                     <div className="text-[14px] text-gray-500">
-                      No PDF files available for this application.
+                      Bu müraciət üçün PDF fayllar mövcud deyil.
                     </div>
                   )}
                 </div>
@@ -668,7 +738,7 @@ const MuracietlerPage = () => {
               </div>
             </div>
                          <p className="font-medium text-[#3F3F3F] text-[14px] w-[40px] md:w-[80px] text-center">
-               Info
+               Məlumat
              </p>
           </div>
 

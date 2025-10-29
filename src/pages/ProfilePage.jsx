@@ -1371,28 +1371,28 @@ const ProfilePage = () => {
                         
                         <div className="space-y-2 text-sm">
                           <div>
-                            <span className="text-gray-600">Load Type:</span>
+                            <span className="text-gray-600">Yük növü:</span>
                             <span className="ml-2 font-medium">{advert.load_type?.[language] || advert.load_type?.az || '-'}</span>
                           </div>
                           
                           <div>
-                            <span className="text-gray-600">Capacity:</span>
+                            <span className="text-gray-600">Tutum:</span>
                             <span className="ml-2 font-medium">{advert.capacity || '-'}</span>
                           </div>
                           
                           <div>
-                            <span className="text-gray-600">From:</span>
+                            <span className="text-gray-600">Haradan:</span>
                             <span className="ml-2 font-medium">{advert.exit_from_address?.[language] || advert.exit_from_address?.az || '-'}</span>
                           </div>
                           
                           <div>
-                            <span className="text-gray-600">Date:</span>
+                            <span className="text-gray-600">Tarix:</span>
                             <span className="ml-2 font-medium">{advert.reach_from_address || '-'}</span>
                           </div>
                           
                           {advert.truck_registration_number && (
                             <div>
-                              <span className="text-gray-600">Truck No:</span>
+                              <span className="text-gray-600">Tır nömrəsi:</span>
                               <span className="ml-2 font-medium">{advert.truck_registration_number}</span>
                             </div>
                           )}
@@ -1845,18 +1845,24 @@ const ProfilePage = () => {
               </div>
             )}
 
-            {/* Branch Edit Form */}
+            {/* Branch Edit Modal */}
             {console.log("Branch edit form check:", { isEditingBranch, editingBranchData, userRole: userData?.role })}
             {isEditingBranch && editingBranchData && (
               <motion.div 
-                className="mt-6 bg-blue-50 rounded-xl p-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
+                className="fixed inset-0 bg-[rgba(0,0,0,0.3)] flex items-center justify-center z-[1002] p-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
               >
-                <h3 className="text-lg font-bold text-gray-800 mb-4">Filialı redaktə et</h3>
-                
-                <form onSubmit={handleBranchSubmit} className="space-y-6">
+                <motion.div 
+                  className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                >
+                  <h3 className="text-lg font-bold text-gray-800 mb-4">Filialı redaktə et</h3>
+
+                  <form onSubmit={handleBranchSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1955,7 +1961,8 @@ const ProfilePage = () => {
                     </button>
                   </div>
                 </form>
-          </motion.div>
+                </motion.div>
+              </motion.div>
         )}
           </motion.div>
         )}
@@ -2022,16 +2029,21 @@ const ProfilePage = () => {
               <form onSubmit={handleAddBranchSubmit} className="space-y-6">
                 {/* Image Section */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Şəkil
-                  </label>
-                  <div className="flex gap-3">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Şəkil</label>
+                  <div className="flex items-center gap-3">
                     <input
+                      id="add-branch-photo"
                       type="file"
                       accept="image/*"
                       onChange={(e) => handleAddBranchFileChange("photo", e.target.files)}
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      className="hidden"
                     />
+                    <label
+                      htmlFor="add-branch-photo"
+                      className="px-4 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors cursor-pointer"
+                    >
+                      Şəkil Seç
+                    </label>
                     {addBranchData.photo && (
                       <button
                         type="button"
@@ -2042,11 +2054,9 @@ const ProfilePage = () => {
                       </button>
                     )}
                   </div>
-                  {addBranchData.photo && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      Seçilmiş: {addBranchData.photo.name}
-                    </p>
-                  )}
+                  <p className="text-sm text-gray-600 mt-1">
+                    {addBranchData.photo ? `Seçilmiş: ${addBranchData.photo.name}` : 'Şəkil seçilməyib'}
+                  </p>
                 </div>
 
                 {/* Status Dropdown */}
@@ -2064,54 +2074,28 @@ const ProfilePage = () => {
                   </select>
                 </div>
 
-                {/* Language Tabs */}
-                <div className="flex gap-2 border-b border-gray-200">
-                  <button
-                    type="button"
-                    className="px-4 py-2 text-sm font-medium text-[#2E92A0] border-b-2 border-[#2E92A0]"
-                  >
-                    AZƏRBAYCAN
-                  </button>
-                  <button
-                    type="button"
-                    className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700"
-                  >
-                    İNGİLİS
-                  </button>
-                  <button
-                    type="button"
-                    className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700"
-                  >
-                    RUS
-                  </button>
-                </div>
+                {/* Single-language (AZ) only */}
 
-                {/* Branch Name */}
+                {/* Branch Name & Description per language */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Filial Adı (AZƏRBAYCAN)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Filial Adı</label>
                   <input
                     type="text"
                     value={addBranchData.name}
                     onChange={(e) => handleAddBranchInputChange("name", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                    placeholder="Filial Adı (AZƏRBAYCAN)"
+                    placeholder="Filial Adı"
                     required
                   />
                 </div>
-
-                {/* Branch Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Açıqlama (AZƏRBAYCAN)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Açıqlama</label>
                   <textarea
                     value={addBranchData.description}
                     onChange={(e) => handleAddBranchInputChange("description", e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
                     rows={4}
-                    placeholder="Açıqlama (AZƏRBAYCAN)"
+                    placeholder="Açıqlama"
                   />
                 </div>
 

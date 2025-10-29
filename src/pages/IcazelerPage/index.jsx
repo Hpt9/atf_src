@@ -282,6 +282,10 @@ const IcazelerPage = () => {
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-4 md:py-8">
+        {/* Mobile Page Header */}
+        <div className="md:hidden mb-4">
+          <h1 className="text-[18px] font-semibold text-[#2E92A0]">İcazələr</h1>
+        </div>
         <AnimatePresence mode="wait">
           {!selectedCard ? (
             <motion.div

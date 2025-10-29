@@ -40,6 +40,7 @@ const EntreperneurDetailIndex = () => {
   }
 
   const adverts = Array.isArray(data.adverts) ? data.adverts : [];
+  const isNonEmpty = (v) => typeof v === 'string' && v.trim().length > 0;
 
   return (
     <div className="w-full flex justify-center">
@@ -54,20 +55,32 @@ const EntreperneurDetailIndex = () => {
         <div className="bg-white border border-[#E7E7E7] rounded-xl p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-1">
             <div className="w-full aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-              {data.avatar ? (
+              {isNonEmpty(data.avatar) ? (
                 <img src={data.avatar} alt={data.name} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-[#A0A0A0]">No Image</span>
+                <span className="text-[#A0A0A0]">Şəkil yoxdur</span>
               )}
             </div>
           </div>
-          <div className="md:col-span-2 flex flex-col gap-2 text-[#3F3F3F]">
-            <div className="text-2xl font-semibold">{data.name} {data.surname || ''}</div>
-            <div className="text-[#6B7280]">{data.email}</div>
-            <div className="text-[#6B7280]">{data.phone}</div>
-            <div>VÖEN: {data.voen || '-'}</div>
-            <div>Vebsayt: {data.website || '-'}</div>
-            <div>Açıqlama: {data.description || '-'}</div>
+          <div className={`md:col-span-2 flex flex-col gap-2 text-[#3F3F3F]`}>
+            {(isNonEmpty(data.name) || isNonEmpty(data.surname)) && (
+              <div className="text-2xl font-semibold">{isNonEmpty(data.name) ? data.name : ''} {isNonEmpty(data.surname) ? data.surname : ''}</div>
+            )}
+            {isNonEmpty(data.email) && (
+              <div className="text-[#6B7280]">{data.email}</div>
+            )}
+            {isNonEmpty(data.phone) && (
+              <div className="text-[#6B7280]">{data.phone}</div>
+            )}
+            {isNonEmpty(data.voen) && (
+              <div>VÖEN: {data.voen}</div>
+            )}
+            {isNonEmpty(data.website) && (
+              <div>Vebsayt: {data.website}</div>
+            )}
+            {isNonEmpty(data.description) && (
+              <div>Açıqlama: {data.description}</div>
+            )}
           </div>
         </div>
 
@@ -99,7 +112,7 @@ const EntreperneurDetailIndex = () => {
                       {firstPhoto ? (
                         <img src={firstPhoto} alt={a.name?.az} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-[#A0A0A0]">No Image</span>
+                        <span className="text-[#A0A0A0]">Şəkil yoxdur</span>
                       )}
                     </div>
                     <div className="p-4 flex flex-col gap-1">

@@ -1,10 +1,113 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoCamera } from "react-icons/io5";
 import { AnimatePresence, motion } from "framer-motion";
+import axios from "axios";
+import toast from 'react-hot-toast';
+import { useAuth } from "../../context/AuthContext";
 
 export const NewUpdate = () => {
-  const [activeTab, setActiveTab] = useState("individual"); // 'individual', 'legal', or 'entrepreneur'
+  const { token } = useAuth();
+  const [activeTab, setActiveTab] = useState(""); // 'individual', 'legal', or 'entrepreneur'
+  const [allowedTab, setAllowedTab] = useState("");
+  const [isRoleLoading, setIsRoleLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // API data states
+  const [truckTypes, setTruckTypes] = useState([]);
+  const [units, setUnits] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+  // Derive allowed tab from user role
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        if (!token) {
+          // Default to individual if not authenticated; adjust if route is protected elsewhere
+          setAllowedTab("individual");
+          setActiveTab("individual");
+          return;
+        }
+        const res = await axios.get("https://atfplatform.tw1.ru/api/user", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+        const role = res?.data?.data?.role;
+        const map = {
+          individual: "individual",
+          legal_entity: "legal",
+          entrepreneur: "entrepreneur",
+        };
+        const tab = map[role] || "individual";
+        setAllowedTab(tab);
+        setActiveTab(tab);
+      } catch (e) {
+        setAllowedTab("individual");
+        setActiveTab("individual");
+      } finally {
+        setIsRoleLoading(false);
+      }
+    };
+    fetchUserRole();
+  }, [token]);
+
+  // Fetch API data for dropdowns
+  useEffect(() => {
+    const fetchApiData = async () => {
+      try {
+        setIsDataLoading(true);
+        const [truckTypesRes, unitsRes, areasRes] = await Promise.all([
+          axios.get("https://atfplatform.tw1.ru/api/truck-types", {
+            headers: { 
+              Authorization: `Bearer ${token}`, 
+              Accept: 'application/json' 
+            }
+          }),
+          axios.get("https://atfplatform.tw1.ru/api/units", {
+            headers: { 
+              Authorization: `Bearer ${token}`, 
+              Accept: 'application/json' 
+            }
+          }),
+          axios.get("https://atfplatform.tw1.ru/api/areas", {
+            headers: { 
+              Authorization: `Bearer ${token}`, 
+              Accept: 'application/json' 
+            }
+          })
+        ]);
+        
+        setTruckTypes(truckTypesRes.data.data || []);
+        setUnits(unitsRes.data.data || []);
+        setAreas(areasRes.data.data || []);
+
+        console.log("Fetched Truck Types:", truckTypesRes.data.data);
+        console.log("Fetched Units:", unitsRes.data.data);
+        console.log("Fetched Areas:", areasRes.data.data);
+        console.log("Truck Types length:", truckTypesRes.data.data?.length);
+        console.log("Units length:", unitsRes.data.data?.length);
+        console.log("Areas length:", areasRes.data.data?.length);
+      } catch (error) {
+        console.error("Error fetching API data:", error);
+        // Set empty arrays on error
+        setTruckTypes([]);
+        setUnits([]);
+        setAreas([]);
+      } finally {
+        setIsDataLoading(false);
+      }
+    };
+
+    fetchApiData();
+  }, [token]);
+
+  // Debug state variables
+  useEffect(() => {
+    console.log("Current truckTypes state:", truckTypes);
+    console.log("Current units state:", units);
+    console.log("Current areas state:", areas);
+  }, [truckTypes, units, areas]);
 
   // Individual (Fiziki şəxs) form state
   const [individualFormData, setIndividualFormData] = useState({
@@ -117,9 +220,16 @@ export const NewUpdate = () => {
 
   const handleLegalCertificatesChange = (e) => {
     const files = Array.from(e.target.files);
+    const pdfFiles = files.filter((f) =>
+      (f && f.type === 'application/pdf') || (typeof f?.name === 'string' && f.name.toLowerCase().endsWith('.pdf'))
+    );
+    if (pdfFiles.length !== files.length) {
+      alert('Yalnız PDF formatında sənədlər qəbul olunur.');
+    }
+    if (pdfFiles.length === 0) return;
     setLegalFormData((prev) => ({
       ...prev,
-      driver_certificates: [...prev.driver_certificates, ...files],
+      driver_certificates: [...prev.driver_certificates, ...pdfFiles],
     }));
   };
 
@@ -159,9 +269,34 @@ export const NewUpdate = () => {
     }
   };
 
+  // Helper function to format dates
+  const formatDateForBackend = (dateString, format = 'datetime') => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    
+    if (format === 'date') {
+      // Y-m-d format
+      return date.toISOString().slice(0, 10);
+    } else {
+      // Y-m-d H:i:s format
+      return date.toISOString().slice(0, 19).replace('T', ' ');
+    }
+  };
+
   // API Integration Functions
   const submitAdvert = async (formData, userType) => {
-    const API_URL = "https://atfplatform.tw1.ru/api/adverts/store";
+    const API_URL = "/api/adverts/store"; // Use proxy instead of full URL
+    
+    // Validate reach_from_address is in the future
+    if (formData.reach_from_address) {
+      const reachDate = new Date(formData.reach_from_address);
+      const now = new Date();
+      if (reachDate <= now) {
+        toast.error("Çatış tarixi indiki tarixdən sonra olmalıdır!");
+        return;
+      }
+    }
     
     // Create FormData object
     const formDataToSend = new FormData();
@@ -170,13 +305,13 @@ export const NewUpdate = () => {
       // Individual form - only fill relevant fields, others null
       formDataToSend.append("capacity", formData.capacity || "");
       formDataToSend.append("unit_id", formData.unit_id || "");
-      formDataToSend.append("reach_from_address", formData.reach_from_address || "");
+      formDataToSend.append("reach_from_address", formatDateForBackend(formData.reach_from_address, 'datetime'));
       formDataToSend.append("empty_space", formData.empty_space || "");
       formDataToSend.append("truck_type_id", formData.truck_type_id || "");
       formDataToSend.append("truck_registration_number", formData.truck_registration_number || "");
       formDataToSend.append("from_id", formData.from_id || "");
       formDataToSend.append("to_id", formData.to_id || "");
-      formDataToSend.append("expires_at", formData.expires_at || "");
+      formDataToSend.append("expires_at", formatDateForBackend(formData.expires_at, 'date'));
       formDataToSend.append("name.az", formData.name_az || "");
       formDataToSend.append("load_type.az", formData.load_type_az || "");
       formDataToSend.append("exit_from_address.az", formData.exit_from_address_az || "");
@@ -187,24 +322,19 @@ export const NewUpdate = () => {
         formDataToSend.append("photos[]", photo);
       });
       
-      // Set null for fields not used in individual
-      formDataToSend.append("driver_certificates[]", null);
-      formDataToSend.append("driver_photo", null);
-      formDataToSend.append("driver_full_name.az", null);
-      formDataToSend.append("driver_biography.az", null);
-      formDataToSend.append("driver_experience.az", null);
+      // Don't send fields that are not used in individual form
       
     } else if (userType === "legal") {
       // Legal form - fill all fields
       formDataToSend.append("capacity", formData.capacity || "");
       formDataToSend.append("unit_id", formData.unit_id || "");
-      formDataToSend.append("reach_from_address", formData.reach_from_address || "");
+      formDataToSend.append("reach_from_address", formatDateForBackend(formData.reach_from_address, 'datetime'));
       formDataToSend.append("empty_space", formData.empty_space || "");
       formDataToSend.append("truck_type_id", formData.truck_type_id || "");
       formDataToSend.append("truck_registration_number", formData.truck_registration_number || "");
       formDataToSend.append("from_id", formData.from_id || "");
       formDataToSend.append("to_id", formData.to_id || "");
-      formDataToSend.append("expires_at", formData.expires_at || "");
+      formDataToSend.append("expires_at", formatDateForBackend(formData.expires_at, 'date'));
       formDataToSend.append("name.az", formData.name_az || "");
       formDataToSend.append("load_type.az", formData.load_type_az || "");
       formDataToSend.append("exit_from_address.az", formData.exit_from_address_az || "");
@@ -232,11 +362,11 @@ export const NewUpdate = () => {
       // Entrepreneur form - only fill relevant fields, others null
       formDataToSend.append("capacity", formData.capacity || "");
       formDataToSend.append("unit_id", formData.unit_id || "");
-      formDataToSend.append("reach_from_address", formData.reach_from_address || "");
+      formDataToSend.append("reach_from_address", formatDateForBackend(formData.reach_from_address, 'datetime'));
       formDataToSend.append("truck_type_id", formData.truck_type_id || "");
       formDataToSend.append("from_id", formData.from_id || "");
       formDataToSend.append("to_id", formData.to_id || "");
-      formDataToSend.append("expires_at", formData.expires_at || "");
+      formDataToSend.append("expires_at", formatDateForBackend(formData.expires_at, 'date'));
       formDataToSend.append("name.az", formData.name_az || "");
       formDataToSend.append("load_type.az", formData.load_type_az || "");
       formDataToSend.append("exit_from_address.az", formData.exit_from_address_az || "");
@@ -247,39 +377,43 @@ export const NewUpdate = () => {
         formDataToSend.append("photos[]", photo);
       });
       
-      // Set null for fields not used in entrepreneur
-      formDataToSend.append("driver_certificates[]", null);
-      formDataToSend.append("driver_photo", null);
-      formDataToSend.append("empty_space", null);
-      formDataToSend.append("truck_registration_number", null);
-      formDataToSend.append("driver_full_name.az", null);
-      formDataToSend.append("driver_biography.az", null);
-      formDataToSend.append("driver_experience.az", null);
+      // Don't send fields that are not used in entrepreneur form
     }
 
     try {
+      console.log("Submitting advert with token:", token ? "Present" : "Missing");
+      console.log("API URL:", API_URL);
+      console.log("FormData entries:", Array.from(formDataToSend.entries()));
+      console.log("User type:", userType);
+      console.log("Unit ID being sent:", formData.unit_id);
+      console.log("Available units:", units);
+      
       const response = await fetch(API_URL, {
         method: "POST",
         body: formDataToSend,
         headers: {
+          Authorization: `Bearer ${token}`,
           // Don't set Content-Type header, let browser set it with boundary for FormData
         },
       });
+      
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
 
       if (response.ok) {
         const result = await response.json();
         console.log("Success:", result);
         // Handle success (show success message, redirect, etc.)
-        alert("Elan uğurla yaradıldı!");
+        toast.success("Elan uğurla yaradıldı!");
         // Reset form or redirect
       } else {
         const error = await response.json();
         console.error("Error:", error);
-        alert("Xəta baş verdi: " + (error.message || "Naməlum xəta"));
+        toast.error("Xəta baş verdi: " + (error.message || "Naməlum xəta"));
       }
     } catch (error) {
       console.error("Network error:", error);
-      alert("Şəbəkə xətası: " + error.message);
+      toast.error("Şəbəkə xətası: " + error.message);
     }
   };
 
@@ -293,39 +427,45 @@ export const NewUpdate = () => {
             Elanın məlumatlarını daxil edin
           </h1>
 
-          {/* Tabs */}
+          {/* Tabs - locked to user's role */}
           <div className="flex border-b border-[#E7E7E7] mb-6">
             <button
-              onClick={() => setActiveTab("individual")}
+              disabled={allowedTab !== "individual"}
               className={`px-6 py-3 font-medium transition-colors ${
                 activeTab === "individual"
                   ? "text-[#2E92A0] border-b-2 border-[#2E92A0]"
-                  : "text-[#6B7280] hover:text-[#2E92A0]"
+                  : "text-[#9CA3AF] cursor-not-allowed"
               }`}
             >
               Fiziki şəxs
             </button>
             <button
-              onClick={() => setActiveTab("legal")}
+              disabled={allowedTab !== "legal"}
               className={`px-6 py-3 font-medium transition-colors ${
                 activeTab === "legal"
                   ? "text-[#2E92A0] border-b-2 border-[#2E92A0]"
-                  : "text-[#6B7280] hover:text-[#2E92A0]"
+                  : "text-[#9CA3AF] cursor-not-allowed"
               }`}
             >
               Hüquqi şəxs
             </button>
             <button
-              onClick={() => setActiveTab("entrepreneur")}
+              disabled={allowedTab !== "entrepreneur"}
               className={`px-6 py-3 font-medium transition-colors ${
                 activeTab === "entrepreneur"
                   ? "text-[#2E92A0] border-b-2 border-[#2E92A0]"
-                  : "text-[#6B7280] hover:text-[#2E92A0]"
+                  : "text-[#9CA3AF] cursor-not-allowed"
               }`}
             >
               Sahibkar
             </button>
           </div>
+          {/* Avoid flicker until role is resolved and data is loaded */}
+          {isRoleLoading || isDataLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2E92A0]"></div>
+            </div>
+          ) : (
           <AnimatePresence mode="wait">
             {/* Individual Form */}
             {activeTab === "individual" && (
@@ -379,13 +519,23 @@ export const NewUpdate = () => {
 
                   <div>
                     <input
-                      type="text"
+                      type={individualFormData.reach_from_address ? "datetime-local" : "text"}
                       value={individualFormData.reach_from_address}
                       onChange={(e) =>
                         handleIndividualInputChange("reach_from_address", e.target.value)
                       }
+                      onFocus={(e) => {
+                        if (!e.target.value) {
+                          e.target.type = 'datetime-local';
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (!e.target.value) {
+                          e.target.type = 'text';
+                        }
+                      }}
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Çatış ünvanı"
+                      placeholder="Çatış tarixi"
                     />
                   </div>
 
@@ -408,12 +558,14 @@ export const NewUpdate = () => {
                           handleIndividualInputChange("unit_id", e.target.value)
                         }
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-r-lg h-[50px] focus:outline-none focus:border-[#2E92A0]"
+                        disabled={isDataLoading}
                       >
                         <option value="">Vahid</option>
-                        <option value="1">Ton</option>
-                        <option value="2">Kq</option>
-                        <option value="3">Litr</option>
-                        <option value="4">Metr</option>
+                        {units.map((unit, index) => (
+                          <option key={index} value={unit.id || (index + 1)}>
+                            {unit.type?.az || unit.type?.en || unit.type?.ru || `Unit ${index + 1}`}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -431,15 +583,21 @@ export const NewUpdate = () => {
                   </div>
 
                   <div>
-                    <input
-                      type="text"
+                    <select
                       value={individualFormData.truck_type_id}
                       onChange={(e) =>
                         handleIndividualInputChange("truck_type_id", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Tır növü"
-                    />
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      disabled={isDataLoading}
+                    >
+                      <option value="">Tır növü seçin</option>
+                      {truckTypes.map((truckType, index) => (
+                        <option key={index} value={truckType.id || (index + 1)}>
+                          {truckType.type?.az || truckType.type?.en || truckType.type?.ru || `Truck Type ${index + 1}`}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
@@ -458,38 +616,58 @@ export const NewUpdate = () => {
                 {/* Right Column */}
                 <div className="space-y-4">
                   <div>
-                    <input
-                      type="text"
+                    <select
                       value={individualFormData.from_id}
                       onChange={(e) =>
                         handleIndividualInputChange("from_id", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Haradan ID"
-                    />
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      disabled={isDataLoading}
+                    >
+                      <option value="">Haradan Çıxılacaq Seç</option>
+                      {areas.map((area, index) => (
+                        <option key={index} value={area.id || (index + 1)}>
+                          {`${area.country?.az || area.country?.en || area.country?.ru || ''} - ${area.city?.az || area.city?.en || area.city?.ru || ''} - ${area.region?.az || area.region?.en || area.region?.ru || ''}`}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
-                    <input
-                      type="text"
+                    <select
                       value={individualFormData.to_id}
                       onChange={(e) =>
                         handleIndividualInputChange("to_id", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Hara ID"
-                    />
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      disabled={isDataLoading}
+                    >
+                      <option value="">Hara Çatdırılacaq Seç</option>
+                      {areas.map((area, index) => (
+                        <option key={index} value={area.id || (index + 1)}>
+                          {`${area.country?.az || area.country?.en || area.country?.ru || ''} - ${area.city?.az || area.city?.en || area.city?.ru || ''} - ${area.region?.az || area.region?.en || area.region?.ru || ''}`}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
                     <input
-                      type="datetime-local"
+                      type={individualFormData.expires_at ? "datetime-local" : "text"}
                       value={individualFormData.expires_at}
                       onChange={(e) =>
                         handleIndividualInputChange("expires_at", e.target.value)
                       }
+                      onFocus={(e) => {
+                        e.target.type = 'datetime-local';
+                      }}
+                      onBlur={(e) => {
+                        if (!e.target.value) {
+                          e.target.type = 'text';
+                        }
+                      }}
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Bitmə tarixi"
+                      placeholder="Elanın bitmə tarixi"
                     />
                   </div>
 
@@ -604,13 +782,23 @@ export const NewUpdate = () => {
 
                   <div>
                     <input
-                      type="text"
+                      type={legalFormData.reach_from_address ? "datetime-local" : "text"}
                       value={legalFormData.reach_from_address}
                       onChange={(e) =>
                         handleLegalInputChange("reach_from_address", e.target.value)
                       }
+                      onFocus={(e) => {
+                        if (!e.target.value) {
+                          e.target.type = 'datetime-local';
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (!e.target.value) {
+                          e.target.type = 'text';
+                        }
+                      }}
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Çatış ünvanı"
+                      placeholder="Çatış tarixi"
                     />
                   </div>
 
@@ -633,12 +821,14 @@ export const NewUpdate = () => {
                           handleLegalInputChange("unit_id", e.target.value)
                         }
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-r-lg h-[50px] focus:outline-none focus:border-[#2E92A0]"
+                        disabled={isDataLoading}
                       >
                         <option value="">Vahid</option>
-                        <option value="1">Ton</option>
-                        <option value="2">Kq</option>
-                        <option value="3">Litr</option>
-                        <option value="4">Metr</option>
+                        {units.map((unit, index) => (
+                          <option key={index} value={unit.id || (index + 1)}>
+                            {unit.type?.az || unit.type?.en || unit.type?.ru || `Unit ${index + 1}`}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -656,15 +846,21 @@ export const NewUpdate = () => {
                   </div>
 
                   <div>
-                    <input
-                      type="text"
+                    <select
                       value={legalFormData.truck_type_id}
                       onChange={(e) =>
                         handleLegalInputChange("truck_type_id", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Tır növü"
-                    />
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      disabled={isDataLoading}
+                    >
+                      <option value="">Tır növü seçin</option>
+                      {truckTypes.map((truckType, index) => (
+                        <option key={index} value={truckType.id || (index + 1)}>
+                          {truckType.type?.az || truckType.type?.en || truckType.type?.ru || `Truck Type ${index + 1}`}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
@@ -681,7 +877,7 @@ export const NewUpdate = () => {
                   <div className="border-2 h-[116px] flex items-center justify-center border-dashed border-[#2E92A0] rounded-lg p-4 text-center hover:border-[#2E92A0] transition-colors cursor-pointer">
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="application/pdf"
                       multiple
                       onChange={handleLegalCertificatesChange}
                       className="hidden"
@@ -729,38 +925,58 @@ export const NewUpdate = () => {
                 {/* Right Column */}
                 <div className="space-y-4">
                   <div>
-                    <input
-                      type="text"
+                    <select
                       value={legalFormData.from_id}
                       onChange={(e) =>
                         handleLegalInputChange("from_id", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Haradan ID"
-                    />
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      disabled={isDataLoading}
+                    >
+                      <option value="">Haradan Çıxılacaq Seç</option>
+                      {areas.map((area, index) => (
+                        <option key={index} value={area.id || (index + 1)}>
+                          {`${area.country?.az || area.country?.en || area.country?.ru || ''} - ${area.city?.az || area.city?.en || area.city?.ru || ''} - ${area.region?.az || area.region?.en || area.region?.ru || ''}`}
+                        </option>
+                      ))}
+                    </select>
                       </div>
 
                   <div>
-                    <input
-                      type="text"
+                    <select
                       value={legalFormData.to_id}
                       onChange={(e) =>
                         handleLegalInputChange("to_id", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Hara ID"
-                    />
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      disabled={isDataLoading}
+                    >
+                      <option value="">Hara Çatdırılacaq Seç</option>
+                      {areas.map((area, index) => (
+                        <option key={index} value={area.id || (index + 1)}>
+                          {`${area.country?.az || area.country?.en || area.country?.ru || ''} - ${area.city?.az || area.city?.en || area.city?.ru || ''} - ${area.region?.az || area.region?.en || area.region?.ru || ''}`}
+                        </option>
+                      ))}
+                    </select>
                     </div>
 
                   <div>
                     <input
-                      type="datetime-local"
+                      type={legalFormData.expires_at ? "datetime-local" : "text"}
                       value={legalFormData.expires_at}
                       onChange={(e) =>
                         handleLegalInputChange("expires_at", e.target.value)
                       }
+                      onFocus={(e) => {
+                        e.target.type = 'datetime-local';
+                      }}
+                      onBlur={(e) => {
+                        if (!e.target.value) {
+                          e.target.type = 'text';
+                        }
+                      }}
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Bitmə tarixi"
+                      placeholder="Elanın bitmə tarixi"
                     />
                   </div>
 
@@ -843,17 +1059,19 @@ export const NewUpdate = () => {
 
               {/* Action Buttons */}
               <div className="flex justify-end gap-4 pt-6 border-t border-[#E7E7E7] w-full">
-                            <button
-                              type="button"
-                  className="px-6 py-3 border border-[#2E92A0] text-[#2E92A0] rounded-lg hover:bg-[#F0F9FA] transition-colors w-1/2"
-                            >
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  className="px-6 py-3 border border-[#2E92A0] text-[#2E92A0] rounded-lg hover:bg-[#F0F9FA] transition-colors w-1/2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Ləğv et
-                            </button>
+                </button>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors w-1/2"
+                  disabled={isSubmitting}
+                  className="px-6 py-3 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors w-1/2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Tamamla
+                  {isSubmitting ? "Göndərilir..." : "Tamamla"}
                 </button>
               </div>
             </motion.form>
@@ -911,13 +1129,23 @@ export const NewUpdate = () => {
 
                   <div>
                     <input
-                      type="text"
+                      type={entrepreneurFormData.reach_from_address ? "datetime-local" : "text"}
                       value={entrepreneurFormData.reach_from_address}
                       onChange={(e) =>
                         handleEntrepreneurInputChange("reach_from_address", e.target.value)
                       }
+                      onFocus={(e) => {
+                        if (!e.target.value) {
+                          e.target.type = 'datetime-local';
+                        }
+                      }}
+                      onBlur={(e) => {
+                        if (!e.target.value) {
+                          e.target.type = 'text';
+                        }
+                      }}
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Çatış ünvanı"
+                      placeholder="Çatış tarixi"
                     />
                   </div>
 
@@ -940,64 +1168,92 @@ export const NewUpdate = () => {
                           handleEntrepreneurInputChange("unit_id", e.target.value)
                         }
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-r-lg h-[50px] focus:outline-none focus:border-[#2E92A0]"
+                        disabled={isDataLoading}
                       >
                         <option value="">Vahid</option>
-                        <option value="1">Ton</option>
-                        <option value="2">Kq</option>
-                        <option value="3">Litr</option>
-                        <option value="4">Metr</option>
+                        {units.map((unit, index) => (
+                          <option key={index} value={unit.id || (index + 1)}>
+                            {unit.type?.az || unit.type?.en || unit.type?.ru || `Unit ${index + 1}`}
+                          </option>
+                        ))}
                       </select>
                             </div>
                   </div>
 
                   <div>
-                    <input
-                      type="text"
+                    <select
                       value={entrepreneurFormData.truck_type_id}
                       onChange={(e) =>
                         handleEntrepreneurInputChange("truck_type_id", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Tır növü"
-                    />
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      disabled={isDataLoading}
+                    >
+                      <option value="">Tır növü seçin</option>
+                      {truckTypes.map((truckType, index) => (
+                        <option key={index} value={truckType.id || (index + 1)}>
+                          {truckType.type?.az || truckType.type?.en || truckType.type?.ru || `Truck Type ${index + 1}`}
+                        </option>
+                      ))}
+                    </select>
                     </div>
                   </div>
 
                 {/* Right Column */}
                 <div className="space-y-4">
                   <div>
-                    <input
-                      type="text"
+                    <select
                       value={entrepreneurFormData.from_id}
                       onChange={(e) =>
                         handleEntrepreneurInputChange("from_id", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Haradan ID"
-                    />
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      disabled={isDataLoading}
+                    >
+                      <option value="">Haradan Çıxılacaq Seç</option>
+                      {areas.map((area, index) => (
+                        <option key={index} value={area.id || (index + 1)}>
+                          {`${area.country?.az || area.country?.en || area.country?.ru || ''} - ${area.city?.az || area.city?.en || area.city?.ru || ''} - ${area.region?.az || area.region?.en || area.region?.ru || ''}`}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
-                    <input
-                      type="text"
+                    <select
                       value={entrepreneurFormData.to_id}
                       onChange={(e) =>
                         handleEntrepreneurInputChange("to_id", e.target.value)
                       }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Hara ID"
-                    />
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      disabled={isDataLoading}
+                    >
+                      <option value="">Hara Çatdırılacaq Seç</option>
+                      {areas.map((area, index) => (
+                        <option key={index} value={area.id || (index + 1)}>
+                          {`${area.country?.az || area.country?.en || area.country?.ru || ''} - ${area.city?.az || area.city?.en || area.city?.ru || ''} - ${area.region?.az || area.region?.en || area.region?.ru || ''}`}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
                     <input
-                      type="datetime-local"
+                      type={entrepreneurFormData.expires_at ? "datetime-local" : "text"}
                       value={entrepreneurFormData.expires_at}
                       onChange={(e) =>
                         handleEntrepreneurInputChange("expires_at", e.target.value)
                       }
+                      onFocus={(e) => {
+                        e.target.type = 'datetime-local';
+                      }}
+                      onBlur={(e) => {
+                        if (!e.target.value) {
+                          e.target.type = 'text';
+                        }
+                      }}
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Bitmə tarixi"
+                      placeholder="Elanın bitmə tarixi"
                     />
                   </div>
 
@@ -1060,6 +1316,7 @@ export const NewUpdate = () => {
             </motion.form>
           )}
           </AnimatePresence>
+          )}
         </div>
       </div>
     </div>

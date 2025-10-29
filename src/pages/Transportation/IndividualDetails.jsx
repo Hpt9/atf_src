@@ -9,6 +9,7 @@ const API_BASE = 'https://atfplatform.tw1.ru';
 export const ElanDetail = () => {
   const { slug } = useParams();
   const [selectedImage, setSelectedImage] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [loadingSimilar, setLoadingSimilar] = useState(true);
   const [similarAnnouncements, setSimilarAnnouncements] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -67,7 +68,8 @@ export const ElanDetail = () => {
                 <img
                   src={(data?.photos && data.photos[selectedImage]) || data?.photos?.[0] || 'https://via.placeholder.com/600x400?text=No+Image'}
                   alt="Main"
-                  className="w-[288px] h-[260px] object-cover rounded-[16px] mx-auto"
+                  className="w-[288px] h-[260px] object-cover rounded-[16px] mx-auto cursor-pointer"
+                  onClick={() => setIsFullscreen(true)}
                 />
               )}
               <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
@@ -81,12 +83,25 @@ export const ElanDetail = () => {
                         ? "border-[#2E92A0]"
                         : "border-[#E7E7E7]"
                     }`}
-                    onClick={() => setSelectedImage(idx)}
+                    onClick={() => { setSelectedImage(idx); setIsFullscreen(true); }}
                   />
                 ))}
               </div>
             </div>
           </div>
+          {/* Fullscreen Image Overlay (primarily for mobile) */}
+          {isFullscreen && (
+            <div
+              className="fixed inset-0 z-[1001] bg-black/90 flex items-center justify-center md:hidden"
+              onClick={() => setIsFullscreen(false)}
+            >
+              <img
+                src={(data?.photos && data.photos[selectedImage]) || data?.photos?.[0] || ''}
+                alt="Fullscreen"
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+          )}
           {/* Title */}
           <h2 className="text-2xl font-medium pb-4 border-b border-[#E7E7E7]">
             {data?.name?.az || '—'}

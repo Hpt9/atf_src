@@ -13,6 +13,8 @@ const SahibkarDetailIndex = () => {
   const { language } = useLanguageStore();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenIndex, setFullscreenIndex] = useState(0);
 
   useEffect(() => {
     const load = async () => {
@@ -117,13 +119,24 @@ const SahibkarDetailIndex = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               {images[0] ? (
-                <img src={images[0]} alt={title} className="w-full h-[260px] object-cover rounded-[12px]" />
+                <img
+                  src={images[0]}
+                  alt={title}
+                  className="w-full min-h-[260px] max-w-[800px] max-h-[450px] object-cover rounded-[12px] cursor-pointer"
+                  onClick={() => { setFullscreenIndex(0); setIsFullscreen(true); }}
+                />
               ) : (
                 <div className="w-full h-[260px] bg-gray-100 rounded-[12px]" />
               )}
               <div className="grid grid-cols-4 gap-2 mt-2">
                 {images.slice(1, 9).map((img, i) => (
-                  <img key={i} src={img} alt={`thumb-${i}`} className="w-full h-[72px] object-cover rounded-[8px]" />
+                  <img
+                    key={i}
+                    src={img}
+                    alt={`thumb-${i}`}
+                    className="w-full h-[72px] object-cover rounded-[8px] cursor-pointer"
+                    onClick={() => { setFullscreenIndex(i + 1); setIsFullscreen(true); }}
+                  />
                 ))}
               </div>
             </div>
@@ -150,6 +163,15 @@ const SahibkarDetailIndex = () => {
             </div>
           </div>
         </div>
+        {/* Fullscreen overlay for mobile */}
+        {isFullscreen && (
+          <div
+            className="fixed inset-0 z-[1001] bg-black/90 flex items-center justify-center md:hidden"
+            onClick={() => setIsFullscreen(false)}
+          >
+            <img src={images[fullscreenIndex] || images[0]} alt="Fullscreen" className="max-w-full max-h-full object-contain" />
+          </div>
+        )}
       </div>
     </div>
   )

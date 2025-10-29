@@ -54,7 +54,7 @@ const EntreperneurIndex = () => {
                 {c.avatar ? (
                   <img src={c.avatar} alt={c.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="text-[#A0A0A0]">No Image</div>
+                  <div className="text-[#A0A0A0]">Şəkil yoxdur</div>
                 )}
               </div>
               <div className="p-4 flex flex-col gap-1">
@@ -67,9 +67,9 @@ const EntreperneurIndex = () => {
         </div>
 
         <div className="flex justify-center items-center gap-2 mt-8">
-          <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage === 1} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">Geriye</button>
+          <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage === 1} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">Geri</button>
           <span className="text-[#3F3F3F]">{pagination.currentPage} / {pagination.lastPage}</span>
-          <button onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={pagination.currentPage === pagination.lastPage} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">İreli</button>
+          <button onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={pagination.currentPage === pagination.lastPage} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">İrəli</button>
         </div>
 
         

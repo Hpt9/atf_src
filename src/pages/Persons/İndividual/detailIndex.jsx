@@ -58,7 +58,7 @@ const IndividualDetailIndex = () => {
               {data.avatar ? (
                 <img src={data.avatar} alt={data.name} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-[#A0A0A0]">No Image</span>
+                <span className="text-[#A0A0A0]">Şəkil yoxdur</span>
               )}
             </div>
           </div>
@@ -99,7 +99,7 @@ const IndividualDetailIndex = () => {
                       {firstPhoto ? (
                         <img src={firstPhoto} alt={a.name?.az} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-[#A0A0A0]">No Image</span>
+                        <span className="text-[#A0A0A0]">Şəkil yoxdur</span>
                       )}
                     </div>
                     <div className="p-4 flex flex-col gap-1">

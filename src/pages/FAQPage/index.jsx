@@ -123,6 +123,8 @@ const FaqPage = () => {
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-8">
+        {/* Mobile Page Header */}
+        
         <h1 className="text-[20px] md:text-[32px] font-semibold text-[#2E92A0] mb-8">
           {getPageTitle()}
         </h1>

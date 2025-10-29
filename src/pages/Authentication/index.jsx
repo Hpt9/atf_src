@@ -705,12 +705,37 @@ const RegisterForm = () => {
               placeholder="Vebsayt (opsional)"
               className="w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] border-[#E7E7E7] focus:border-[#2E92A0]"
             />
-            <input
+<input
               type="text"
+              inputMode="numeric"
+              pattern="\\d*"
+              min={100000000}
+              max={999999999}
+              title="VÖEN 9 rəqəmdən ibarət olmalıdır"
+              required
               name="voen"
               value={formData.voen}
-              onChange={handleChange}
-              placeholder="VÖEN (opsional)"
+              onChange={(e) => {
+                const sanitized = String(e.target.value || '')
+                  .replace(/\D/g, '')
+                  .slice(0, 9);
+                e.target.value = sanitized;
+                handleChange(e);
+              }}
+              onKeyDown={(e) => {
+                // Prevent non-numeric entries like e, E, +, -, .
+                if (["e", "E", "+", "-", ".", ","].includes(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+              onInput={(e) => {
+                // Enforce max length 9 in case of paste or scroll changes
+                const sanitized = String(e.target.value || '').replace(/\D/g, '').slice(0, 9);
+                if (sanitized !== e.target.value) {
+                  e.target.value = sanitized;
+                }
+              }}
+              placeholder="VÖEN"
               className="w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] border-[#E7E7E7] focus:border-[#2E92A0]"
             />
           </div>
