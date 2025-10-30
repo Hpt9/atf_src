@@ -117,7 +117,7 @@ const LegalDetailIndex = () => {
                 }
                 return (
                   <a
-                    href={`/dasinma/kataloq/${a.slug}`}
+                    href={`/dasinma/huquqi-sexs-elanlari/${a.slug}`}
                     key={a.id}
                     className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden"
                   >
