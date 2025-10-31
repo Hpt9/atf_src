@@ -482,9 +482,10 @@ const MuracietlerPage = () => {
     setSelectedApp(null);
   };
 
-  // Handle PDF link click
-  const handlePDFLinkClick = (pdfSlug) => {
-    const pdfUrl = `https://atfplatform.tw1.ru/storage/${pdfSlug}`;
+  // Handle PDF link click (supports full URLs or storage slugs)
+  const handlePDFLinkClick = (pdfUrlOrSlug) => {
+    const isFullUrl = typeof pdfUrlOrSlug === 'string' && /^https?:\/\//i.test(pdfUrlOrSlug);
+    const pdfUrl = isFullUrl ? pdfUrlOrSlug : `https://atfplatform.tw1.ru/storage/${pdfUrlOrSlug}`;
     window.open(pdfUrl, '_blank');
   };
 
@@ -651,24 +652,18 @@ const MuracietlerPage = () => {
                   </div>
                   
                   <div className="flex items-start gap-2">
-                    <span className="text-[14px] font-medium text-[#3F3F3F]">Sənədlər:</span>
-                    <div className="flex flex-col gap-1">
-                      {selectedApp.approval_titles && selectedApp.approval_titles.map((title, index) => (
-                        <span key={index} className="text-[14px] text-[#3F3F3F]">
-                          {title.az}
-                        </span>
-                      ))}
-                    </div>
+                    <span className="text-[14px] font-medium text-[#3F3F3F]">Qurum:</span>
+                    <span className="text-[14px] text-[#3F3F3F]">{typeof selectedApp.organization === 'string' ? selectedApp.organization : (selectedApp.organization?.az || '')}</span>
                   </div>
 
-                  {selectedApp.pdf_slug && selectedApp.pdf_slug.length > 0 ? (
+                  {Array.isArray(selectedApp.organization_doc_form) && selectedApp.organization_doc_form.length > 0 ? (
                     <div className="space-y-2">
                       <span className="text-[14px] font-medium text-[#3F3F3F]">PDF Sənədlər:</span>
                       <div className="space-y-1">
-                        {selectedApp.pdf_slug.map((pdf) => (
+                        {selectedApp.organization_doc_form.map((url, idx) => (
                           <button
-                            key={pdf.id}
-                            onClick={() => handlePDFLinkClick(pdf.slug)}
+                            key={idx}
+                            onClick={() => handlePDFLinkClick(url)}
                             className="w-full text-left p-2 border border-[#E7E7E7] rounded hover:bg-[#F5F5F5] transition-colors cursor-pointer"
                           >
                             <div className="flex items-center gap-2">
@@ -694,9 +689,7 @@ const MuracietlerPage = () => {
                                   strokeLinejoin="round"
                                 />
                               </svg>
-                              <span className="text-[14px] text-[#2E92A0] hover:text-[#1E7A8A]">
-                                {pdf.slug.split('/').pop()}
-                              </span>
+                              <span className="text-[14px] text-[#2E92A0] hover:text-[#1E7A8A]">{(typeof url === 'string' ? url : '').split('/').pop()}</span>
                             </div>
                           </button>
                         ))}
@@ -764,30 +757,39 @@ const MuracietlerPage = () => {
                 }}
               >
                 {applications.length === 0 ? (
-                  <motion.div
-                    className="p-[16px] text-center text-[#3F3F3F] flex flex-col items-center justify-center space-y-4"
-                    variants={rowVariants}
-                  >
-                    <svg
-                      width="64"
-                      height="64"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                      onClick={() => toogleMuracietModal()}
-                      className="hover:cursor-pointer hover:scale-105 transition-all duration-200 group"
+                  searchQuery.trim() ? (
+                    <motion.div
+                      className="p-[16px] text-center text-[#3F3F3F] flex flex-col items-center justify-center"
+                      variants={rowVariants}
                     >
-                      <path
-                        d="M9 12H15M12 9V15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-                        stroke="#A0A0A0"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="group-hover:stroke-[#2E92A0] transition-all duration-200"
-                      />
-                    </svg>
-                    <p>{texts.noApplications[language] || texts.noApplications.az}</p>
-                  </motion.div>
+                      <p>{texts.noResults[language] || texts.noResults.az}</p>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      className="p-[16px] text-center text-[#3F3F3F] flex flex-col items-center justify-center space-y-4"
+                      variants={rowVariants}
+                    >
+                      <svg
+                        width="64"
+                        height="64"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        onClick={() => toogleMuracietModal()}
+                        className="hover:cursor-pointer hover:scale-105 transition-all duration-200 group"
+                      >
+                        <path
+                          d="M9 12H15M12 9V15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                          stroke="#A0A0A0"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="group-hover:stroke-[#2E92A0] transition-all duration-200"
+                        />
+                      </svg>
+                      <p>{texts.noApplications[language] || texts.noApplications.az}</p>
+                    </motion.div>
+                  )
                 ) : currentItems.length > 0 ? (
                   currentItems.reverse().map((app) => (
                     <motion.div
@@ -800,16 +802,14 @@ const MuracietlerPage = () => {
                           {app.code<10 ? "0"+app.code : app.code}
                         </p>
                         <p className="text-[#3F3F3F] text-[14px] w-[75px] md:w-[150px]">
-                        {Array.isArray(app.approval_titles) && app.approval_titles.length > 0
-                            ? app.approval_titles.map((title, index) => {
-                                const text = (title && (title[language] || title.az)) || (typeof title === 'string' ? title : '');
-                                const suffix = index < app.approval_titles.length - 1 ? ', ' : '';
-                                return text + suffix;
-                              })
-                            : texts.hello[language] || texts.hello.az}
+                          {Array.isArray(app.organization_doc_form) && app.organization_doc_form.length > 0
+                            ? `${app.organization_doc_form.length} PDF`
+                            : (texts.hello[language] || texts.hello.az)}
                         </p>
                         <p className="text-[#3F3F3F] text-[14px] w-[55px] mobile-sm:w-[80px] xs:w-[100px] md:w-[150px]">
-                        {app.organization?.[language] || app.organization?.az || (typeof app.organization === 'string' ? app.organization : (texts.hello[language] || texts.hello.az))}
+                          {typeof app.organization === 'string' 
+                            ? app.organization 
+                            : (app.organization?.[language] || app.organization?.az || (texts.hello[language] || texts.hello.az))}
                         </p>
                       </div>
                                              <div className="w-[40px] md:w-[80px] flex justify-center">
@@ -897,7 +897,7 @@ const MuracietlerPage = () => {
           </motion.div>
 
           {/* Pagination */}
-          {applications.length > 0 && filteredApplications.length > 0 && (
+          {applications.length > 0 && filteredApplications.length > 0 && totalPages > 1 && (
             <div className="pagination flex items-center justify-between p-4 border-t border-[#E7E7E7] bg-white">
               <div className="w-full justify-center flex items-center gap-2">
                 <motion.button

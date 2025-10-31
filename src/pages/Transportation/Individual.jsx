@@ -95,7 +95,16 @@ export const Elanlar = () => {
     };
     fetchLists();
   }, [token]);
-  
+  const getPageTitle = () => {
+    switch(language) {
+      case 'en':
+        return 'Individual Advertisements';
+      case 'ru':
+        return 'Индивидуальные объявления';
+      default:
+        return 'Fiziki şəxs elanları';
+    }
+  };
   // Fetch individuals adverts
   useEffect(() => {
     const controller = new AbortController();
@@ -207,6 +216,9 @@ export const Elanlar = () => {
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-4 md:py-8 h-[calc(100vh-303px)] min-h-[calc(100vh-203px)]">
         {/* Search and Filter Row (responsive) */}
+        <h1 className="block md:hidden text-[20px] md:text-[32px] font-semibold text-[#2E92A0] mb-8">
+          {getPageTitle()}
+        </h1>
         <div className="flex flex-col md:flex-row-reverse md:items-center md:justify-between gap-4 mb-6">
           {/* Tabs (bottom on mobile, left on desktop) */}
           

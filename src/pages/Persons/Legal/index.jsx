@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
+import useLanguageStore from '../../../store/languageStore'; 
 
 const LegalIndex = () => {
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
   const [pagination, setPagination] = useState({ currentPage: 1, lastPage: 1 });
   // Detail modal removed; using a dedicated route for details
-
+  const { language } = useLanguageStore();
   const fetchCompanies = async (page = 1) => {
     try {
       setLoading(true);
@@ -40,9 +41,22 @@ const LegalIndex = () => {
     );
   }
 
+  const getPageTitle = () => {
+    switch(language) {
+      case 'en':
+        return 'Legal Entities';
+      case 'ru':
+        return 'Юридические лица';
+      default:
+        return 'Hüquqi şəxslər';
+      }
+  };
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-6">
+        <h1 className="block md:hidden text-[20px] md:text-[32px] font-semibold text-[#2E92A0] mb-8">
+          {getPageTitle()}
+        </h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {items.map((c, idx) => (
             <Link
@@ -68,11 +82,13 @@ const LegalIndex = () => {
           ))}
         </div>
 
-        <div className="flex justify-center items-center gap-2 mt-8">
-          <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage === 1} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">Geri</button>
-          <span className="text-[#3F3F3F]">{pagination.currentPage} / {pagination.lastPage}</span>
-          <button onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={pagination.currentPage === pagination.lastPage} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">İrəli</button>
-        </div>
+        {items.length > 0 && pagination.lastPage > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-8">
+            <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage === 1} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">Geri</button>
+            <span className="text-[#3F3F3F]">{pagination.currentPage} / {pagination.lastPage}</span>
+            <button onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={pagination.currentPage === pagination.lastPage} className="px-4 py-2 rounded bg-[#FAFAFA] border border-[#E7E7E7] text-[#3F3F3F] font-medium disabled:text-gray-400 disabled:cursor-not-allowed">İrəli</button>
+          </div>
+        )}
 
         {/* Detail modal removed */}
       </div>

@@ -28,17 +28,22 @@ const IcazelerPage = () => {
     ]
   });
 
-  // Fetch all approvals
+  // Fetch all approvals (now grouped by organization with nested approvals)
   const fetchAllApprovals = async (page) => {
     try {
       setLoading(true);
       const response = await axios.get(`https://atfplatform.tw1.ru/api/approvals?page=${page}`);
-      // Handle array response from API
-        setApprovalsData({
-          data: response.data,
-          total: response.data.length,
-          per_page: response.data.length,
-          current_page: 1,
+      // Accept both grouped shape { data: [{ id, name, approvals: [] }]} or raw array
+      const groups = Array.isArray(response?.data?.data)
+        ? response.data.data
+        : Array.isArray(response?.data)
+        ? response.data
+        : [];
+      setApprovalsData({
+        data: groups,
+        total: groups.length,
+        per_page: groups.length,
+        current_page: 1,
         last_page: 1,
         prev_page_url: null,
         next_page_url: null,
@@ -76,7 +81,7 @@ const IcazelerPage = () => {
     }
   };
 
-  // Search approvals
+  // Search approvals (supports grouped response)
   const searchApprovals = async (query) => {
     try {
       setLoading(true);
@@ -84,10 +89,15 @@ const IcazelerPage = () => {
         'https://atfplatform.tw1.ru/api/approval-search',
         { q: query }
       );
+      const groups = Array.isArray(response?.data?.data)
+        ? response.data.data
+        : Array.isArray(response?.data)
+        ? response.data
+        : [];
       setApprovalsData({
-        data: response.data,
-        total: response.data.length,
-        per_page: response.data.length,
+        data: groups,
+        total: groups.length,
+        per_page: groups.length,
         current_page: 1,
         last_page: 1,
         prev_page_url: null,
@@ -303,37 +313,52 @@ const IcazelerPage = () => {
                 <div className="text-center text-red-500 py-8">{error}</div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {approvalsData.data?.length > 0 ? (
-                      approvalsData.data.map((approval) => (
-                        <motion.div
-                          key={approval.id}
-                          variants={cardVariants}
-                          whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
-                          onClick={() => setSelectedCard(approval)}
-                          className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden cursor-pointer"
-                        >
-                          <div className="relative">
-                            <div className="h-[180px] bg-[#FAFAFA] flex items-center justify-center px-[32px] py-[16px] border-b border-[#E7E7E7]">
-                              <img 
-                                src={`${approval.logo}`} 
-                                alt={approval.title[language]}
-                                className="max-h-full max-w-full object-contain"
-                              />
+                  {Array.isArray(approvalsData.data) && approvalsData.data.length > 0 ? (
+                    approvalsData.data.map((org) => (
+                      <div key={org.id} className="mb-8">
+                        {/* Organization Header */}
+                        <h2 className="text-xl font-semibold text-[#2E92A0] mb-4">
+                          {org?.name?.[language] || org?.name?.az || '-'}
+                        </h2>
+                        {/* Approvals grid under this organization */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {Array.isArray(org.approvals) && org.approvals.length > 0 ? (
+                            org.approvals.map((approval) => (
+                              <motion.div
+                                key={approval.id}
+                                variants={cardVariants}
+                                whileHover={{ y: -5, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" }}
+                                onClick={() => setSelectedCard(approval)}
+                                className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden cursor-pointer"
+                              >
+                                <div className="relative">
+                                  <div className="h-[180px] bg-[#FAFAFA] flex items-center justify-center px-[32px] py-[16px] border-b border-[#E7E7E7]">
+                                    <img 
+                                      src={`${approval.logo}`} 
+                                      alt={approval.title[language]}
+                                      className="max-h-full max-w-full object-contain"
+                                    />
+                                  </div>
+                                  <div className="p-4 bg-white">
+                                    <h3 className="text-left font-medium text-[#3F3F3F]">{approval.title[language]}</h3>
+                                    <p className="text-left text-sm text-gray-600">{approval.alt_title[language]}</p>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            ))
+                          ) : (
+                            <div className="col-span-4 p-[16px] text-center text-[#3F3F3F]">
+                              {getNoResultsText()}
                             </div>
-                            <div className="p-4 bg-white">
-                              <h3 className="text-left font-medium text-[#3F3F3F]">{approval.title[language]}</h3>
-                              <p className="text-left text-sm text-gray-600">{approval.alt_title[language]}</p>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))
-                    ) : (
-                      <div className="col-span-4 p-[16px] text-center text-[#3F3F3F]">
-                        {getNoResultsText()}
+                          )}
+                        </div>
                       </div>
-                    )}
-                  </div>
+                    ))
+                  ) : (
+                    <div className="p-[16px] text-center text-[#3F3F3F]">
+                      {getNoResultsText()}
+                    </div>
+                  )}
                   
                   {approvalsData.last_page > 1 && (
                     <div className="flex justify-center items-center gap-2 mt-8">

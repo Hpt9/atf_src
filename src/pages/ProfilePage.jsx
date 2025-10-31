@@ -44,7 +44,15 @@ const ProfilePage = () => {
 
   // Add branch states
   const [showAddBranchModal, setShowAddBranchModal] = useState(false);
+  const [activeAddBranchLangTab, setActiveAddBranchLangTab] = useState('az');
   const [addBranchData, setAddBranchData] = useState({
+    name_az: '',
+    name_en: '',
+    name_ru: '',
+    description_az: '',
+    description_en: '',
+    description_ru: '',
+    // legacy fallbacks (optional)
     name: '',
     description: '',
     status: 'active',
@@ -736,8 +744,16 @@ const ProfilePage = () => {
     // Create FormData object
     const formDataToSend = new FormData();
 
-    formDataToSend.append("name", branchData.name || "");
-    formDataToSend.append("description", branchData.description || "");
+    // Multilingual fields
+    formDataToSend.append("name.az", branchData.name_az || "");
+    formDataToSend.append("name.en", branchData.name_en || "");
+    formDataToSend.append("name.ru", branchData.name_ru || "");
+    formDataToSend.append("description.az", branchData.description_az || "");
+    formDataToSend.append("description.en", branchData.description_en || "");
+    formDataToSend.append("description.ru", branchData.description_ru || "");
+    // Backward-compatible fields (if API accepts single-language too)
+    if (branchData.name) formDataToSend.append("name", branchData.name);
+    if (branchData.description) formDataToSend.append("description", branchData.description);
     formDataToSend.append("status", branchData.status || "active");
 
     // Add photo if provided
@@ -763,6 +779,12 @@ const ProfilePage = () => {
         await fetchUserData();
         setShowAddBranchModal(false);
         setAddBranchData({
+          name_az: '',
+          name_en: '',
+          name_ru: '',
+          description_az: '',
+          description_en: '',
+          description_ru: '',
           name: '',
           description: '',
           status: 'active',
@@ -838,8 +860,8 @@ const ProfilePage = () => {
   // Handle add branch form submission
   const handleAddBranchSubmit = async (e) => {
     e.preventDefault();
-    if (!addBranchData.name.trim()) {
-      toast.error("Filialın adı mütləq doldurulmalıdır");
+    if (!addBranchData.name_az.trim()) {
+      toast.error("Filialın adı (AZ) mütləq doldurulmalıdır");
       return;
     }
 
@@ -1830,6 +1852,18 @@ const ProfilePage = () => {
                 <IoLocation className="text-[#2E92A0]" />
                 Filial Əlavə Et
               </h3>
+              <div className="flex mb-4 gap-2">
+                {['az','en','ru'].map((lang) => (
+                  <button
+                    key={lang}
+                    type="button"
+                    onClick={() => setActiveAddBranchLangTab(lang)}
+                    className={`px-4 py-2 rounded font-bold border-b-2 transition-all ${activeAddBranchLangTab === lang ? 'border-[#2E92A0] text-[#2E92A0]' : 'border-transparent text-[#27272A]'}`}
+                  >
+                    {lang === 'az' ? 'AZƏRBAYCAN' : lang === 'en' ? 'İNGLİS' : 'RUS'}
+                  </button>
+                ))}
+              </div>
 
               <form onSubmit={handleAddBranchSubmit} className="space-y-6">
                 {/* Image Section */}
@@ -1879,30 +1913,81 @@ const ProfilePage = () => {
                   </select>
                 </div>
 
-                {/* Single-language (AZ) only */}
-
                 {/* Branch Name & Description per language */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Filial Adı</label>
-                  <input
-                    type="text"
-                    value={addBranchData.name}
-                    onChange={(e) => handleAddBranchInputChange("name", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                    placeholder="Filial Adı"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Açıqlama</label>
-                  <textarea
-                    value={addBranchData.description}
-                    onChange={(e) => handleAddBranchInputChange("description", e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                    rows={4}
-                    placeholder="Açıqlama"
-                  />
-                </div>
+                {activeAddBranchLangTab === 'az' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Filial Adı (AZ)</label>
+                    <input
+                      type="text"
+                      value={addBranchData.name_az}
+                      onChange={(e) => handleAddBranchInputChange("name_az", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Filial Adı (AZ)"
+                      required
+                    />
+                  </div>
+                )}
+                {activeAddBranchLangTab === 'en' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Branch Name (EN)</label>
+                    <input
+                      type="text"
+                      value={addBranchData.name_en}
+                      onChange={(e) => handleAddBranchInputChange("name_en", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Branch Name (EN)"
+                    />
+                  </div>
+                )}
+                {activeAddBranchLangTab === 'ru' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Название филиала (RU)</label>
+                    <input
+                      type="text"
+                      value={addBranchData.name_ru}
+                      onChange={(e) => handleAddBranchInputChange("name_ru", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      placeholder="Название филиала (RU)"
+                    />
+                  </div>
+                )}
+
+                {activeAddBranchLangTab === 'az' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Açıqlama (AZ)</label>
+                    <textarea
+                      value={addBranchData.description_az}
+                      onChange={(e) => handleAddBranchInputChange("description_az", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      rows={4}
+                      placeholder="Açıqlama (AZ)"
+                    />
+                  </div>
+                )}
+                {activeAddBranchLangTab === 'en' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description (EN)</label>
+                    <textarea
+                      value={addBranchData.description_en}
+                      onChange={(e) => handleAddBranchInputChange("description_en", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      rows={4}
+                      placeholder="Description (EN)"
+                    />
+                  </div>
+                )}
+                {activeAddBranchLangTab === 'ru' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Описание (RU)</label>
+                    <textarea
+                      value={addBranchData.description_ru}
+                      onChange={(e) => handleAddBranchInputChange("description_ru", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                      rows={4}
+                      placeholder="Описание (RU)"
+                    />
+                  </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
@@ -1911,6 +1996,12 @@ const ProfilePage = () => {
                     onClick={() => {
                       setShowAddBranchModal(false);
                       setAddBranchData({
+                        name_az: '',
+                        name_en: '',
+                        name_ru: '',
+                        description_az: '',
+                        description_en: '',
+                        description_ru: '',
                         name: '',
                         description: '',
                         status: 'active',

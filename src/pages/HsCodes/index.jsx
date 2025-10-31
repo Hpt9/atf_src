@@ -703,7 +703,7 @@ const HsCodesPage = () => {
           </div>
 
           {/* Pagination Controls */}
-          {!searchQuery && (
+          {!searchQuery && pagination.lastPage > 1 && (
             <div className="flex justify-center items-center gap-2 p-4 border-t border-[#E7E7E7]">
               <button
                 onClick={() => handlePageChange(pagination.currentPage - 1)}
