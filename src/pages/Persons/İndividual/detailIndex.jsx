@@ -106,7 +106,7 @@ const IndividualDetailIndex = () => {
                       <div className="font-medium text-[#3F3F3F]">{a.name?.az}</div>
                       <div className="text-[#6B7280] text-sm">{a.load_type?.az}</div>
                       <div className="text-[#6B7280] text-sm">Boş yer: {a.empty_space ?? '-'}</div>
-                      <div className="text-[#6B7280] text-sm">Qeydiyyat: {a.truck_registration_number ?? '-'}</div>
+                      <div className="text-[#6B7280] text-sm">Qeydiyyat Nişanı: {a.truck_registration_number ?? '-'}</div>
                       <div className="text-[#6B7280] text-sm">Çıxış: {a.exit_from_address?.az}</div>
                       <div className="text-[#6B7280] text-sm">Gəlmə: {a.reach_from_address}</div>
                     </div>

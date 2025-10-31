@@ -109,6 +109,9 @@ export const NewUpdate = () => {
     console.log("Current areas state:", areas);
   }, [truckTypes, units, areas]);
 
+  // Local language tab state for form fields (az, ru, en)
+  const [activeLangTab, setActiveLangTab] = useState('az');
+
   // Individual (Fiziki şəxs) form state
   const [individualFormData, setIndividualFormData] = useState({
     capacity: "",
@@ -122,9 +125,17 @@ export const NewUpdate = () => {
     to_id: "",
     expires_at: "",
     name_az: "",
+    name_ru: "",
+    name_en: "",
     load_type_az: "",
+    load_type_ru: "",
+    load_type_en: "",
     exit_from_address_az: "",
+    exit_from_address_ru: "",
+    exit_from_address_en: "",
     description_az: "",
+    description_ru: "",
+    description_en: "",
   });
 
   // Legal (Hüquqi şəxs) form state
@@ -142,12 +153,26 @@ export const NewUpdate = () => {
     to_id: "",
     expires_at: "",
     driver_full_name_az: "",
+    driver_full_name_ru: "",
+    driver_full_name_en: "",
     driver_biography_az: "",
-    name_az: "",
-    load_type_az: "",
-    exit_from_address_az: "",
-    description_az: "",
+    driver_biography_ru: "",
+    driver_biography_en: "",
     driver_experience_az: "",
+    driver_experience_ru: "",
+    driver_experience_en: "",
+    name_az: "",
+    name_ru: "",
+    name_en: "",
+    load_type_az: "",
+    load_type_ru: "",
+    load_type_en: "",
+    exit_from_address_az: "",
+    exit_from_address_ru: "",
+    exit_from_address_en: "",
+    description_az: "",
+    description_ru: "",
+    description_en: "",
   });
 
   // Entrepreneur (Sahibkar) form state
@@ -161,9 +186,17 @@ export const NewUpdate = () => {
     truck_type_id: "",
     expires_at: "",
     name_az: "",
+    name_ru: "",
+    name_en: "",
     load_type_az: "",
+    load_type_ru: "",
+    load_type_en: "",
     exit_from_address_az: "",
+    exit_from_address_ru: "",
+    exit_from_address_en: "",
     description_az: "",
+    description_ru: "",
+    description_en: "",
   });
 
   // Individual form handlers
@@ -313,9 +346,17 @@ export const NewUpdate = () => {
       formDataToSend.append("to_id", formData.to_id || "");
       formDataToSend.append("expires_at", formatDateForBackend(formData.expires_at, 'date'));
       formDataToSend.append("name.az", formData.name_az || "");
+      formDataToSend.append("name.ru", formData.name_ru || "");
+      formDataToSend.append("name.en", formData.name_en || "");
       formDataToSend.append("load_type.az", formData.load_type_az || "");
+      formDataToSend.append("load_type.ru", formData.load_type_ru || "");
+      formDataToSend.append("load_type.en", formData.load_type_en || "");
       formDataToSend.append("exit_from_address.az", formData.exit_from_address_az || "");
+      formDataToSend.append("exit_from_address.ru", formData.exit_from_address_ru || "");
+      formDataToSend.append("exit_from_address.en", formData.exit_from_address_en || "");
       formDataToSend.append("description.az", formData.description_az || "");
+      formDataToSend.append("description.ru", formData.description_ru || "");
+      formDataToSend.append("description.en", formData.description_en || "");
       
       // Add photos
       formData.photos.forEach((photo, index) => {
@@ -336,12 +377,26 @@ export const NewUpdate = () => {
       formDataToSend.append("to_id", formData.to_id || "");
       formDataToSend.append("expires_at", formatDateForBackend(formData.expires_at, 'date'));
       formDataToSend.append("name.az", formData.name_az || "");
+      formDataToSend.append("name.ru", formData.name_ru || "");
+      formDataToSend.append("name.en", formData.name_en || "");
       formDataToSend.append("load_type.az", formData.load_type_az || "");
+      formDataToSend.append("load_type.ru", formData.load_type_ru || "");
+      formDataToSend.append("load_type.en", formData.load_type_en || "");
       formDataToSend.append("exit_from_address.az", formData.exit_from_address_az || "");
+      formDataToSend.append("exit_from_address.ru", formData.exit_from_address_ru || "");
+      formDataToSend.append("exit_from_address.en", formData.exit_from_address_en || "");
       formDataToSend.append("description.az", formData.description_az || "");
+      formDataToSend.append("description.ru", formData.description_ru || "");
+      formDataToSend.append("description.en", formData.description_en || "");
       formDataToSend.append("driver_full_name.az", formData.driver_full_name_az || "");
+      formDataToSend.append("driver_full_name.ru", formData.driver_full_name_ru || "");
+      formDataToSend.append("driver_full_name.en", formData.driver_full_name_en || "");
       formDataToSend.append("driver_biography.az", formData.driver_biography_az || "");
+      formDataToSend.append("driver_biography.ru", formData.driver_biography_ru || "");
+      formDataToSend.append("driver_biography.en", formData.driver_biography_en || "");
       formDataToSend.append("driver_experience.az", formData.driver_experience_az || "");
+      formDataToSend.append("driver_experience.ru", formData.driver_experience_ru || "");
+      formDataToSend.append("driver_experience.en", formData.driver_experience_en || "");
       
       // Add driver photo
       if (formData.driver_photo) {
@@ -368,9 +423,17 @@ export const NewUpdate = () => {
       formDataToSend.append("to_id", formData.to_id || "");
       formDataToSend.append("expires_at", formatDateForBackend(formData.expires_at, 'date'));
       formDataToSend.append("name.az", formData.name_az || "");
+      formDataToSend.append("name.ru", formData.name_ru || "");
+      formDataToSend.append("name.en", formData.name_en || "");
       formDataToSend.append("load_type.az", formData.load_type_az || "");
+      formDataToSend.append("load_type.ru", formData.load_type_ru || "");
+      formDataToSend.append("load_type.en", formData.load_type_en || "");
       formDataToSend.append("exit_from_address.az", formData.exit_from_address_az || "");
+      formDataToSend.append("exit_from_address.ru", formData.exit_from_address_ru || "");
+      formDataToSend.append("exit_from_address.en", formData.exit_from_address_en || "");
       formDataToSend.append("description.az", formData.description_az || "");
+      formDataToSend.append("description.ru", formData.description_ru || "");
+      formDataToSend.append("description.en", formData.description_en || "");
       
       // Add photos
       formData.photos.forEach((photo, index) => {
@@ -467,6 +530,20 @@ export const NewUpdate = () => {
             </div>
           ) : (
           <AnimatePresence mode="wait">
+            {/* Language Tabs */}
+            <div className="flex mb-4 mt-2 gap-2">
+              {['az', 'en', 'ru'].map((lang) => (
+                <button
+                  key={lang}
+                  type="button"
+                  onClick={() => setActiveLangTab(lang)}
+                  className={`px-4 py-2 rounded font-bold border-b-2 transition-all ${activeLangTab === lang ? 'border-[#2E92A0] text-[#2E92A0]' : 'border-transparent text-[#27272A]'}`}
+                >
+                  {lang === 'az' ? 'AZƏRBAYCAN' : lang === 'en' ? 'İNGLİS' : 'RUS'}
+                </button>
+              ))}
+            </div>
+
             {/* Individual Form */}
             {activeTab === "individual" && (
               <motion.form 
@@ -481,40 +558,97 @@ export const NewUpdate = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Column */}
                 <div className="space-y-4">
+                  {/* NAME FIELDS - Individual Form */}
                   <div>
-                    <input
-                      type="text"
-                      value={individualFormData.name_az}
-                      onChange={(e) =>
-                        handleIndividualInputChange("name_az", e.target.value)
-                      }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Elanın adı"
-                    />
+                    {activeLangTab === 'az' && (
+                      <input
+                        type="text"
+                        value={individualFormData.name_az}
+                        onChange={(e) => handleIndividualInputChange("name_az", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Elanın adı (AZ)"
+                      />
+                    )}
+                    {activeLangTab === 'ru' && (
+                      <input
+                        type="text"
+                        value={individualFormData.name_ru}
+                        onChange={(e) => handleIndividualInputChange("name_ru", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Elanın adı (RU)"
+                      />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <input
+                        type="text"
+                        value={individualFormData.name_en}
+                        onChange={(e) => handleIndividualInputChange("name_en", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Elanın adı (EN)"
+                      />
+                    )}
                   </div>
 
+                  {/* LOAD TYPE FIELDS - Individual Form */}
                   <div>
-                    <input
-                      type="text"
-                      value={individualFormData.load_type_az}
-                      onChange={(e) =>
-                        handleIndividualInputChange("load_type_az", e.target.value)
-                      }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Yük növü"
-                    />
+                    {activeLangTab === 'az' && (
+                      <input
+                        type="text"
+                        value={individualFormData.load_type_az}
+                        onChange={(e) => handleIndividualInputChange("load_type_az", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Yük növü (AZ)"
+                      />
+                    )}
+                    {activeLangTab === 'ru' && (
+                      <input
+                        type="text"
+                        value={individualFormData.load_type_ru}
+                        onChange={(e) => handleIndividualInputChange("load_type_ru", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Yük növü (RU)"
+                      />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <input
+                        type="text"
+                        value={individualFormData.load_type_en}
+                        onChange={(e) => handleIndividualInputChange("load_type_en", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Yük növü (EN)"
+                      />
+                    )}
                   </div>
 
+                  {/* EXIT FROM ADDRESS FIELDS - Individual Form */}
                   <div>
-                    <input
-                      type="text"
-                      value={individualFormData.exit_from_address_az}
-                      onChange={(e) =>
-                        handleIndividualInputChange("exit_from_address_az", e.target.value)
-                      }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Çıxış ünvanı"
-                    />
+                    {activeLangTab === 'az' && (
+                      <input
+                        type="text"
+                        value={individualFormData.exit_from_address_az}
+                        onChange={(e) => handleIndividualInputChange("exit_from_address_az", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Çıxış ünvanı (AZ)"
+                      />
+                    )}
+                    {activeLangTab === 'ru' && (
+                      <input
+                        type="text"
+                        value={individualFormData.exit_from_address_ru}
+                        onChange={(e) => handleIndividualInputChange("exit_from_address_ru", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Çıxış ünvanı (RU)"
+                      />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <input
+                        type="text"
+                        value={individualFormData.exit_from_address_en}
+                        onChange={(e) => handleIndividualInputChange("exit_from_address_en", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Çıxış ünvanı (EN)"
+                      />
+                    )}
                   </div>
 
                   <div>
@@ -671,16 +805,35 @@ export const NewUpdate = () => {
                     />
                   </div>
 
+                  {/* DESCRIPTION FIELDS - Individual Form */}
                   <div>
-                    <textarea
-                      value={individualFormData.description_az}
-                      onChange={(e) =>
-                        handleIndividualInputChange("description_az", e.target.value)
-                      }
-                      rows={4}
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
-                      placeholder="Təsvir..."
-                    />
+                    {activeLangTab === 'az' && (
+                      <textarea
+                        value={individualFormData.description_az}
+                        onChange={(e) => handleIndividualInputChange("description_az", e.target.value)}
+                        rows={4}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
+                        placeholder="Təsvir (AZ)..."
+                      />
+                    )}
+                    {activeLangTab === 'ru' && (
+                      <textarea
+                        value={individualFormData.description_ru}
+                        onChange={(e) => handleIndividualInputChange("description_ru", e.target.value)}
+                        rows={4}
+                        className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
+                        placeholder="Təsvir (RU)..."
+                      />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <textarea
+                        value={individualFormData.description_en}
+                        onChange={(e) => handleIndividualInputChange("description_en", e.target.value)}
+                        rows={4}
+                        className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
+                        placeholder="Təsvir (EN)..."
+                      />
+                    )}
                   </div>
 
                   <div className="mt-[18px]">
@@ -744,40 +897,97 @@ export const NewUpdate = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Column */}
                 <div className="space-y-4">
+                  {/* NAME FIELDS - Legal Form */}
                   <div>
-                    <input
-                      type="text"
-                      value={legalFormData.name_az}
-                      onChange={(e) =>
-                        handleLegalInputChange("name_az", e.target.value)
-                      }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Elanın adı"
-                    />
+                    {activeLangTab === 'az' && (
+                      <input
+                        type="text"
+                        value={legalFormData.name_az}
+                        onChange={(e) => handleLegalInputChange("name_az", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Elanın adı (AZ)"
+                      />
+                    )}
+                    {activeLangTab === 'ru' && (
+                      <input
+                        type="text"
+                        value={legalFormData.name_ru}
+                        onChange={(e) => handleLegalInputChange("name_ru", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Elanın adı (RU)"
+                      />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <input
+                        type="text"
+                        value={legalFormData.name_en}
+                        onChange={(e) => handleLegalInputChange("name_en", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Elanın adı (EN)"
+                      />
+                    )}
                   </div>
 
+                  {/* LOAD TYPE FIELDS - Legal Form */}
                   <div>
-                    <input
-                      type="text"
-                      value={legalFormData.load_type_az}
-                      onChange={(e) =>
-                        handleLegalInputChange("load_type_az", e.target.value)
-                      }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Yük növü"
-                    />
+                    {activeLangTab === 'az' && (
+                      <input
+                        type="text"
+                        value={legalFormData.load_type_az}
+                        onChange={(e) => handleLegalInputChange("load_type_az", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Yük növü (AZ)"
+                      />
+                    )}
+                    {activeLangTab === 'ru' && (
+                      <input
+                        type="text"
+                        value={legalFormData.load_type_ru}
+                        onChange={(e) => handleLegalInputChange("load_type_ru", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Yük növü (RU)"
+                      />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <input
+                        type="text"
+                        value={legalFormData.load_type_en}
+                        onChange={(e) => handleLegalInputChange("load_type_en", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Yük növü (EN)"
+                      />
+                    )}
                   </div>
 
+                  {/* EXIT FROM ADDRESS FIELDS - Legal Form */}
                   <div>
-                    <input
-                      type="text"
-                      value={legalFormData.exit_from_address_az}
-                      onChange={(e) =>
-                        handleLegalInputChange("exit_from_address_az", e.target.value)
-                      }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Çıxış ünvanı"
-                    />
+                    {activeLangTab === 'az' && (
+                      <input
+                        type="text"
+                        value={legalFormData.exit_from_address_az}
+                        onChange={(e) => handleLegalInputChange("exit_from_address_az", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Çıxış ünvanı (AZ)"
+                      />
+                    )}
+                    {activeLangTab === 'ru' && (
+                      <input
+                        type="text"
+                        value={legalFormData.exit_from_address_ru}
+                        onChange={(e) => handleLegalInputChange("exit_from_address_ru", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Çıxış ünvanı (RU)"
+                      />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <input
+                        type="text"
+                        value={legalFormData.exit_from_address_en}
+                        onChange={(e) => handleLegalInputChange("exit_from_address_en", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Çıxış ünvanı (EN)"
+                      />
+                    )}
                   </div>
 
                   <div>
@@ -980,52 +1190,128 @@ export const NewUpdate = () => {
                     />
                   </div>
 
+                  {/* DRIVER NAME FIELDS - Legal Form */}
                   <div>
-                    <input
-                      type="text"
-                      value={legalFormData.driver_full_name_az}
-                      onChange={(e) =>
-                        handleLegalInputChange("driver_full_name_az", e.target.value)
-                      }
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Sürücünün adı soyadı"
-                    />
+                    {activeLangTab === 'az' && (
+                      <input
+                        type="text"
+                        value={legalFormData.driver_full_name_az}
+                        onChange={(e) => handleLegalInputChange("driver_full_name_az", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Sürücünün adı soyadı (AZ)"
+                      />
+                    )}
+                    {activeLangTab === 'ru' && (
+                      <input
+                        type="text"
+                        value={legalFormData.driver_full_name_ru}
+                        onChange={(e) => handleLegalInputChange("driver_full_name_ru", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Sürücünün adı soyadı (RU)"
+                      />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <input
+                        type="text"
+                        value={legalFormData.driver_full_name_en}
+                        onChange={(e) => handleLegalInputChange("driver_full_name_en", e.target.value)}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Sürücünün adı soyadı (EN)"
+                      />
+                    )}
                   </div>
 
+                  {/* DRIVER BIOGRAPHY FIELDS - Legal Form */}
                   <div>
-                    <textarea
-                      value={legalFormData.driver_biography_az}
-                      onChange={(e) =>
-                        handleLegalInputChange("driver_biography_az", e.target.value)
-                      }
-                      rows={3}
-                      className="w-full h-[116px] px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                      placeholder="Sürücünün bioqrafiyası"
-                    />
+                    {activeLangTab === 'az' && (
+                      <textarea
+                        value={legalFormData.driver_biography_az}
+                        onChange={(e) => handleLegalInputChange("driver_biography_az", e.target.value)}
+                        rows={3}
+                        className="w-full h-[116px] px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                        placeholder="Sürücünün bioqrafiyası (AZ)..."
+                      />
+                    )}
+                    {activeLangTab === 'ru' && (
+                      <textarea
+                        value={legalFormData.driver_biography_ru}
+                        onChange={(e) => handleLegalInputChange("driver_biography_ru", e.target.value)}
+                        rows={3}
+                        className="w-full h-[116px] mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                        placeholder="Sürücünün bioqrafiyası (RU)..."
+                      />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <textarea
+                        value={legalFormData.driver_biography_en}
+                        onChange={(e) => handleLegalInputChange("driver_biography_en", e.target.value)}
+                        rows={3}
+                        className="w-full h-[116px] mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                        placeholder="Sürücünün bioqrafiyası (EN)..."
+                      />
+                    )}
                   </div>
 
+                  {/* DRIVER EXPERIENCE FIELDS - Legal Form */}
                   <div>
-                    <textarea
-                      value={legalFormData.driver_experience_az}
-                      onChange={(e) =>
-                        handleLegalInputChange("driver_experience_az", e.target.value)
-                      }
-                      rows={3}
-                      className="w-full h-[116px] px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                      placeholder="Sürücünün təcrübəsi"
-                    />
+                    {activeLangTab === 'az' && (
+                      <textarea
+                        value={legalFormData.driver_experience_az}
+                        onChange={(e) => handleLegalInputChange("driver_experience_az", e.target.value)}
+                        rows={3}
+                        className="w-full h-[116px] px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                        placeholder="Sürücünün təcrübəsi (AZ)..."
+                      />
+                    )}
+                    {activeLangTab === 'ru' && (
+                      <textarea
+                        value={legalFormData.driver_experience_ru}
+                        onChange={(e) => handleLegalInputChange("driver_experience_ru", e.target.value)}
+                        rows={3}
+                        className="w-full h-[116px] mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                        placeholder="Sürücünün təcrübəsi (RU)..."
+                      />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <textarea
+                        value={legalFormData.driver_experience_en}
+                        onChange={(e) => handleLegalInputChange("driver_experience_en", e.target.value)}
+                        rows={3}
+                        className="w-full h-[116px] mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                        placeholder="Sürücünün təcrübəsi (EN)..."
+                      />
+                    )}
                   </div>
 
+                  {/* DESCRIPTION FIELDS - Legal Form */}
                   <div>
-                    <textarea
-                      value={legalFormData.description_az}
-                      onChange={(e) =>
-                        handleLegalInputChange("description_az", e.target.value)
-                      }
-                      rows={3}
-                      className="w-full h-[116px] px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                      placeholder="Təsvir"
-                    />
+                    {activeLangTab === 'az' && (
+                      <textarea
+                        value={legalFormData.description_az}
+                        onChange={(e) => handleLegalInputChange("description_az", e.target.value)}
+                        rows={3}
+                        className="w-full h-[116px] px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                        placeholder="Təsvir (AZ)..."
+                      />
+                    )}
+                    {activeLangTab === 'ru' && (
+                      <textarea
+                        value={legalFormData.description_ru}
+                        onChange={(e) => handleLegalInputChange("description_ru", e.target.value)}
+                        rows={3}
+                        className="w-full h-[116px] mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                        placeholder="Təsvir (RU)..."
+                      />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <textarea
+                        value={legalFormData.description_en}
+                        onChange={(e) => handleLegalInputChange("description_en", e.target.value)}
+                        rows={3}
+                        className="w-full h-[116px] mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
+                        placeholder="Təsvir (EN)..."
+                      />
+                    )}
                   </div>
 
                   {/* Driver Photo Upload */}
@@ -1091,6 +1377,7 @@ export const NewUpdate = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left Column */}
                 <div className="space-y-4">
+                  {/* NAME FIELDS - Entrepreneur Form */}
                   <div>
                             <input
                               type="text"
@@ -1099,10 +1386,29 @@ export const NewUpdate = () => {
                         handleEntrepreneurInputChange("name_az", e.target.value)
                               }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Elanın adı"
+                      placeholder="Elanın adı (AZ)"
                             />
+                            <input
+                      type="text"
+                      value={entrepreneurFormData.name_ru}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("name_ru", e.target.value)
+                      }
+                      className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Elanın adı (RU)"
+                    />
+                    <input
+                      type="text"
+                      value={entrepreneurFormData.name_en}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("name_en", e.target.value)
+                      }
+                      className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Elanın adı (EN)"
+                    />
                   </div>
 
+                  {/* LOAD TYPE FIELDS - Entrepreneur Form */}
                   <div>
                               <input
                       type="text"
@@ -1111,10 +1417,29 @@ export const NewUpdate = () => {
                         handleEntrepreneurInputChange("load_type_az", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Yük növü"
+                      placeholder="Yük növü (AZ)"
+                    />
+                    <input
+                      type="text"
+                      value={entrepreneurFormData.load_type_ru}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("load_type_ru", e.target.value)
+                      }
+                      className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Yük növü (RU)"
+                    />
+                    <input
+                      type="text"
+                      value={entrepreneurFormData.load_type_en}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("load_type_en", e.target.value)
+                      }
+                      className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Yük növü (EN)"
                     />
                   </div>
 
+                  {/* EXIT FROM ADDRESS FIELDS - Entrepreneur Form */}
                   <div>
                     <input
                       type="text"
@@ -1123,7 +1448,25 @@ export const NewUpdate = () => {
                         handleEntrepreneurInputChange("exit_from_address_az", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Çıxış ünvanı"
+                      placeholder="Çıxış ünvanı (AZ)"
+                    />
+                    <input
+                      type="text"
+                      value={entrepreneurFormData.exit_from_address_ru}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("exit_from_address_ru", e.target.value)
+                      }
+                      className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Çıxış ünvanı (RU)"
+                    />
+                    <input
+                      type="text"
+                      value={entrepreneurFormData.exit_from_address_en}
+                      onChange={(e) =>
+                        handleEntrepreneurInputChange("exit_from_address_en", e.target.value)
+                      }
+                      className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Çıxış ünvanı (EN)"
                     />
                   </div>
 
@@ -1257,16 +1600,41 @@ export const NewUpdate = () => {
                     />
                   </div>
 
+                  {/* DESCRIPTION FIELDS - Entrepreneur Form */}
                   <div>
-                    <textarea
-                      value={entrepreneurFormData.description_az}
-                      onChange={(e) =>
-                        handleEntrepreneurInputChange("description_az", e.target.value)
-                      }
-                      rows={4}
-                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
-                      placeholder="Təsvir..."
-                    />
+                    {activeLangTab === 'az' && (
+                      <textarea
+                        value={entrepreneurFormData.description_az}
+                        onChange={(e) =>
+                          handleEntrepreneurInputChange("description_az", e.target.value)
+                        }
+                        rows={4}
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
+                        placeholder="Təsvir (AZ)..."
+                      />
+                    )}
+                    {activeLangTab === 'ru' && (
+                      <textarea
+                        value={entrepreneurFormData.description_ru}
+                        onChange={(e) =>
+                          handleEntrepreneurInputChange("description_ru", e.target.value)
+                        }
+                        rows={4}
+                        className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
+                        placeholder="Təsvir (RU)..."
+                      />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <textarea
+                        value={entrepreneurFormData.description_en}
+                        onChange={(e) =>
+                          handleEntrepreneurInputChange("description_en", e.target.value)
+                        }
+                        rows={4}
+                        className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
+                        placeholder="Təsvir (EN)..."
+                      />
+                    )}
                   </div>
 
                   <div className="mt-[18px]">

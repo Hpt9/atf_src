@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useNavigate, Link } from 'react-router-dom';
@@ -8,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { IoPerson, IoMail, IoCall, IoLockClosed, IoEye, IoEyeOff, IoCheckmarkCircle, IoBusiness, IoCar, IoLocation, IoCreate, IoTrash } from 'react-icons/io5';
 import { FaPlus } from "react-icons/fa";
 import DEFAULT_AVATAR from '../assets/images/user_avatar.avif';
-
+import AdvertEditForm from "../components/AdvertEditForm";
 const ProfilePage = () => {
   const getPhotoUrl = (path) => {
     if (!path) return null;
@@ -20,6 +21,7 @@ const ProfilePage = () => {
   const { token } = useAuth();
   const { language } = useLanguageStore();
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [activeAdvertLangTab, setActiveAdvertLangTab] = useState('az');
   const [isEditingAdvert, setIsEditingAdvert] = useState(null); // null or advert ID
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -28,17 +30,17 @@ const ProfilePage = () => {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [userData, setUserData] = useState(null);
-  
+
   // Advert editing states
   const [editingAdvertData, setEditingAdvertData] = useState(null);
   const [isSubmittingAdvert, setIsSubmittingAdvert] = useState(false);
-  
+
   // Branch editing states
   const [editingBranchData, setEditingBranchData] = useState(null);
   const [isEditingBranch, setIsEditingBranch] = useState(null);
   const [isSubmittingBranch, setIsSubmittingBranch] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
-  
+
   // Add branch states
   const [showAddBranchModal, setShowAddBranchModal] = useState(false);
   const [addBranchData, setAddBranchData] = useState({
@@ -229,7 +231,7 @@ const ProfilePage = () => {
           'Accept': 'application/json'
         }
       });
-      
+
       console.log('User data fetched:', response.data);
       const userData = response.data?.data || null;
       setUserData(userData);
@@ -247,7 +249,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const loadUserData = async () => {
       const userData = await fetchUserData();
-      
+
       if (userData) {
         // Format the phone number when loading user data
         const formattedPhone = userData.phone ? formatPhoneNumber(userData.phone) : '';
@@ -269,13 +271,13 @@ const ProfilePage = () => {
   const formatPhoneNumber = (value) => {
     // Remove all non-digit characters
     const number = value.replace(/\D/g, '');
-    
+
     // Return empty if no input
     if (number.length === 0) return '';
-    
+
     // Start building the formatted number
     let formatted = '+';
-    
+
     // Add the country code
     if (number.length >= 3) {
       formatted += number.slice(0, 3);
@@ -283,7 +285,7 @@ const ProfilePage = () => {
     } else {
       return formatted + number;
     }
-    
+
     // Add the operator code
     if (number.length >= 5) {
       formatted += number.slice(3, 5);
@@ -291,7 +293,7 @@ const ProfilePage = () => {
     } else {
       return formatted + number.slice(3);
     }
-    
+
     // Add the first part of subscriber number
     if (number.length >= 8) {
       formatted += number.slice(5, 8);
@@ -299,7 +301,7 @@ const ProfilePage = () => {
     } else {
       return formatted + number.slice(5);
     }
-    
+
     // Add the second part
     if (number.length >= 10) {
       formatted += number.slice(8, 10);
@@ -307,20 +309,20 @@ const ProfilePage = () => {
     } else {
       return formatted + number.slice(8);
     }
-    
+
     // Add the last part
     if (number.length >= 12) {
       formatted += number.slice(10, 12);
     } else {
       return formatted + number.slice(10);
     }
-    
+
     return formatted;
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Special handling for phone number formatting
     if (name === 'phone') {
       const formattedNumber = formatPhoneNumber(value);
@@ -389,10 +391,10 @@ const ProfilePage = () => {
       if (response.data) {
         // Refresh user data after successful update
         await fetchUserData();
-        
+
         toast.success(texts.toastMessages.updateSuccess[language] || texts.toastMessages.updateSuccess.az);
         setIsEditingProfile(false);
-        
+
         // Clear password fields locally (not sent in this request)
         setFormData(prev => ({
           ...prev,
@@ -460,16 +462,16 @@ const ProfilePage = () => {
   // Advert update functions
   const updateAdvert = async (advertData, userType, advertSlug) => {
     const API_URL = `https://atfplatform.tw1.ru/api/adverts/update/${advertSlug}`;
-    
+
     console.log("=== ADVERT UPDATE DEBUG ===");
     console.log("API URL:", API_URL);
     console.log("User Type:", userType);
     console.log("Advert Slug:", advertSlug);
     console.log("Full Advert Data:", advertData);
-    
+
     // Create FormData object
     const formDataToSend = new FormData();
-    
+
     if (userType === "individual") {
       // Individual form - only fill relevant fields, others null
       formDataToSend.append("capacity", advertData.capacity || "0");
@@ -493,15 +495,15 @@ const ProfilePage = () => {
       formDataToSend.append("description_az", advertData.description_az || "");
       formDataToSend.append("description_en", advertData.description_en || "");
       formDataToSend.append("description_ru", advertData.description_ru || "");
-      
+
       // Add photos
       advertData.photos.forEach((photo, index) => {
         formDataToSend.append("photos[]", photo);
       });
-      
+
       // Set null for fields not used in individual
       // Note: Don't append null values, just skip them for nullable fields
-      
+
     } else if (userType === "legal_entity") {
       // Legal form - fill all fields
       formDataToSend.append("capacity", advertData.capacity || "0");
@@ -528,22 +530,22 @@ const ProfilePage = () => {
       formDataToSend.append("driver_full_name_az", advertData.driver_full_name_az || "");
       formDataToSend.append("driver_biography_az", advertData.driver_biography_az || "");
       formDataToSend.append("driver_experience_az", advertData.driver_experience_az || "");
-      
+
       // Add driver photo
       if (advertData.driver_photo) {
         formDataToSend.append("driver_photo", advertData.driver_photo);
       }
-      
+
       // Add driver certificates
       advertData.driver_certificates.forEach((cert, index) => {
         formDataToSend.append("driver_certificates[]", cert);
       });
-      
+
       // Add photos
       advertData.photos.forEach((photo, index) => {
         formDataToSend.append("photos[]", photo);
       });
-      
+
     } else if (userType === "entrepreneur") {
       // Entrepreneur form - only fill relevant fields, others null
       formDataToSend.append("capacity", advertData.capacity || "0");
@@ -565,12 +567,12 @@ const ProfilePage = () => {
       formDataToSend.append("description_az", advertData.description_az || "");
       formDataToSend.append("description_en", advertData.description_en || "");
       formDataToSend.append("description_ru", advertData.description_ru || "");
-      
+
       // Add photos
       advertData.photos.forEach((photo, index) => {
         formDataToSend.append("photos[]", photo);
       });
-      
+
       // Set null for fields not used in entrepreneur
       // Note: Don't append null values, just skip them for nullable fields
     }
@@ -580,22 +582,22 @@ const ProfilePage = () => {
       toast.error("Tutum mütləq doldurulmalıdır");
       return;
     }
-    
+
     if (!advertData.name_az || advertData.name_az.trim() === "") {
       toast.error("Elanın adı (AZ) mütləq doldurulmalıdır");
       return;
     }
-    
+
     if (!advertData.load_type_az || advertData.load_type_az.trim() === "") {
       toast.error("Yük növü (AZ) mütləq doldurulmalıdır");
       return;
     }
-    
+
     if (!advertData.exit_from_address_az || advertData.exit_from_address_az.trim() === "") {
       toast.error("Çıxış ünvanı (AZ) mütləq doldurulmalıdır");
       return;
     }
-    
+
     if (!advertData.description_az || advertData.description_az.trim() === "") {
       toast.error("Təsvir (AZ) mütləq doldurulmalıdır");
       return;
@@ -620,7 +622,7 @@ const ProfilePage = () => {
       console.log("Response:", response);
       console.log("Response status:", response.data);
       console.log("Response headers:", Object.fromEntries(response.headers.entries()));
-      
+
       if (response.ok) {
         const result = await response.json();
         console.log("Advert updated successfully:", result);
@@ -645,14 +647,14 @@ const ProfilePage = () => {
   // Branch update and delete functions
   const updateBranch = async (branchData, branchSlug) => {
     const API_URL = `https://atfplatform.tw1.ru/api/branches/${branchSlug}`;
-    
+
     // Create FormData object
     const formDataToSend = new FormData();
-    
+
     formDataToSend.append("name", branchData.name || "");
     formDataToSend.append("description", branchData.description || "");
     formDataToSend.append("status", branchData.status || "active");
-    
+
     // Add photo if provided
     if (branchData.photo) {
       formDataToSend.append("photo", branchData.photo);
@@ -717,14 +719,14 @@ const ProfilePage = () => {
 
   const addBranch = async (branchData) => {
     const API_URL = 'https://atfplatform.tw1.ru/api/branches';
-    
+
     // Create FormData object
     const formDataToSend = new FormData();
-    
+
     formDataToSend.append("name", branchData.name || "");
     formDataToSend.append("description", branchData.description || "");
     formDataToSend.append("status", branchData.status || "active");
-    
+
     // Add photo if provided
     if (branchData.photo) {
       formDataToSend.append("photo", branchData.photo);
@@ -886,8 +888,14 @@ const ProfilePage = () => {
         truck_type_id: advert.truck_type_id || "",
         truck_registration_number: advert.truck_registration_number || "",
         driver_full_name_az: advert.driver_full_name || "",
+        driver_full_name_en: advert.driver_full_name || "",
+        driver_full_name_ru: advert.driver_full_name || "",
         driver_biography_az: advert.driver_biography || "",
+        driver_biography_en: advert.driver_biography || "",
+        driver_biography_ru: advert.driver_biography || "",
         driver_experience_az: advert.driver_experience || "",
+        driver_experience_en: advert.driver_experience || "",
+        driver_experience_ru: advert.driver_experience || "",
         driver_photo: null,
         driver_certificates: [],
       });
@@ -947,7 +955,7 @@ const ProfilePage = () => {
   if (initialLoading) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-303px)]">
-        <motion.div 
+        <motion.div
           className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2E92A0]"
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -959,7 +967,7 @@ const ProfilePage = () => {
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100 py-8 min-h-[calc(100vh-303px)]">
       <div className="max-w-4xl mx-auto px-4">
-        <motion.div 
+        <motion.div
           className="bg-white rounded-2xl shadow-xl p-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -985,7 +993,7 @@ const ProfilePage = () => {
                 </p>
               </div>
             </div>
-            
+
             {!isEditingProfile && (
               <motion.button
                 type="button"
@@ -998,11 +1006,11 @@ const ProfilePage = () => {
               </motion.button>
             )}
           </div>
-          
+
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Avatar */}
-              <motion.div 
+              <motion.div
                 className="space-y-2 md:col-span-2"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -1021,23 +1029,23 @@ const ProfilePage = () => {
                       onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
                     />
                   </div> */}
-                <input
-                  type="file"
-                  accept="image/*"
-                  disabled={!isEditingProfile}
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setAvatarFile(e.target.files[0]);
-                    } else {
-                      setAvatarFile(null);
-                    }
-                  }}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:border-gray-300"
-                />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={!isEditingProfile}
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setAvatarFile(e.target.files[0]);
+                      } else {
+                        setAvatarFile(null);
+                      }
+                    }}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:border-gray-300"
+                  />
                 </div>
               </motion.div>
               {/* First Name */}
-              <motion.div 
+              <motion.div
                 className="space-y-2"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -1056,9 +1064,9 @@ const ProfilePage = () => {
                   className="w-full px-4 py-4 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 disabled:bg-gray-50 disabled:cursor-not-allowed hover:border-gray-300"
                 />
               </motion.div>
-              
+
               {/* Last Name */}
-              <motion.div 
+              <motion.div
                 className="space-y-2"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -1079,7 +1087,7 @@ const ProfilePage = () => {
               </motion.div>
 
               {/* Email */}
-              <motion.div 
+              <motion.div
                 className="space-y-2"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -1100,7 +1108,7 @@ const ProfilePage = () => {
               </motion.div>
 
               {/* Phone */}
-              <motion.div 
+              <motion.div
                 className="space-y-2"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -1124,95 +1132,95 @@ const ProfilePage = () => {
               {/* Password fields - only show in edit mode */}
               {isEditingProfile && (
                 <>
-              {/* Old Password (for password change) */}
-              <motion.div 
-                className="space-y-2"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.45 }}
-              >
-                <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <IoLockClosed className="text-[#2E92A0]" />
-                  Köhnə şifrə
-                </label>
-                <div className="relative">
-                  <input
-                    type={showOldPassword ? "text" : "password"}
-                    name="old_password"
-                    value={formData.old_password || ''}
-                    onChange={handleInputChange}
+                  {/* Old Password (for password change) */}
+                  <motion.div
+                    className="space-y-2"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.45 }}
+                  >
+                    <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <IoLockClosed className="text-[#2E92A0]" />
+                      Köhnə şifrə
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showOldPassword ? "text" : "password"}
+                        name="old_password"
+                        value={formData.old_password || ''}
+                        onChange={handleInputChange}
                         className="w-full px-4 py-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 hover:border-gray-300"
-                    placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
-                  />
-                    <button
-                      type="button"
-                      onClick={() => setShowOldPassword(!showOldPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#2E92A0] transition-colors"
-                    >
-                      {showOldPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
-                    </button>
-                </div>
-              </motion.div>
+                        placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowOldPassword(!showOldPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#2E92A0] transition-colors"
+                      >
+                        {showOldPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                      </button>
+                    </div>
+                  </motion.div>
 
-              {/* New Password */}
-              <motion.div 
-                className="space-y-2"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 }}
-              >
-                <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <IoLockClosed className="text-[#2E92A0]" />
-                  {texts.newPassword[language] || texts.newPassword.az}
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
+                  {/* New Password */}
+                  <motion.div
+                    className="space-y-2"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <IoLockClosed className="text-[#2E92A0]" />
+                      {texts.newPassword[language] || texts.newPassword.az}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
                         className="w-full px-4 py-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 hover:border-gray-300"
-                    placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
-                  />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#2E92A0] transition-colors"
-                    >
-                      {showPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
-                    </button>
-                </div>
-              </motion.div>
+                        placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#2E92A0] transition-colors"
+                      >
+                        {showPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                      </button>
+                    </div>
+                  </motion.div>
 
-              {/* Confirm Password */}
-              <motion.div 
-                className="space-y-2"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 }}
-              >
-                <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <IoLockClosed className="text-[#2E92A0]" />
-                  {texts.confirmPassword[language] || texts.confirmPassword.az}
-                </label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    name="password_confirmation"
-                    value={formData.password_confirmation}
-                    onChange={handleInputChange} 
+                  {/* Confirm Password */}
+                  <motion.div
+                    className="space-y-2"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 }}
+                  >
+                    <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <IoLockClosed className="text-[#2E92A0]" />
+                      {texts.confirmPassword[language] || texts.confirmPassword.az}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        name="password_confirmation"
+                        value={formData.password_confirmation}
+                        onChange={handleInputChange}
                         className="w-full px-4 py-4 pr-12 rounded-xl border-2 border-gray-200 focus:border-[#2E92A0] outline-none transition-all duration-300 hover:border-gray-300"
-                    placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
-                  />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#2E92A0] transition-colors"
-                    >
-                      {showConfirmPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
-                    </button>
-                </div>
-              </motion.div>
+                        placeholder={texts.passwordPlaceholder[language] || texts.passwordPlaceholder.az}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#2E92A0] transition-colors"
+                      >
+                        {showConfirmPassword ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                      </button>
+                    </div>
+                  </motion.div>
                 </>
               )}
             </div>
@@ -1220,7 +1228,7 @@ const ProfilePage = () => {
             {/* Password Error */}
             <AnimatePresence>
               {passwordError && (
-                <motion.div 
+                <motion.div
                   className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1239,7 +1247,7 @@ const ProfilePage = () => {
             {/* Action Buttons */}
             <AnimatePresence mode="wait">
               {isEditingProfile ? (
-                <motion.div 
+                <motion.div
                   className="flex justify-end gap-4"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1283,7 +1291,7 @@ const ProfilePage = () => {
                   >
                     {loading ? (
                       <>
-                        <motion.div 
+                        <motion.div
                           className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                           animate={{ rotate: 360 }}
                           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -1307,7 +1315,7 @@ const ProfilePage = () => {
                   >
                     {loading ? (
                       <>
-                        <motion.div 
+                        <motion.div
                           className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                           animate={{ rotate: 360 }}
                           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -1326,9 +1334,9 @@ const ProfilePage = () => {
             </AnimatePresence>
           </form>
         </motion.div>
-        
+
         {/* Separate Adverts Section */}
-        <motion.div 
+        <motion.div
           className="mt-8 bg-white rounded-2xl shadow-xl p-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1338,7 +1346,7 @@ const ProfilePage = () => {
             <IoCar className="text-[#2E92A0]" />
             {texts.adverts[language] || texts.adverts.az}
           </h3>
-          
+
           {userData?.adverts && userData.adverts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {userData.adverts.map((advert, index) => {
@@ -1365,7 +1373,7 @@ const ProfilePage = () => {
                     transition={{ delay: 0.1 * index }}
                   >
                     {/* Clickable Link Wrapper */}
-                    <Link 
+                    <Link
                       to={getAdvertRoute(userData?.role, advert.slug)}
                       className="block"
                       onClick={(e) => {
@@ -1382,28 +1390,28 @@ const ProfilePage = () => {
                             Bax →
                           </span>
                         </h4>
-                        
+
                         <div className="space-y-2 text-sm">
                           <div>
                             <span className="text-gray-600">Yük növü:</span>
                             <span className="ml-2 font-medium">{advert.load_type?.[language] || advert.load_type?.az || '-'}</span>
                           </div>
-                          
+
                           <div>
                             <span className="text-gray-600">Tutum:</span>
                             <span className="ml-2 font-medium">{advert.capacity || '-'}</span>
                           </div>
-                          
+
                           <div>
                             <span className="text-gray-600">Haradan:</span>
                             <span className="ml-2 font-medium">{advert.exit_from_address?.[language] || advert.exit_from_address?.az || '-'}</span>
                           </div>
-                          
+
                           <div>
                             <span className="text-gray-600">Tarix:</span>
                             <span className="ml-2 font-medium">{advert.reach_from_address || '-'}</span>
                           </div>
-                          
+
                           {advert.truck_registration_number && (
                             <div>
                               <span className="text-gray-600">Tır nömrəsi:</span>
@@ -1413,10 +1421,10 @@ const ProfilePage = () => {
                         </div>
                       </div>
                     </Link>
-                    
+
                     {/* Edit Icon - positioned outside the link */}
                     <div className="absolute top-4 right-4">
-                      <button 
+                      <button
                         className="edit-button p-2 text-gray-400 hover:text-[#2E92A0] transition-colors bg-white rounded-full shadow-sm"
                         onClick={(e) => {
                           e.preventDefault();
@@ -1437,338 +1445,30 @@ const ProfilePage = () => {
               <p className="text-gray-600">{texts.noAdverts[language] || texts.noAdverts.az}</p>
             </div>
           )}
-          
+
           {/* Advert Edit Form */}
           {isEditingAdvert && editingAdvertData && (
-            <motion.div 
-              className="mt-6 bg-blue-50 rounded-xl p-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
+            <motion.div>
               <h3 className="text-lg font-bold text-gray-800 mb-4">Elanı redaktə et</h3>
-              
-              <form onSubmit={handleAdvertSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Common fields for all user types */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Elanın adı (AZ)
-                    </label>
-                    <input
-                      type="text"
-                      value={editingAdvertData.name_az || ""}
-                      onChange={(e) => handleAdvertInputChange("name_az", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Elanın adı"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Elanın adı (EN)
-                    </label>
-                    <input
-                      type="text"
-                      value={editingAdvertData.name_en || ""}
-                      onChange={(e) => handleAdvertInputChange("name_en", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Advert name"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Elanın adı (RU)
-                    </label>
-                    <input
-                      type="text"
-                      value={editingAdvertData.name_ru || ""}
-                      onChange={(e) => handleAdvertInputChange("name_ru", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Название объявления"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Yük növü (AZ)
-                    </label>
-                    <input
-                      type="text"
-                      value={editingAdvertData.load_type_az || ""}
-                      onChange={(e) => handleAdvertInputChange("load_type_az", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Yük növü"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tutum
-                    </label>
-                    <input
-                      type="text"
-                      value={editingAdvertData.capacity || ""}
-                      onChange={(e) => handleAdvertInputChange("capacity", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Tutum"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Vahid ID
-                    </label>
-                    <input
-                      type="text"
-                      value={editingAdvertData.unit_id || ""}
-                      onChange={(e) => handleAdvertInputChange("unit_id", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Vahid ID"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Çatış ünvanı
-                    </label>
-                    <input
-                      type="text"
-                      value={editingAdvertData.reach_from_address || ""}
-                      onChange={(e) => handleAdvertInputChange("reach_from_address", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Çatış ünvanı"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Haradan ID
-                    </label>
-                    <input
-                      type="text"
-                      value={editingAdvertData.from_id || ""}
-                      onChange={(e) => handleAdvertInputChange("from_id", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Haradan ID"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Hara ID
-                    </label>
-                    <input
-                      type="text"
-                      value={editingAdvertData.to_id || ""}
-                      onChange={(e) => handleAdvertInputChange("to_id", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Hara ID"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Bitmə tarixi
-                    </label>
-                    <input
-                      type="date"
-                      value={editingAdvertData.expires_at || ""}
-                      onChange={(e) => handleAdvertInputChange("expires_at", e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                    />
-                  </div>
-
-                  {/* Individual and Legal specific fields */}
-                  {(userData?.role === "individual" || userData?.role === "legal_entity") && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Boş yer
-                        </label>
-                        <input
-                          type="text"
-                          value={editingAdvertData.empty_space || ""}
-                          onChange={(e) => handleAdvertInputChange("empty_space", e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                          placeholder="Boş yer"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Tır növü ID
-                        </label>
-                        <input
-                          type="text"
-                          value={editingAdvertData.truck_type_id || ""}
-                          onChange={(e) => handleAdvertInputChange("truck_type_id", e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                          placeholder="Tır növü ID"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Tır qeydiyyat nömrəsi
-                        </label>
-                        <input
-                          type="text"
-                          value={editingAdvertData.truck_registration_number || ""}
-                          onChange={(e) => handleAdvertInputChange("truck_registration_number", e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                          placeholder="Tır qeydiyyat nömrəsi"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {/* Legal entity specific fields */}
-                  {userData?.role === "legal_entity" && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Sürücünün adı soyadı
-                        </label>
-                        <input
-                          type="text"
-                          value={editingAdvertData.driver_full_name_az || ""}
-                          onChange={(e) => handleAdvertInputChange("driver_full_name_az", e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                          placeholder="Sürücünün adı soyadı"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Sürücünün bioqrafiyası
-                        </label>
-                        <textarea
-                          value={editingAdvertData.driver_biography_az || ""}
-                          onChange={(e) => handleAdvertInputChange("driver_biography_az", e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                          rows={3}
-                          placeholder="Sürücünün bioqrafiyası"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Sürücünün təcrübəsi
-                        </label>
-                        <textarea
-                          value={editingAdvertData.driver_experience_az || ""}
-                          onChange={(e) => handleAdvertInputChange("driver_experience_az", e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                          rows={3}
-                          placeholder="Sürücünün təcrübəsi"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {/* Entrepreneur specific fields */}
-                  {userData?.role === "entrepreneur" && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tır növü ID
-                      </label>
-                      <input
-                        type="text"
-                        value={editingAdvertData.truck_type_id || ""}
-                        onChange={(e) => handleAdvertInputChange("truck_type_id", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                        placeholder="Tır növü ID"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* File uploads */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Şəkillər
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={(e) => handleAdvertFileChange("photos", e.target.files)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                    />
-                    {editingAdvertData.photos.length > 0 && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        Seçilmiş: {editingAdvertData.photos.length} şəkil
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Legal entity specific file uploads */}
-                  {userData?.role === "legal_entity" && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Sürücü şəkli
-                        </label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleAdvertFileChange("driver_photo", e.target.files)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Sürücü sertifikatları
-                        </label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          onChange={(e) => handleAdvertFileChange("driver_certificates", e.target.files)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                        />
-                        {editingAdvertData.driver_certificates.length > 0 && (
-                          <p className="text-sm text-gray-600 mt-1">
-                            Seçilmiş: {editingAdvertData.driver_certificates.length} sənəd
-                          </p>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex justify-end gap-4">
-                <button
-                    type="button"
-                    onClick={() => {
-                      setIsEditingAdvert(null);
-                      setEditingAdvertData(null);
-                    }}
-                    className="px-6 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                  >
-                    Ləğv et
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmittingAdvert}
-                    className="px-6 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSubmittingAdvert ? "Yenilənir..." : "Yadda saxla"}
-                </button>
-              </div>
-              </form>
+              <AdvertEditForm
+                editingAdvertData={editingAdvertData}
+                handleAdvertInputChange={handleAdvertInputChange}
+                handleAdvertFileChange={handleAdvertFileChange}
+                handleAdvertSubmit={handleAdvertSubmit}
+                isSubmittingAdvert={isSubmittingAdvert}
+                setIsEditingAdvert={setIsEditingAdvert}
+                setEditingAdvertData={setEditingAdvertData}
+                activeAdvertLangTab={activeAdvertLangTab}
+                setActiveAdvertLangTab={setActiveAdvertLangTab}
+                userData={userData}
+              />
             </motion.div>
           )}
         </motion.div>
-        
+
         {/* Separate Branches Section (for Legal Entities) */}
         {userData?.role === 'legal_entity' && (
-          <motion.div 
+          <motion.div
             className="mt-8 bg-white rounded-2xl shadow-xl p-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1790,67 +1490,67 @@ const ProfilePage = () => {
                 <span className="text-sm font-medium">Filial əlavə et</span>
               </motion.button> */}
             </div>
-            
+
             {userData?.branches && userData.branches.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {userData.branches.map((branch, index) => {
                   console.log("Branch data:", branch);
                   return (
-                  <motion.div
-                    key={branch.slug}
-                    className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow relative"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 * index }}
-                  >
-                    {/* Edit and Delete Icons */}
-                    <div className="absolute top-4 right-4 flex gap-2">
-                      <button 
-                        className="p-2 text-gray-400 hover:text-[#2E92A0] transition-colors bg-white rounded-full shadow-sm"
-                        onClick={() => handleEditBranch(branch)}
-                      >
-                        <IoCreate size={18} />
-                      </button>
-                      <button 
-                        className="p-2 text-gray-400 hover:text-red-500 transition-colors bg-white rounded-full shadow-sm"
-                        onClick={() => setShowDeleteConfirm(branch)}
-                      >
-                        <IoTrash size={18} />
-                      </button>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      {branch.photo && (
-                        <div className="w-full h-36 overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
-                          <img
-                            src={getPhotoUrl(branch.photo)}
-                            alt={branch.name?.[language] || branch.name?.az || 'Branch photo'}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                      )}
-                      <h4 className="font-bold text-gray-800 text-lg">
-                        {branch.name?.[language] || branch.name?.az || 'Unnamed Branch'}
-                      </h4>
-                      
-                      {branch.description && (
-                        <p className="text-gray-600 text-sm">
-                          {branch.description?.[language] || branch.description?.az}
-                        </p>
-                      )}
-                    </div>
-                  </motion.div>
+                    <motion.div
+                      key={branch.slug}
+                      className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow relative"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 * index }}
+                    >
+                      {/* Edit and Delete Icons */}
+                      <div className="absolute top-4 right-4 flex gap-2">
+                        <button
+                          className="p-2 text-gray-400 hover:text-[#2E92A0] transition-colors bg-white rounded-full shadow-sm"
+                          onClick={() => handleEditBranch(branch)}
+                        >
+                          <IoCreate size={18} />
+                        </button>
+                        <button
+                          className="p-2 text-gray-400 hover:text-red-500 transition-colors bg-white rounded-full shadow-sm"
+                          onClick={() => setShowDeleteConfirm(branch)}
+                        >
+                          <IoTrash size={18} />
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        {branch.photo && (
+                          <div className="w-full h-36 overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
+                            <img
+                              src={getPhotoUrl(branch.photo)}
+                              alt={branch.name?.[language] || branch.name?.az || 'Branch photo'}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
+                        )}
+                        <h4 className="font-bold text-gray-800 text-lg">
+                          {branch.name?.[language] || branch.name?.az || 'Unnamed Branch'}
+                        </h4>
+
+                        {branch.description && (
+                          <p className="text-gray-600 text-sm">
+                            {branch.description?.[language] || branch.description?.az}
+                          </p>
+                        )}
+                      </div>
+                    </motion.div>
                   );
                 })}
                 <motion.div
-                    className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow relative flex justify-center items-center"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    onClick={() => setShowAddBranchModal(true)}
-                  >
-                    <FaPlus className='text-[#2E92A0] h-5 w-5'/>
-                  </motion.div>
+                  className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow relative flex justify-center items-center"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => setShowAddBranchModal(true)}
+                >
+                  <FaPlus className='text-[#2E92A0] h-5 w-5' />
+                </motion.div>
               </div>
             ) : (
               <div className="text-center py-12 bg-gray-50 rounded-xl">
@@ -1862,13 +1562,13 @@ const ProfilePage = () => {
             {/* Branch Edit Modal */}
             {console.log("Branch edit form check:", { isEditingBranch, editingBranchData, userRole: userData?.role })}
             {isEditingBranch && editingBranchData && (
-              <motion.div 
+              <motion.div
                 className="fixed inset-0 bg-[rgba(0,0,0,0.3)] flex items-center justify-center z-[1002] p-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                <motion.div 
+                <motion.div
                   className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -1877,119 +1577,119 @@ const ProfilePage = () => {
                   <h3 className="text-lg font-bold text-gray-800 mb-4">Filialı redaktə et</h3>
 
                   <form onSubmit={handleBranchSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Filialın adı
-                      </label>
-                      <input
-                        type="text"
-                        value={editingBranchData.name || ""}
-                        onChange={(e) => handleBranchInputChange("name", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                        placeholder="Filialın adı"
-                      />
-                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Filialın adı
+                        </label>
+                        <input
+                          type="text"
+                          value={editingBranchData.name || ""}
+                          onChange={(e) => handleBranchInputChange("name", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                          placeholder="Filialın adı"
+                        />
+                      </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Status
-                      </label>
-                      <select
-                        value={editingBranchData.status || "active"}
-                        onChange={(e) => handleBranchInputChange("status", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      >
-                        <option value="active">Aktiv</option>
-                        <option value="passive">Passiv</option>
-                      </select>
-                    </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Status
+                        </label>
+                        <select
+                          value={editingBranchData.status || "active"}
+                          onChange={(e) => handleBranchInputChange("status", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                        >
+                          <option value="active">Aktiv</option>
+                          <option value="passive">Passiv</option>
+                        </select>
+                      </div>
 
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Təsvir
-                      </label>
-                      <textarea
-                        value={editingBranchData.description || ""}
-                        onChange={(e) => handleBranchInputChange("description", e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                        rows={4}
-                        placeholder="Filialın təsviri"
-                      />
-                    </div>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Təsvir
+                        </label>
+                        <textarea
+                          value={editingBranchData.description || ""}
+                          onChange={(e) => handleBranchInputChange("description", e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                          rows={4}
+                          placeholder="Filialın təsviri"
+                        />
+                      </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Şəkil
-                      </label>
-                      {(() => {
-                        const branch = userData?.branches?.find(
-                          (b) => b.id === isEditingBranch || b.slug === isEditingBranch
-                        );
-                        const photoUrl = getPhotoUrl(branch?.photo);
-                        return photoUrl ? (
-                          <div className="mb-3">
-                            <div className="w-full h-36 overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
-                              <img
-                                src={photoUrl}
-                                alt={branch?.name?.[language] || branch?.name?.az || 'Branch photo'}
-                                className="w-full h-full object-cover"
-                              />
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Şəkil
+                        </label>
+                        {(() => {
+                          const branch = userData?.branches?.find(
+                            (b) => b.id === isEditingBranch || b.slug === isEditingBranch
+                          );
+                          const photoUrl = getPhotoUrl(branch?.photo);
+                          return photoUrl ? (
+                            <div className="mb-3">
+                              <div className="w-full h-36 overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
+                                <img
+                                  src={photoUrl}
+                                  alt={branch?.name?.[language] || branch?.name?.az || 'Branch photo'}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">Mövcud şəkil</p>
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">Mövcud şəkil</p>
-                          </div>
-                        ) : null;
-                      })()}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleBranchFileChange("photo", e.target.files)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      />
-                      {editingBranchData.photo && (
-                        <p className="text-sm text-gray-600 mt-1">
-                          Seçilmiş: {editingBranchData.photo.name}
-                        </p>
-                      )}
+                          ) : null;
+                        })()}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleBranchFileChange("photo", e.target.files)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
+                        />
+                        {editingBranchData.photo && (
+                          <p className="text-sm text-gray-600 mt-1">
+                            Seçilmiş: {editingBranchData.photo.name}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Action buttons */}
-                  <div className="flex justify-end gap-4">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsEditingBranch(null);
-                        setEditingBranchData(null);
-                      }}
-                      className="px-6 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                    >
-                      Ləğv et
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={isSubmittingBranch}
-                      className="px-6 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSubmittingBranch ? "Yenilənir..." : "Yadda saxla"}
-                    </button>
-                  </div>
-                </form>
+                    {/* Action buttons */}
+                    <div className="flex justify-end gap-4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingBranch(null);
+                          setEditingBranchData(null);
+                        }}
+                        className="px-6 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                      >
+                        Ləğv et
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmittingBranch}
+                        className="px-6 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSubmittingBranch ? "Yenilənir..." : "Yadda saxla"}
+                      </button>
+                    </div>
+                  </form>
                 </motion.div>
               </motion.div>
-        )}
+            )}
           </motion.div>
         )}
 
         {/* Delete Confirmation Dialog */}
         {showDeleteConfirm && (
-          <motion.div 
+          <motion.div
             className="fixed inset-0 bg-[rgba(0,0,0,0.3)] flex items-center justify-center z-[1002]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.div 
+            <motion.div
               className="bg-white rounded-xl p-6 max-w-md w-full mx-4"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -1997,10 +1697,10 @@ const ProfilePage = () => {
             >
               <h3 className="text-lg font-bold text-gray-800 mb-4">Filialı sil</h3>
               <p className="text-gray-600 mb-6">
-                "{showDeleteConfirm.name?.[language] || showDeleteConfirm.name?.az}" filialını silmək istədiyinizə əminsiniz? 
+                "{showDeleteConfirm.name?.[language] || showDeleteConfirm.name?.az}" filialını silmək istədiyinizə əminsiniz?
                 Bu əməliyyat geri alına bilməz.
               </p>
-              
+
               <div className="flex justify-end gap-4">
                 <button
                   onClick={() => setShowDeleteConfirm(null)}
@@ -2023,13 +1723,13 @@ const ProfilePage = () => {
 
         {/* Add Branch Modal */}
         {showAddBranchModal && (
-          <motion.div 
+          <motion.div
             className="fixed inset-0 bg-[rgba(0,0,0,0.3)] flex items-center justify-center z-[1002] p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.div 
+            <motion.div
               className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -2039,7 +1739,7 @@ const ProfilePage = () => {
                 <IoLocation className="text-[#2E92A0]" />
                 Filial Əlavə Et
               </h3>
-              
+
               <form onSubmit={handleAddBranchSubmit} className="space-y-6">
                 {/* Image Section */}
                 <div>
@@ -2137,7 +1837,7 @@ const ProfilePage = () => {
                   >
                     {isSubmittingAddBranch ? (
                       <>
-                        <motion.div 
+                        <motion.div
                           className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
                           animate={{ rotate: 360 }}
                           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -2157,7 +1857,7 @@ const ProfilePage = () => {
           </motion.div>
         )}
       </div>
-    </div>
+    </div >
   );
 };
 
