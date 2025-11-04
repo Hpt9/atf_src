@@ -76,7 +76,7 @@ const LegalIndex = () => {
                 <div className="text-[14px] text-[#6B7280]">{c.email}</div>
                 <div className="text-[14px] text-[#6B7280]">{c.phone}</div>
                 <div className="text-[13px] text-[#3F3F3F]">Yük maşınları: {c.truck_count ?? 0}</div>
-                <div className="text-[13px] text-[#3F3F3F]">Boş: {c.empty_truck_count ?? 0}</div>
+                <div className="text-[13px] text-[#3F3F3F]">Boş yük maşınları: {c.empty_truck_count ?? 0}</div>
               </div>
             </Link>
           ))}

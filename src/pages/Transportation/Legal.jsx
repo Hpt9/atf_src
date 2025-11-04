@@ -159,7 +159,16 @@ export const Kataloq = () => {
           body: JSON.stringify(body || {}),
           signal: controller.signal
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+          if (res.status === 404) {
+            // No items found: show friendly empty state (not an error)
+            setItems([]);
+            setMeta(null);
+            setNoResultsMsg('');
+            return;
+          }
+          throw new Error(`HTTP ${res.status}`);
+        }
         const json = await res.json();
         const list = Array.isArray(json?.data) ? json.data : [];
         setItems(list);
@@ -330,7 +339,9 @@ export const Kataloq = () => {
                           type="number" 
                           placeholder="Tutum" 
                           value={capacity}
-                          onChange={(e)=>setCapacity(e.target.value)}
+                          min={0}
+                          onKeyDown={(e)=>{ if (["-","+","e","E"].includes(e.key)) e.preventDefault(); }}
+                          onChange={(e)=>{ const v = e.target.value; if (v === "") { setCapacity(""); return; } const n = Math.max(0, Number(v)); setCapacity(Number.isNaN(n) ? "" : String(n)); }}
                           className="flex-1 h-full px-4 py-2 text-[#3F3F3F] text-[15px] focus:outline-none border-none"
                         />
                         <div className="w-px h-6 bg-[#E7E7E7]"></div>

@@ -17,6 +17,20 @@ const ProfilePage = () => {
     const cleaned = path.replace(/^\/?(storage\/)?/, '');
     return `https://atfplatform.tw1.ru/storage/${cleaned}`;
   };
+  const getAdvertFirstPhoto = (photos) => {
+    if (!photos) return null;
+    if (Array.isArray(photos)) return photos[0] || null;
+    if (typeof photos === 'string') {
+      try {
+        const parsed = JSON.parse(photos);
+        if (Array.isArray(parsed)) return parsed[0] || null;
+        if (typeof parsed === 'string') return parsed;
+      } catch (_) {
+        if (/^https?:\/\//i.test(photos)) return photos;
+      }
+    }
+    return null;
+  };
   const navigate = useNavigate();
   const { token } = useAuth();
   const { language } = useLanguageStore();
@@ -593,22 +607,22 @@ const ProfilePage = () => {
     }
 
     if (!advertData.name_az || advertData.name_az.trim() === "") {
-      toast.error("Elanın adı (AZ) mütləq doldurulmalıdır");
+      toast.error("Elanın adı  mütləq doldurulmalıdır");
       return;
     }
 
     if (!advertData.load_type_az || advertData.load_type_az.trim() === "") {
-      toast.error("Yük növü (AZ) mütləq doldurulmalıdır");
+      toast.error("Yük növü  mütləq doldurulmalıdır");
       return;
     }
 
     if (!advertData.exit_from_address_az || advertData.exit_from_address_az.trim() === "") {
-      toast.error("Çıxış ünvanı (AZ) mütləq doldurulmalıdır");
+      toast.error("Çıxış ünvanı  mütləq doldurulmalıdır");
       return;
     }
 
     if (!advertData.description_az || advertData.description_az.trim() === "") {
-      toast.error("Təsvir (AZ) mütləq doldurulmalıdır");
+      toast.error("Təsvir  mütləq doldurulmalıdır");
       return;
     }
 
@@ -851,9 +865,14 @@ const ProfilePage = () => {
 
   // Handle branch file changes
   const handleBranchFileChange = (field, files) => {
+    const file = files && files[0];
+    if (file && file.size > 1024 * 1024) {
+      toast.error('Şəkilin maksimal ölçüsü 1024KB olmalıdır');
+      return;
+    }
     setEditingBranchData(prev => ({
       ...prev,
-      [field]: files[0],
+      [field]: file || null,
     }));
   };
 
@@ -861,7 +880,7 @@ const ProfilePage = () => {
   const handleAddBranchSubmit = async (e) => {
     e.preventDefault();
     if (!addBranchData.name_az.trim()) {
-      toast.error("Filialın adı (AZ) mütləq doldurulmalıdır");
+      toast.error("Filialın adı  mütləq doldurulmalıdır");
       return;
     }
 
@@ -883,9 +902,14 @@ const ProfilePage = () => {
 
   // Handle add branch file changes
   const handleAddBranchFileChange = (field, files) => {
+    const file = files && files[0];
+    if (file && file.size > 1024 * 1024) {
+      toast.error('Şəkilin maksimal ölçüsü 1024KB olmalıdır');
+      return;
+    }
     setAddBranchData(prev => ({
       ...prev,
-      [field]: files[0],
+      [field]: file || null,
     }));
   };
 
@@ -1074,7 +1098,13 @@ const ProfilePage = () => {
                     disabled={!isEditingProfile}
                     onChange={(e) => {
                       if (e.target.files && e.target.files[0]) {
-                        setAvatarFile(e.target.files[0]);
+                        const file = e.target.files[0];
+                        if (file.size > 1024 * 1024) {
+                          toast.error('Şəkilin maksimal ölçüsü 1024KB olmalıdır');
+                          e.target.value = '';
+                          return;
+                        }
+                        setAvatarFile(file);
                       } else {
                         setAvatarFile(null);
                       }
@@ -1403,6 +1433,7 @@ const ProfilePage = () => {
                   }
                 };
 
+                const image = getAdvertFirstPhoto(advert.photos);
                 return (
                   <motion.div
                     key={advert.id}
@@ -1423,6 +1454,11 @@ const ProfilePage = () => {
                       }}
                     >
                       <div className="space-y-3">
+                        {image && (
+                          <div className="w-full h-40 overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
+                            <img src={image} alt={advert.name?.[language] || advert.name?.az || 'Advert'} className="w-full h-full object-cover" />
+                          </div>
+                        )}
                         <h4 className="font-bold text-gray-800 text-lg group-hover:text-[#2E92A0] transition-colors flex items-center justify-between">
                           <span>{advert.name?.[language] || advert.name?.az || 'Unnamed Advert'}</span>
                           <span className="text-xs text-gray-400 group-hover:text-[#2E92A0] transition-colors">
@@ -1632,42 +1668,42 @@ const ProfilePage = () => {
                       {activeBranchLangTab === 'az' && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Filialın adı (AZ)
+                            Filialın adı 
                           </label>
                           <input
                             type="text"
                             value={editingBranchData.name_az || ""}
                             onChange={(e) => handleBranchInputChange("name_az", e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                            placeholder="Filialın adı (AZ)"
+                            placeholder="Filialın adı "
                           />
                         </div>
                       )}
                       {activeBranchLangTab === 'en' && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Branch name (EN)
+                            Branch name 
                           </label>
                           <input
                             type="text"
                             value={editingBranchData.name_en || ""}
                             onChange={(e) => handleBranchInputChange("name_en", e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                            placeholder="Branch name (EN)"
+                            placeholder="Branch name "
                           />
                         </div>
                       )}
                       {activeBranchLangTab === 'ru' && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Название филиала (RU)
+                            Название филиала 
                           </label>
                           <input
                             type="text"
                             value={editingBranchData.name_ru || ""}
                             onChange={(e) => handleBranchInputChange("name_ru", e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                            placeholder="Название филиала (RU)"
+                            placeholder="Название филиала "
                           />
                         </div>
                       )}
@@ -1690,42 +1726,42 @@ const ProfilePage = () => {
                         {activeBranchLangTab === 'az' && (
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Təsvir (AZ)
+                              Təsvir 
                             </label>
                             <textarea
                               value={editingBranchData.description_az || ""}
                               onChange={(e) => handleBranchInputChange("description_az", e.target.value)}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
                               rows={4}
-                              placeholder="Filialın təsviri (AZ)"
+                              placeholder="Filialın təsviri "
                             />
                           </div>
                         )}
                         {activeBranchLangTab === 'en' && (
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Description (EN)
+                              Description 
                             </label>
                             <textarea
                               value={editingBranchData.description_en || ""}
                               onChange={(e) => handleBranchInputChange("description_en", e.target.value)}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
                               rows={4}
-                              placeholder="Branch description (EN)"
+                              placeholder="Branch description "
                             />
                           </div>
                         )}
                         {activeBranchLangTab === 'ru' && (
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Описание (RU)
+                              Описание 
                             </label>
                             <textarea
                               value={editingBranchData.description_ru || ""}
                               onChange={(e) => handleBranchInputChange("description_ru", e.target.value)}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
                               rows={4}
-                              placeholder="Описание филиала (RU)"
+                              placeholder="Описание филиала "
                             />
                           </div>
                         )}
@@ -1916,75 +1952,75 @@ const ProfilePage = () => {
                 {/* Branch Name & Description per language */}
                 {activeAddBranchLangTab === 'az' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Filial Adı (AZ)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Filial Adı </label>
                     <input
                       type="text"
                       value={addBranchData.name_az}
                       onChange={(e) => handleAddBranchInputChange("name_az", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Filial Adı (AZ)"
+                      placeholder="Filial Adı "
                       required
                     />
                   </div>
                 )}
                 {activeAddBranchLangTab === 'en' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Branch Name (EN)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Branch Name </label>
                     <input
                       type="text"
                       value={addBranchData.name_en}
                       onChange={(e) => handleAddBranchInputChange("name_en", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Branch Name (EN)"
+                      placeholder="Branch Name "
                     />
                   </div>
                 )}
                 {activeAddBranchLangTab === 'ru' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Название филиала (RU)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Название филиала </label>
                     <input
                       type="text"
                       value={addBranchData.name_ru}
                       onChange={(e) => handleAddBranchInputChange("name_ru", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
-                      placeholder="Название филиала (RU)"
+                      placeholder="Название филиала "
                     />
                   </div>
                 )}
 
                 {activeAddBranchLangTab === 'az' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Açıqlama (AZ)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Açıqlama </label>
                     <textarea
                       value={addBranchData.description_az}
                       onChange={(e) => handleAddBranchInputChange("description_az", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
                       rows={4}
-                      placeholder="Açıqlama (AZ)"
+                      placeholder="Açıqlama "
                     />
                   </div>
                 )}
                 {activeAddBranchLangTab === 'en' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Description (EN)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description </label>
                     <textarea
                       value={addBranchData.description_en}
                       onChange={(e) => handleAddBranchInputChange("description_en", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
                       rows={4}
-                      placeholder="Description (EN)"
+                      placeholder="Description "
                     />
                   </div>
                 )}
                 {activeAddBranchLangTab === 'ru' && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Описание (RU)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Описание </label>
                     <textarea
                       value={addBranchData.description_ru}
                       onChange={(e) => handleAddBranchInputChange("description_ru", e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2E92A0]"
                       rows={4}
-                      placeholder="Описание (RU)"
+                      placeholder="Описание "
                     />
                   </div>
                 )}

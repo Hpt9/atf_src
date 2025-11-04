@@ -66,9 +66,9 @@ const IndividualDetailIndex = () => {
             <div className="text-2xl font-semibold">{data.name} {data.surname || ''}</div>
             <div className="text-[#6B7280]">{data.email}</div>
             <div className="text-[#6B7280]">{data.phone}</div>
-            <div>VÖEN: {data.voen || '-'}</div>
-            <div>Vebsayt: {data.website || '-'}</div>
-            <div>Açıqlama: {data.description || '-'}</div>
+            <div>VÖEN: {data.voen || 'Qeyd Edilməyib'}</div>
+            <div>Vebsayt: {data.website || 'Qeyd Edilməyib'}</div>
+            <div>Açıqlama: {data.description || 'Qeyd Edilməyib'}</div>
           </div>
         </div>
 
@@ -105,8 +105,8 @@ const IndividualDetailIndex = () => {
                     <div className="p-4 flex flex-col gap-1">
                       <div className="font-medium text-[#3F3F3F]">{a.name?.az}</div>
                       <div className="text-[#6B7280] text-sm">{a.load_type?.az}</div>
-                      <div className="text-[#6B7280] text-sm">Boş yer: {a.empty_space ?? '-'}</div>
-                      <div className="text-[#6B7280] text-sm">Qeydiyyat Nişanı: {a.truck_registration_number ?? '-'}</div>
+                      <div className="text-[#6B7280] text-sm">Boş yer: {a.empty_space ?? 'Qeyd Edilməyib'}</div>
+                      <div className="text-[#6B7280] text-sm">Qeydiyyat Nişanı: {a.truck_registration_number ?? 'Qeyd Edilməyib'}</div>
                       <div className="text-[#6B7280] text-sm">Çıxış: {a.exit_from_address?.az}</div>
                       <div className="text-[#6B7280] text-sm">Gəlmə: {a.reach_from_address}</div>
                     </div>

@@ -202,7 +202,7 @@ const LoginForm = () => {
         <div>
           <input
             type="email"
-            placeholder="E-mail ünvanı"
+            placeholder="E-poçt ünvanı"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
@@ -237,14 +237,14 @@ const LoginForm = () => {
           </button>
         </div>
         {error && <div className="text-[#E94134] text-sm">{errorMessage}</div>}
-        <div className="flex justify-end">
+        {/* <div className="flex justify-end">
           <button
             type="button"
             className="text-[#2E92A0] text-sm hover:underline cursor-pointer"
           >
             Şifrənizi unutmusunuz?
           </button>
-        </div>
+        </div> */}
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -682,7 +682,7 @@ const RegisterForm = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="E-mail ünvanı"
+              placeholder="E-poçt ünvanı"
               className={`w-full px-4 py-4 border rounded-lg focus:outline-none text-[#3F3F3F] ${
                 errors.email
                   ? "border-[#E94134]"

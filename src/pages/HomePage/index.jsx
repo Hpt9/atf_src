@@ -31,6 +31,11 @@ const HomePage = () => {
       ru: "Поиск...",
       az: "Axtarış..."
     },
+    searching: {
+      en: "Searching...",
+      ru: "Поиск...",
+      az: "Axtarılır..."
+    },
     noResults: {
       en: "No matching results found",
       ru: "Результаты не найдены",
@@ -195,14 +200,19 @@ const HomePage = () => {
               </div>
               
               <AnimatePresence>
-                {searchResults && (
+                {(searchResults || isSearching) && (
                   <Motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     className="absolute top-full left-0 right-0 mt-2 bg-white rounded-[8px] shadow-lg max-h-[400px] overflow-y-auto"
                   >
-                    {(searchResults.hs_codes?.length > 0 || searchResults.approvals?.length > 0) ? (
+                    {isSearching ? (
+                      <div className="p-4 flex items-center gap-3 justify-center text-[#3F3F3F]">
+                        <div className="w-5 h-5 border-2 border-[#2E92A0] border-t-transparent rounded-full animate-spin"></div>
+                        <span>{texts.searching[language] || texts.searching.az}</span>
+                      </div>
+                    ) : (searchResults.hs_codes?.length > 0 || searchResults.approvals?.length > 0) ? (
                       <>
                         {searchResults.hs_codes?.length > 0 && (
                           <div className="p-2">

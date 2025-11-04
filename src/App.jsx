@@ -29,6 +29,7 @@ import LegalIndex from "./pages/Persons/Legal";
 import IndividualDetailIndex from "./pages/Persons/İndividual/detailIndex";
 import LegalDetailIndex from "./pages/Persons/Legal/detailIndex";
 import EntreperneurDetailIndex from "./pages/Persons/Entreperneur/detailIndex";
+import NotFoundPage from "./pages/NotFound";
 function App() {
   const location = useLocation();
 
@@ -162,8 +163,13 @@ function App() {
             <Route path="/profile" element={
               <ProfilePage />
             } />
+          <Route path="*" element={
+            <PageTransition>
+              <NotFoundPage />
+            </PageTransition>
+          } />
           </Route>
-          <Route path='*' element={<div>Not Found</div>}></Route>
+          
           <Route path="/giris" element={<Authentication />}></Route>
           <Route path="/admin/chat" element={
             <AdminRouteGuard>

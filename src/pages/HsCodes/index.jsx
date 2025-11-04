@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { LuInfo } from "react-icons/lu";
 import { FaRegFilePdf } from "react-icons/fa6";
 import { IoIosArrowDown, IoIosArrowForward as IoIosArrowRight } from "react-icons/io";
+import { IoFolderOutline } from "react-icons/io5";
 import { useSearchBar } from "../../context/SearchBarContext";
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -10,6 +12,8 @@ import { IoSearch } from "react-icons/io5";
 import useLanguageStore from "../../store/languageStore";
 
 const HsCodesPage = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { setSearchBar } = useSearchBar();
   const { language } = useLanguageStore();
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,6 +90,23 @@ const HsCodesPage = () => {
       fetchRootCategories();
     }
   }, [searchQuery]);
+
+  // Initialize search from navigation state (e.g., coming from Home page global search)
+  useEffect(() => {
+    const incoming = location?.state?.searchQuery;
+    if (incoming !== undefined && incoming !== null && incoming !== "") {
+      const q = String(incoming);
+      setSearchQuery(q);
+      // Trigger search immediately for initial navigation
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      searchHsCodes(q);
+      // Clear state to prevent re-trigger on back/forward
+      navigate(location.pathname, { replace: true, state: null });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchRootCategories = async (page = 1) => {
     try {
@@ -664,6 +685,8 @@ const HsCodesPage = () => {
                       <div className="mr-2 text-[#3F3F3F] flex-shrink-0">
                         {loadingChildren[item.id] ? (
                           <div className="w-4 h-4 border-t-2 border-b-2 border-[#2E92A0] rounded-full animate-spin" />
+                        ) : !item.code ? (
+                          <IoFolderOutline className="text-[#2E92A0]" />
                         ) : isExpanded(item.id) ? (
                           <IoIosArrowDown className="text-[#2E92A0]" />
                         ) : (
@@ -806,11 +829,6 @@ const HsCodesPage = () => {
                              language === 'ru' ? 'Действует с' : 
                              'Etibarlıdır'}
                           </th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Actions' : 
-                             language === 'ru' ? 'Действия' : 
-                             'Əməliyyatlar'}
-                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -852,11 +870,6 @@ const HsCodesPage = () => {
                              language === 'ru' ? 'Статус' : 
                              'Status'}
                           </th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Actions' : 
-                             language === 'ru' ? 'Действия' : 
-                             'Əməliyyatlar'}
-                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -883,7 +896,6 @@ const HsCodesPage = () => {
                                 <div>{r?.doc_name?.az || r?.doc_name?.en || r?.doc_name?.ru || '-'}</div>
                                 <div className="text-xs text-[#6B7280] mt-1">{r?.doc_no || ''}</div>
                               </td>
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]"><a href={r?.link} target="_blank" rel="noopener noreferrer" className="text-[#2E92A0] underline">{language === 'en' ? 'Open' : language === 'ru' ? 'Открыть' : 'Bax'}</a></td>
                             </tr>
                           ))
                         ) : (
@@ -914,11 +926,6 @@ const HsCodesPage = () => {
                             {language === 'en' ? 'Used' : 
                              language === 'ru' ? 'Использовано' : 
                              'İstifadə edilib'}
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Actions' : 
-                             language === 'ru' ? 'Действия' : 
-                             'Əməliyyatlar'}
                           </th>
                         </tr>
                       </thead>
@@ -954,17 +961,12 @@ const HsCodesPage = () => {
                           <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
                             {language === 'en' ? 'Date' : 
                              language === 'ru' ? 'Дата' : 
-                             'Tarix'}
+                             'Kod'}
                           </th>
                           <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
                             {language === 'en' ? 'Status' : 
                              language === 'ru' ? 'Статус' : 
                              'Status'}
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Actions' : 
-                             language === 'ru' ? 'Действия' : 
-                             'Əməliyyatlar'}
                           </th>
                         </tr>
                       </thead>
@@ -974,7 +976,6 @@ const HsCodesPage = () => {
                             <tr key={idx} className="hover:bg-[#F5F5F5]">
                               <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{d?.name?.az || d?.name?.en || d?.name?.ru || '-'}</td>
                               <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{d?.category_id || '-'}</td>
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">-</td>
                               <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">-</td>
                             </tr>
                           ))
@@ -1007,11 +1008,6 @@ const HsCodesPage = () => {
                              language === 'ru' ? 'Дата загрузки' : 
                              'Yükləmə tarixi'}
                           </th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Actions' : 
-                             language === 'ru' ? 'Действия' : 
-                             'Əməliyyatlar'}
-                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1021,7 +1017,6 @@ const HsCodesPage = () => {
                               <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{doc?.type?.az || doc?.type?.en || doc?.type?.ru || '-'}</td>
                               <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{doc?.file_name || '-'}</td>
                               <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{doc?.uploaded_at || '-'}</td>
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">-</td>
                             </tr>
                           ))
                         ) : (
@@ -1053,11 +1048,6 @@ const HsCodesPage = () => {
                              language === 'ru' ? 'Примечание' : 
                              'Qeyd'}
                           </th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Actions' : 
-                             language === 'ru' ? 'Действия' : 
-                             'Malın təsnifatı'}
-                          </th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1072,13 +1062,6 @@ const HsCodesPage = () => {
                               </td>
                               <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">
                                 {parameter.note?.az || parameter.note?.en || parameter.note?.ru || '-'}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">
-                                <button className="text-[#2E92A0] hover:text-[#267A85] font-medium">
-                                  {language === 'en' ? 'View Classification' : 
-                                   language === 'ru' ? 'Просмотр классификации' : 
-                                   'Malın təsnifatı'}
-                                </button>
                               </td>
                             </tr>
                           ))
@@ -1100,11 +1083,11 @@ const HsCodesPage = () => {
 
             {/* Table Footer */}
             <div className="p-4 border-t border-[#E7E7E7] flex justify-between items-center">
-              <div className="text-sm text-[#6B7280]">
+              {/* <div className="text-sm text-[#6B7280]">
                 {language === 'en' ? 'Total items:' : 
                  language === 'ru' ? 'Всего элементов:' : 
                  'Ümumi element:'} {tableData.length}
-              </div>
+              </div> */}
               <div className="flex gap-2">
                 <button
                   onClick={closeTable}
@@ -1113,21 +1096,6 @@ const HsCodesPage = () => {
                   {language === 'en' ? 'Close' : 
                    language === 'ru' ? 'Закрыть' : 
                    'Bağla'}
-                </button>
-                <button
-                  onClick={() => {
-                    if (activeTab === 'parameters') {
-                      fetchParametersData();
-                    } else {
-                      // TODO: Add API calls for other tabs
-                      console.log('Fetching table data for HS Code:', selectedHsCode?.code, 'Tab:', activeTab);
-                    }
-                  }}
-                  className="px-4 py-2 bg-[#2E92A0] text-white rounded-lg hover:bg-[#267A85]"
-                >
-                  {language === 'en' ? `Load ${tabs.find(t => t.id === activeTab)?.name.en || 'Data'}` : 
-                   language === 'ru' ? `Загрузить ${tabs.find(t => t.id === activeTab)?.name.ru || 'данные'}` : 
-                   `${tabs.find(t => t.id === activeTab)?.name.az || 'Məlumatları'} yüklə`}
                 </button>
               </div>
             </div>

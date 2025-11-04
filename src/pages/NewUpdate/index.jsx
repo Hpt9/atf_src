@@ -11,6 +11,11 @@ export const NewUpdate = () => {
   const [allowedTab, setAllowedTab] = useState("");
   const [isRoleLoading, setIsRoleLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const roleLabels = {
+    individual: "Fiziki şəxs",
+    legal: "Hüquqi şəxs",
+    entrepreneur: "Sahibkar",
+  };
   
   // API data states
   const [truckTypes, setTruckTypes] = useState([]);
@@ -490,38 +495,11 @@ export const NewUpdate = () => {
             Elanın məlumatlarını daxil edin
           </h1>
 
-          {/* Tabs - locked to user's role */}
-          <div className="flex border-b border-[#E7E7E7] mb-6">
-            <button
-              disabled={allowedTab !== "individual"}
-              className={`px-6 py-3 font-medium transition-colors ${
-                activeTab === "individual"
-                  ? "text-[#2E92A0] border-b-2 border-[#2E92A0]"
-                  : "text-[#9CA3AF] cursor-not-allowed"
-              }`}
-            >
-              Fiziki şəxs
-            </button>
-            <button
-              disabled={allowedTab !== "legal"}
-              className={`px-6 py-3 font-medium transition-colors ${
-                activeTab === "legal"
-                  ? "text-[#2E92A0] border-b-2 border-[#2E92A0]"
-                  : "text-[#9CA3AF] cursor-not-allowed"
-              }`}
-            >
-              Hüquqi şəxs
-            </button>
-            <button
-              disabled={allowedTab !== "entrepreneur"}
-              className={`px-6 py-3 font-medium transition-colors ${
-                activeTab === "entrepreneur"
-                  ? "text-[#2E92A0] border-b-2 border-[#2E92A0]"
-                  : "text-[#9CA3AF] cursor-not-allowed"
-              }`}
-            >
-              Sahibkar
-            </button>
+          {/* Single role label (tabs removed) */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="px-4 py-2 rounded-lg bg-[#E8F5F7] text-[#2E92A0] font-medium inline-flex items-center gap-2">
+              <span>{roleLabels[allowedTab] || ""}</span>
+            </div>
           </div>
           {/* Avoid flicker until role is resolved and data is loaded */}
           {isRoleLoading || isDataLoading ? (
@@ -566,7 +544,7 @@ export const NewUpdate = () => {
                         value={individualFormData.name_az}
                         onChange={(e) => handleIndividualInputChange("name_az", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Elanın adı (AZ)"
+                        placeholder="Elanın adı "
                       />
                     )}
                     {activeLangTab === 'ru' && (
@@ -575,7 +553,7 @@ export const NewUpdate = () => {
                         value={individualFormData.name_ru}
                         onChange={(e) => handleIndividualInputChange("name_ru", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Elanın adı (RU)"
+                        placeholder="Elanın adı "
                       />
                     )}
                     {activeLangTab === 'en' && (
@@ -584,7 +562,7 @@ export const NewUpdate = () => {
                         value={individualFormData.name_en}
                         onChange={(e) => handleIndividualInputChange("name_en", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Elanın adı (EN)"
+                        placeholder="Elanın adı "
                       />
                     )}
                   </div>
@@ -597,7 +575,7 @@ export const NewUpdate = () => {
                         value={individualFormData.load_type_az}
                         onChange={(e) => handleIndividualInputChange("load_type_az", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Yük növü (AZ)"
+                        placeholder="Yük növü "
                       />
                     )}
                     {activeLangTab === 'ru' && (
@@ -606,7 +584,7 @@ export const NewUpdate = () => {
                         value={individualFormData.load_type_ru}
                         onChange={(e) => handleIndividualInputChange("load_type_ru", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Yük növü (RU)"
+                        placeholder="Yük növü "
                       />
                     )}
                     {activeLangTab === 'en' && (
@@ -615,7 +593,7 @@ export const NewUpdate = () => {
                         value={individualFormData.load_type_en}
                         onChange={(e) => handleIndividualInputChange("load_type_en", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Yük növü (EN)"
+                        placeholder="Yük növü "
                       />
                     )}
                   </div>
@@ -628,7 +606,7 @@ export const NewUpdate = () => {
                         value={individualFormData.exit_from_address_az}
                         onChange={(e) => handleIndividualInputChange("exit_from_address_az", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Çıxış ünvanı (AZ)"
+                        placeholder="Çıxış ünvanı "
                       />
                     )}
                     {activeLangTab === 'ru' && (
@@ -637,7 +615,7 @@ export const NewUpdate = () => {
                         value={individualFormData.exit_from_address_ru}
                         onChange={(e) => handleIndividualInputChange("exit_from_address_ru", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Çıxış ünvanı (RU)"
+                        placeholder="Çıxış ünvanı "
                       />
                     )}
                     {activeLangTab === 'en' && (
@@ -646,7 +624,7 @@ export const NewUpdate = () => {
                         value={individualFormData.exit_from_address_en}
                         onChange={(e) => handleIndividualInputChange("exit_from_address_en", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Çıxış ünvanı (EN)"
+                        placeholder="Çıxış ünvanı "
                       />
                     )}
                   </div>
@@ -813,7 +791,7 @@ export const NewUpdate = () => {
                         onChange={(e) => handleIndividualInputChange("description_az", e.target.value)}
                         rows={4}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
-                        placeholder="Təsvir (AZ)..."
+                        placeholder="Təsvir ..."
                       />
                     )}
                     {activeLangTab === 'ru' && (
@@ -822,7 +800,7 @@ export const NewUpdate = () => {
                         onChange={(e) => handleIndividualInputChange("description_ru", e.target.value)}
                         rows={4}
                         className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
-                        placeholder="Təsvir (RU)..."
+                        placeholder="Təsvir ..."
                       />
                     )}
                     {activeLangTab === 'en' && (
@@ -831,7 +809,7 @@ export const NewUpdate = () => {
                         onChange={(e) => handleIndividualInputChange("description_en", e.target.value)}
                         rows={4}
                         className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
-                        placeholder="Təsvir (EN)..."
+                        placeholder="Təsvir ..."
                       />
                     )}
                   </div>
@@ -905,7 +883,7 @@ export const NewUpdate = () => {
                         value={legalFormData.name_az}
                         onChange={(e) => handleLegalInputChange("name_az", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Elanın adı (AZ)"
+                        placeholder="Elanın adı "
                       />
                     )}
                     {activeLangTab === 'ru' && (
@@ -914,7 +892,7 @@ export const NewUpdate = () => {
                         value={legalFormData.name_ru}
                         onChange={(e) => handleLegalInputChange("name_ru", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Elanın adı (RU)"
+                        placeholder="Elanın adı "
                       />
                     )}
                     {activeLangTab === 'en' && (
@@ -923,7 +901,7 @@ export const NewUpdate = () => {
                         value={legalFormData.name_en}
                         onChange={(e) => handleLegalInputChange("name_en", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Elanın adı (EN)"
+                        placeholder="Elanın adı "
                       />
                     )}
                   </div>
@@ -936,7 +914,7 @@ export const NewUpdate = () => {
                         value={legalFormData.load_type_az}
                         onChange={(e) => handleLegalInputChange("load_type_az", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Yük növü (AZ)"
+                        placeholder="Yük növü "
                       />
                     )}
                     {activeLangTab === 'ru' && (
@@ -945,7 +923,7 @@ export const NewUpdate = () => {
                         value={legalFormData.load_type_ru}
                         onChange={(e) => handleLegalInputChange("load_type_ru", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Yük növü (RU)"
+                        placeholder="Yük növü "
                       />
                     )}
                     {activeLangTab === 'en' && (
@@ -954,7 +932,7 @@ export const NewUpdate = () => {
                         value={legalFormData.load_type_en}
                         onChange={(e) => handleLegalInputChange("load_type_en", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Yük növü (EN)"
+                        placeholder="Yük növü "
                       />
                     )}
                   </div>
@@ -967,7 +945,7 @@ export const NewUpdate = () => {
                         value={legalFormData.exit_from_address_az}
                         onChange={(e) => handleLegalInputChange("exit_from_address_az", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Çıxış ünvanı (AZ)"
+                        placeholder="Çıxış ünvanı "
                       />
                     )}
                     {activeLangTab === 'ru' && (
@@ -976,7 +954,7 @@ export const NewUpdate = () => {
                         value={legalFormData.exit_from_address_ru}
                         onChange={(e) => handleLegalInputChange("exit_from_address_ru", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Çıxış ünvanı (RU)"
+                        placeholder="Çıxış ünvanı "
                       />
                     )}
                     {activeLangTab === 'en' && (
@@ -985,7 +963,7 @@ export const NewUpdate = () => {
                         value={legalFormData.exit_from_address_en}
                         onChange={(e) => handleLegalInputChange("exit_from_address_en", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Çıxış ünvanı (EN)"
+                        placeholder="Çıxış ünvanı "
                       />
                     )}
                   </div>
@@ -1198,7 +1176,7 @@ export const NewUpdate = () => {
                         value={legalFormData.driver_full_name_az}
                         onChange={(e) => handleLegalInputChange("driver_full_name_az", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Sürücünün adı soyadı (AZ)"
+                        placeholder="Sürücünün adı soyadı "
                       />
                     )}
                     {activeLangTab === 'ru' && (
@@ -1207,7 +1185,7 @@ export const NewUpdate = () => {
                         value={legalFormData.driver_full_name_ru}
                         onChange={(e) => handleLegalInputChange("driver_full_name_ru", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Sürücünün adı soyadı (RU)"
+                        placeholder="Sürücünün adı soyadı "
                       />
                     )}
                     {activeLangTab === 'en' && (
@@ -1216,7 +1194,7 @@ export const NewUpdate = () => {
                         value={legalFormData.driver_full_name_en}
                         onChange={(e) => handleLegalInputChange("driver_full_name_en", e.target.value)}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Sürücünün adı soyadı (EN)"
+                        placeholder="Sürücünün adı soyadı "
                       />
                     )}
                   </div>
@@ -1229,7 +1207,7 @@ export const NewUpdate = () => {
                         onChange={(e) => handleLegalInputChange("driver_biography_az", e.target.value)}
                         rows={3}
                         className="w-full h-[116px] px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                        placeholder="Sürücünün bioqrafiyası (AZ)..."
+                        placeholder="Sürücünün bioqrafiyası ..."
                       />
                     )}
                     {activeLangTab === 'ru' && (
@@ -1238,7 +1216,7 @@ export const NewUpdate = () => {
                         onChange={(e) => handleLegalInputChange("driver_biography_ru", e.target.value)}
                         rows={3}
                         className="w-full h-[116px] mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                        placeholder="Sürücünün bioqrafiyası (RU)..."
+                        placeholder="Sürücünün bioqrafiyası ..."
                       />
                     )}
                     {activeLangTab === 'en' && (
@@ -1247,7 +1225,7 @@ export const NewUpdate = () => {
                         onChange={(e) => handleLegalInputChange("driver_biography_en", e.target.value)}
                         rows={3}
                         className="w-full h-[116px] mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                        placeholder="Sürücünün bioqrafiyası (EN)..."
+                        placeholder="Sürücünün bioqrafiyası ..."
                       />
                     )}
                   </div>
@@ -1260,7 +1238,7 @@ export const NewUpdate = () => {
                         onChange={(e) => handleLegalInputChange("driver_experience_az", e.target.value)}
                         rows={3}
                         className="w-full h-[116px] px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                        placeholder="Sürücünün təcrübəsi (AZ)..."
+                        placeholder="Sürücünün təcrübəsi ..."
                       />
                     )}
                     {activeLangTab === 'ru' && (
@@ -1269,7 +1247,7 @@ export const NewUpdate = () => {
                         onChange={(e) => handleLegalInputChange("driver_experience_ru", e.target.value)}
                         rows={3}
                         className="w-full h-[116px] mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                        placeholder="Sürücünün təcrübəsi (RU)..."
+                        placeholder="Sürücünün təcrübəsi ..."
                       />
                     )}
                     {activeLangTab === 'en' && (
@@ -1278,7 +1256,7 @@ export const NewUpdate = () => {
                         onChange={(e) => handleLegalInputChange("driver_experience_en", e.target.value)}
                         rows={3}
                         className="w-full h-[116px] mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                        placeholder="Sürücünün təcrübəsi (EN)..."
+                        placeholder="Sürücünün təcrübəsi ..."
                       />
                     )}
                   </div>
@@ -1291,7 +1269,7 @@ export const NewUpdate = () => {
                         onChange={(e) => handleLegalInputChange("description_az", e.target.value)}
                         rows={3}
                         className="w-full h-[116px] px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                        placeholder="Təsvir (AZ)..."
+                        placeholder="Təsvir ..."
                       />
                     )}
                     {activeLangTab === 'ru' && (
@@ -1300,7 +1278,7 @@ export const NewUpdate = () => {
                         onChange={(e) => handleLegalInputChange("description_ru", e.target.value)}
                         rows={3}
                         className="w-full h-[116px] mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                        placeholder="Təsvir (RU)..."
+                        placeholder="Təsvir ..."
                       />
                     )}
                     {activeLangTab === 'en' && (
@@ -1309,7 +1287,7 @@ export const NewUpdate = () => {
                         onChange={(e) => handleLegalInputChange("description_en", e.target.value)}
                         rows={3}
                         className="w-full h-[116px] mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium"
-                        placeholder="Təsvir (EN)..."
+                        placeholder="Təsvir ..."
                       />
                     )}
                   </div>
@@ -1386,7 +1364,7 @@ export const NewUpdate = () => {
                         handleEntrepreneurInputChange("name_az", e.target.value)
                               }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Elanın adı (AZ)"
+                      placeholder="Elanın adı "
                             />
                             <input
                       type="text"
@@ -1395,7 +1373,7 @@ export const NewUpdate = () => {
                         handleEntrepreneurInputChange("name_ru", e.target.value)
                       }
                       className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Elanın adı (RU)"
+                      placeholder="Elanın adı "
                     />
                     <input
                       type="text"
@@ -1404,7 +1382,7 @@ export const NewUpdate = () => {
                         handleEntrepreneurInputChange("name_en", e.target.value)
                       }
                       className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Elanın adı (EN)"
+                      placeholder="Elanın adı "
                     />
                   </div>
 
@@ -1417,7 +1395,7 @@ export const NewUpdate = () => {
                         handleEntrepreneurInputChange("load_type_az", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Yük növü (AZ)"
+                      placeholder="Yük növü "
                     />
                     <input
                       type="text"
@@ -1426,7 +1404,7 @@ export const NewUpdate = () => {
                         handleEntrepreneurInputChange("load_type_ru", e.target.value)
                       }
                       className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Yük növü (RU)"
+                      placeholder="Yük növü "
                     />
                     <input
                       type="text"
@@ -1435,7 +1413,7 @@ export const NewUpdate = () => {
                         handleEntrepreneurInputChange("load_type_en", e.target.value)
                       }
                       className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Yük növü (EN)"
+                      placeholder="Yük növü "
                     />
                   </div>
 
@@ -1448,7 +1426,7 @@ export const NewUpdate = () => {
                         handleEntrepreneurInputChange("exit_from_address_az", e.target.value)
                       }
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Çıxış ünvanı (AZ)"
+                      placeholder="Çıxış ünvanı "
                     />
                     <input
                       type="text"
@@ -1457,7 +1435,7 @@ export const NewUpdate = () => {
                         handleEntrepreneurInputChange("exit_from_address_ru", e.target.value)
                       }
                       className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Çıxış ünvanı (RU)"
+                      placeholder="Çıxış ünvanı "
                     />
                     <input
                       type="text"
@@ -1466,7 +1444,7 @@ export const NewUpdate = () => {
                         handleEntrepreneurInputChange("exit_from_address_en", e.target.value)
                       }
                       className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Çıxış ünvanı (EN)"
+                      placeholder="Çıxış ünvanı "
                     />
                   </div>
 
@@ -1610,7 +1588,7 @@ export const NewUpdate = () => {
                         }
                         rows={4}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
-                        placeholder="Təsvir (AZ)..."
+                        placeholder="Təsvir ..."
                       />
                     )}
                     {activeLangTab === 'ru' && (
@@ -1621,7 +1599,7 @@ export const NewUpdate = () => {
                         }
                         rows={4}
                         className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
-                        placeholder="Təsvir (RU)..."
+                        placeholder="Təsvir ..."
                       />
                     )}
                     {activeLangTab === 'en' && (
@@ -1632,7 +1610,7 @@ export const NewUpdate = () => {
                         }
                         rows={4}
                         className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
-                        placeholder="Təsvir (EN)..."
+                        placeholder="Təsvir ..."
                       />
                     )}
                   </div>

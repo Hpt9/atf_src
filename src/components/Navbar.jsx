@@ -101,7 +101,7 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
                     return (
                       <div key={item.id} className="navbar-dropdown-parent relative inline-block">
                         <button
-                          className={`text-[16px] font-medium transition-all duration-150 cursor-pointer relative flex items-center gap-1 ${
+                          className={`text-[16px] uppercase font-medium transition-all duration-150 cursor-pointer relative flex items-center gap-1 ${
                             isActive ? 'text-[#2E92A0]' : 'text-[#3F3F3F] hover:text-[#2E92A0]'
                           }`}
                           type="button"
@@ -110,7 +110,7 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
                           aria-expanded={openDropdownId === item.id}
                         >
                           {item.title[language] || item.title.az}
-                          <IoChevronDown className="ml-1 text-[16px] relative top-[2px] transition-transform duration-200" style={{ transform: openDropdownId === item.id ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                          <IoChevronDown className="ml-1 text-[16px] uppercase relative top-[2px] transition-transform duration-200" style={{ transform: openDropdownId === item.id ? 'rotate(180deg)' : 'rotate(0deg)' }} />
                           {isActive && (
                             <motion.span
                               className="absolute -bottom-1 left-0 w-full h-[2px] bg-[#2E92A0]"
@@ -136,7 +136,7 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
                                 <Link
                                   key={child.id}
                                   to={`/${child.url}`}
-                                  className="text-[16px] font-medium text-[#3F3F3F] hover:text-[#2E92A0] hover:bg-gray-50 rounded transition-colors"
+                                  className="text-[16px] uppercase font-medium text-[#3F3F3F] hover:text-[#2E92A0] hover:bg-gray-50 rounded transition-colors"
                                   onClick={() => setOpenDropdownId(null)}
                                 >
                                   {child.title[language] || child.title.az}
@@ -154,7 +154,7 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
                     <Link
                       key={item.id}
                       to={item.url === '' ? '/' : path}
-                      className={`text-[16px] font-medium transition-all duration-150 cursor-pointer relative ${
+                      className={`text-[16px] uppercase font-medium transition-all duration-150 cursor-pointer relative ${
                         isActive ? 'text-[#2E92A0]' : 'text-[#3F3F3F] hover:text-[#2E92A0]'
                       }`}
                     >
