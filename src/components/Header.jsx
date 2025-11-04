@@ -493,7 +493,7 @@ const Header = () => {
                           {user.name} {user.surname}
                         </span>
                         <span className="text-[#696969] text-sm">
-                          +{user.phone}
+                          {user.phone}
                         </span>
                       </div>
                     </div>
@@ -552,10 +552,10 @@ const Header = () => {
                       type="text"
                       placeholder={
                         language === "az"
-                          ? "Ümumi axtarış"
+                          ? "HS Kod üzrə axtarış"
                           : language === "en"
-                          ? "Global search"
-                          : "Общий поиск"
+                          ? "HS Code search"
+                          : "HS Kod üzrə axtarış"
                       }
                       className="w-full px-4 py-3 pl-11 border border-[#E7E7E7] rounded-lg outline-none focus:border-[#2E92A0] transition-colors"
                       value={localSearchValue}

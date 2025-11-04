@@ -29,17 +29,17 @@ const HomePage = () => {
     searchPlaceholder: {
       en: "Search...",
       ru: "Поиск...",
-      az: "Axtarış..."
+      az: "HS Kod üzrə axtarış..."
     },
     searching: {
       en: "Searching...",
       ru: "Поиск...",
-      az: "Axtarılır..."
+      az: "HS Kod üzrə axtarılır..."
     },
     noResults: {
       en: "No matching results found",
       ru: "Результаты не найдены",
-      az: "Axtarışa uyğun nəticə tapılmadı"
+      az: "HS Kod üzrə axtarışa uyğun nəticə tapılmadı"
     },
     hsCodes: {
       en: "HS Codes",

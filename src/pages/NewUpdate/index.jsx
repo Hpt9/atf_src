@@ -663,11 +663,11 @@ export const NewUpdate = () => {
                   <div className="flex w-full">
                     <div className="w-[80%]">
                     <input
-                      type="text"
-                        value={individualFormData.capacity}
-                      onChange={(e) =>
-                          handleIndividualInputChange("capacity", e.target.value)
-                        }
+                      type="number"
+                      min={0}
+                      onKeyDown={(e)=>{ if (["-","+","e","E"].includes(e.key)) e.preventDefault(); }}
+                      onChange={(e)=>{ const v = e.target.value; if (v === "") { handleIndividualInputChange("capacity", ""); return; } const n = Math.max(0, Number(v)); handleIndividualInputChange("capacity", Number.isNaN(n) ? "" : String(n)); }}
+                      value={individualFormData.capacity}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-l-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
                         placeholder="Tutum"
                       />
@@ -1002,11 +1002,12 @@ export const NewUpdate = () => {
                   <div className="flex w-full">
                     <div className="w-[80%]">
                       <input
-                        type="text"
+                        type="number"
+                        min={0}
+                        onKeyDown={(e)=>{ if (["-","+","e","E"].includes(e.key)) e.preventDefault(); }}
+                        onChange={(e)=>{ const v = e.target.value; if (v === "") { handleLegalInputChange("capacity", ""); return; } const n = Math.max(0, Number(v)); handleLegalInputChange("capacity", Number.isNaN(n) ? "" : String(n)); }}
                         value={legalFormData.capacity}
-                        onChange={(e) =>
-                          handleLegalInputChange("capacity", e.target.value)
-                        }
+                        
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-l-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
                         placeholder="Tutum"
                       />
@@ -1482,11 +1483,12 @@ export const NewUpdate = () => {
                   <div className="flex w-full">
                     <div className="w-[80%]">
                       <input
-                        type="text"
+                        type="number"
+                        min={0}
+                        onKeyDown={(e)=>{ if (["-","+","e","E"].includes(e.key)) e.preventDefault(); }}
+                        onChange={(e)=>{ const v = e.target.value; if (v === "") { handleEntrepreneurInputChange("capacity", ""); return; } const n = Math.max(0, Number(v)); handleEntrepreneurInputChange("capacity", Number.isNaN(n) ? "" : String(n)); }}
                         value={entrepreneurFormData.capacity}
-                        onChange={(e) =>
-                          handleEntrepreneurInputChange("capacity", e.target.value)
-                        }
+                        
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-l-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
                         placeholder="Tutum"
                       />

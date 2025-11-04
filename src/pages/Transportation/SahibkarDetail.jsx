@@ -92,6 +92,12 @@ const SahibkarDetailIndex = () => {
 
   const title = item.name?.[language] || item.name?.az || '-';
   const subtitle = item.load_type?.[language] || item.load_type?.az || '';
+  const formatArea = (area, lang) => {
+    if (!area) return '-';
+    const pick = (obj) => obj?.[lang] || obj?.az || '';
+    const parts = [pick(area.country), pick(area.city), pick(area.region)].filter(Boolean);
+    return parts.join(' - ') || '-';
+  };
   // Normalize photos to an array
   let images = [];
   if (Array.isArray(item.photos)) {
@@ -147,11 +153,11 @@ const SahibkarDetailIndex = () => {
             <div className="flex flex-col gap-2">
               <div className="text-2xl font-medium text-[#3F3F3F]">{title}</div>
               <div className="text-[#6B7280]">{subtitle}</div>
-              <div className="text-[#3F3F3F]">Boş yer: {item.empty_space ?? '-'}</div>
-              <div className="text-[#3F3F3F]">Qeydiyyat nömrəsi: {item.truck_registration_number ?? '-'}</div>
-              <div className="text-[#3F3F3F]">Çıxış ünvanı: {item.exit_from_address?.[language] || item.exit_from_address?.az || '-'}</div>
               <div className="text-[#3F3F3F]">Gəlmə vaxtı: {item.reach_from_address || '-'}</div>
               <div className="text-[#3F3F3F]">Açıqlama: {item.description?.[language] || item.description?.az || '-'}</div>
+              <div className="text-[#3F3F3F]">Na daşıyır: {item.load_type?.[language] || item.load_type?.az || item.load_type || '-'}</div>
+              <div className="text-[#3F3F3F]">Haradan gəlir: {formatArea(item.from, language)}</div>
+              <div className="text-[#3F3F3F]">Hara gedir: {formatArea(item.to, language)}</div>
               <div className="text-[#3F3F3F]">
                 Sahib: {item.user ? (
                   <button
@@ -171,10 +177,10 @@ const SahibkarDetailIndex = () => {
         {isFullscreen && (
           <div className="fixed inset-0 z-[1001] bg-black/90 flex items-center justify-center" onMouseUp={() => setIsPanning(false)} onMouseLeave={() => setIsPanning(false)}>
             <div className="absolute top-4 right-4 flex gap-2">
-              <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0]" onClick={() => setZoom((z) => Math.min(5, z + 0.25))}>+</button>
-              <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0]" onClick={() => setZoom((z) => Math.max(1, z - 0.25))}>-</button>
-              <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0]" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Reset</button>
-              <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0]" onClick={() => setIsFullscreen(false)}>Close</button>
+              <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => setZoom((z) => Math.min(5, z + 0.25))}>+</button>
+              <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => setZoom((z) => Math.max(1, z - 0.25))}>-</button>
+              <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Sıfırla</button>
+              <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => setIsFullscreen(false)}>Bağla</button>
             </div>
             <div
               className="w-full h-full flex items-center justify-center overflow-hidden cursor-move"

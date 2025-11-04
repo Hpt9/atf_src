@@ -84,11 +84,11 @@ export const KataloqDetail = () => {
           {/* Fullscreen overlay with zoom/pan */}
           {isFullscreen && (
             <div className="fixed inset-0 z-[1001] bg-black/90 flex items-center justify-center" onMouseUp={() => setIsPanning(false)} onMouseLeave={() => setIsPanning(false)}>
-              <div className="absolute top-4 right-4 flex gap-2">
-                <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0]" onClick={() => setZoom((z) => Math.min(5, z + 0.25))}>+</button>
-                <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0]" onClick={() => setZoom((z) => Math.max(1, z - 0.25))}>-</button>
-                <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0]" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Reset</button>
-                <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0]" onClick={() => setIsFullscreen(false)}>Close</button>
+              <div className="absolute top-4 right-4 flex gap-2 z-[1002]">
+                <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => setZoom((z) => Math.min(5, z + 0.25))}>+</button>
+                <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => setZoom((z) => Math.max(1, z - 0.25))}>-</button>
+                <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Sıfırla</button>
+                <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => setIsFullscreen(false)}>Bağla</button>
               </div>
               <div
                 className="w-full h-full flex items-center justify-center overflow-hidden cursor-move"
@@ -118,7 +118,7 @@ export const KataloqDetail = () => {
               { label: "Boş yer", value: data?.empty_space != null ? String(data.empty_space) : '—' },
               { label: "Çıxış vaxtı", value: data?.exit_from_address?.az || '—' },
               { label: "Gəlmə vaxtı", value: data?.reach_from_address || '—' },
-              { label: "Nömrə", value: data?.truck_registration_number || '—' },
+              { label: "Qeydiyyat Nişanı", value: data?.truck_registration_number || '—' },
             ].map((d, i) => (
               <React.Fragment key={i}>
                 <div className="text-[#3F3F3F] whitespace-nowrap">{d.label}</div>
