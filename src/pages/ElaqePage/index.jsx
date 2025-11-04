@@ -192,7 +192,7 @@ const ElaqePage = () => {
                 </div>
                 <div>
                   <p className="text-sm text-[#3F3F3F]">{texts.emailLabel[language] || texts.emailLabel.az}</p>
-                  <p className="text-[#2E92A0]">info@xxxx.az</p>
+                  <p className="text-[#2E92A0]">info@atf.org.az</p>
                 </div>
                 <div className="ml-auto rotate-[-45deg] group-hover:rotate-0 transition-transform duration-200">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -210,7 +210,7 @@ const ElaqePage = () => {
                 </div>
                 <div>
                   <p className="text-sm text-[#3F3F3F]">{texts.phoneLabel[language] || texts.phoneLabel.az}</p>
-                  <p className="text-[#2E92A0]">(+994) 50 123 45 67</p>
+                  <p className="text-[#2E92A0]">(+994) 55 276 47 46</p>
                 </div>
                 <div className="ml-auto rotate-[-45deg] group-hover:rotate-0 transition-transform duration-200">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -229,7 +229,7 @@ const ElaqePage = () => {
                 </div>
                 <div>
                   <p className="text-sm text-[#3F3F3F]">{texts.addressLabel[language] || texts.addressLabel.az}</p>
-                  <p className="text-[#2E92A0]">Test testov küçəsi 7A</p>
+                  <p className="text-[#2E92A0]">Azərbaycan, Bakı şəh. Zaur Nudirəliyev küç. 79s</p>
                 </div>
                 <div className="ml-auto rotate-[-45deg] group-hover:rotate-0 transition-transform duration-200">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

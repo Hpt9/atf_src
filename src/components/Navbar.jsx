@@ -89,7 +89,7 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
           <div className="flex items-center justify-between">
             <div className="items-center space-x-4 lg:space-x-8 flex relative">
               {!shouldShowMenuItems ? (
-                <div className="text-[14px] text-[#696969]">
+                <div className="text-[16px] text-[#696969]">
                   {language === 'az' ? "Yüklənir..." : language === 'en' ? "Loading..." : "Загрузка..."}
                 </div>
               ) : (
@@ -101,7 +101,7 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
                     return (
                       <div key={item.id} className="navbar-dropdown-parent relative inline-block">
                         <button
-                          className={`text-[14px] font-medium transition-all duration-150 cursor-pointer relative flex items-center gap-1 ${
+                          className={`text-[16px] font-medium transition-all duration-150 cursor-pointer relative flex items-center gap-1 ${
                             isActive ? 'text-[#2E92A0]' : 'text-[#3F3F3F] hover:text-[#2E92A0]'
                           }`}
                           type="button"
@@ -136,7 +136,7 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
                                 <Link
                                   key={child.id}
                                   to={`/${child.url}`}
-                                  className="text-[14px] font-medium text-[#3F3F3F] hover:text-[#2E92A0] hover:bg-gray-50 rounded transition-colors"
+                                  className="text-[16px] font-medium text-[#3F3F3F] hover:text-[#2E92A0] hover:bg-gray-50 rounded transition-colors"
                                   onClick={() => setOpenDropdownId(null)}
                                 >
                                   {child.title[language] || child.title.az}
@@ -154,7 +154,7 @@ const Navbar = ({ menuItems = [], isMenuLoading = false }) => {
                     <Link
                       key={item.id}
                       to={item.url === '' ? '/' : path}
-                      className={`text-[14px] font-medium transition-all duration-150 cursor-pointer relative ${
+                      className={`text-[16px] font-medium transition-all duration-150 cursor-pointer relative ${
                         isActive ? 'text-[#2E92A0]' : 'text-[#3F3F3F] hover:text-[#2E92A0]'
                       }`}
                     >
