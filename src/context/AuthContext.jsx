@@ -111,7 +111,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="w-full h-screen flex items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-2 border-[#2E92A0] border-t-transparent rounded-full animate-spin" aria-label="Yüklənir" />
+          <div className="text-[#3F3F3F] text-sm">Yüklənir...</div>
+        </div>
+      </div>
+    );
   }
 
   return (

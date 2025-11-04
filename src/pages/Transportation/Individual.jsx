@@ -301,8 +301,39 @@ export const Elanlar = () => {
                   </select>
                 </div>
 
-                {/* Tırın tutumu combined input */}
-                <div className="w-full">
+                {/* Tırın tutumu input + vahid select (responsive) */}
+                {/* Mobile: stacked */}
+                <div className="w-full space-y-2 md:hidden">
+                  <input 
+                    type="number" 
+                    placeholder="Tutum" 
+                    value={capacity}
+                    min={0}
+                    onKeyDown={(e)=>{ if (["-","+","e","E"].includes(e.key)) e.preventDefault(); }}
+                    onChange={(e)=>{
+                      const v = e.target.value;
+                      if (v === "") { setCapacity(""); return; }
+                      const n = Math.max(0, Number(v));
+                      setCapacity(Number.isNaN(n) ? "" : String(n));
+                    }}
+                    className="w-full h-[48px] px-4 py-2 border border-[#E7E7E7] rounded-lg text-[#3F3F3F] text-[15px] focus:outline-none"
+                  />
+                  <select 
+                    disabled={listsLoading} 
+                    value={unitId}
+                    onChange={(e)=>setUnitId(e.target.value)}
+                    className="w-full h-[48px] px-4 py-2 border border-[#E7E7E7] rounded-lg text-[#3F3F3F] text-[15px] focus:outline-none bg-white"
+                  >
+                    <option value="">Vahid</option>
+                    {units.map((u, idx) => (
+                      <option key={u.id || idx} value={u.id}>
+                        {u.type?.[language] || u.type?.az || u.type || '-'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {/* Desktop: combined */}
+                <div className="w-full hidden md:block">
                   <div className="flex items-center border border-[#E7E7E7] rounded-lg overflow-hidden h-[48px] bg-white">
                     <input 
                       type="number" 
