@@ -324,7 +324,8 @@ export const NewUpdate = () => {
 
   // API Integration Functions
   const submitAdvert = async (formData, userType) => {
-    const API_URL = "/api/adverts/store"; // Use proxy instead of full URL
+    const API_BASE = import.meta?.env?.VITE_API_BASE || "https://atfplatform.tw1.ru";
+    const API_URL = `${API_BASE}/api/adverts/store`;
     
     // Validate reach_from_address is in the future
     if (formData.reach_from_address) {
@@ -455,33 +456,41 @@ export const NewUpdate = () => {
       console.log("User type:", userType);
       console.log("Unit ID being sent:", formData.unit_id);
       console.log("Available units:", units);
-      
+
       const response = await fetch(API_URL, {
         method: "POST",
         body: formDataToSend,
         headers: {
           Authorization: `Bearer ${token}`,
-          // Don't set Content-Type header, let browser set it with boundary for FormData
         },
       });
-      
-      console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers);
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log("Success:", result);
-        // Handle success (show success message, redirect, etc.)
-        toast.success("Elan uğurla yaradıldı!");
-        // Reset form or redirect
-      } else {
-        const error = await response.json();
-        console.error("Error:", error);
-        toast.error("Xəta baş verdi: " + (error.message || "Naməlum xəta"));
+      const contentType = response.headers.get("content-type") || "";
+      const isJson = contentType.includes("application/json");
+
+      if (!response.ok) {
+        const errorBodyText = await response.text().catch(() => "");
+        let errorBody;
+        try { errorBody = errorBodyText ? JSON.parse(errorBodyText) : null; } catch { errorBody = { message: errorBodyText }; }
+        const message = errorBody?.message || `HTTP ${response.status}`;
+        console.error("Error:", errorBody || message);
+        toast.error("Xəta baş verdi: " + message);
+        return;
       }
+
+      // Handle success with possible empty/HTML body
+      let result = null;
+      if (isJson) {
+        const text = await response.text();
+        if (text) {
+          try { result = JSON.parse(text); } catch { result = null; }
+        }
+      }
+      console.log("Success:", result);
+      toast.success("Elan uğurla yaradıldı!");
     } catch (error) {
       console.error("Network error:", error);
-      toast.error("Şəbəkə xətası: " + error.message);
+      toast.error("Şəbəkə xətası: " + (error?.message || "Naməlum xəta"));
     }
   };
 
