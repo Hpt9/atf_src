@@ -323,10 +323,64 @@ export const NewUpdate = () => {
   };
 
   // API Integration Functions
+  const isEmptyValue = (val) => {
+    if (val == null) return true;
+    if (typeof val === 'string') return val.trim() === '';
+    if (Array.isArray(val)) return val.length === 0;
+    return false;
+  };
+
+  const validateRequired = (formData, userType) => {
+    // Only Azerbaijani language fields are mandatory; RU/EN can be empty
+    const baseFields = [
+      'capacity', 'unit_id', 'reach_from_address', 'from_id', 'to_id', 'expires_at',
+      'photos',
+      'name_az',
+      'load_type_az',
+      'exit_from_address_az',
+      'description_az'
+    ];
+
+    let required = [...baseFields];
+
+    if (userType === 'individual') {
+      required.push('empty_space', 'truck_type_id', 'truck_registration_number');
+    }
+    if (userType === 'legal') {
+      required.push(
+        'empty_space', 'truck_type_id', 'truck_registration_number',
+        // Only AZ variants are required; RU/EN optional
+        'driver_full_name_az',
+        'driver_biography_az',
+        'driver_experience_az',
+        'driver_photo', 'driver_certificates'
+      );
+    }
+    if (userType === 'entrepreneur') {
+      required.push('truck_type_id');
+    }
+
+    const missing = [];
+    for (const field of required) {
+      const value = formData[field];
+      if (isEmptyValue(value)) missing.push(field);
+    }
+    if (missing.length > 0) {
+      toast.error('Bütün məlumatları daxil edin.');
+      return false;
+    }
+    return true;
+  };
+
   const submitAdvert = async (formData, userType) => {
     const API_BASE = import.meta?.env?.VITE_API_BASE || "https://atfplatform.tw1.ru";
     const API_URL = `${API_BASE}/api/adverts/store`;
     
+    // Required fields validation
+    if (!validateRequired(formData, userType)) {
+      return;
+    }
+
     // Validate reach_from_address is in the future
     if (formData.reach_from_address) {
       const reachDate = new Date(formData.reach_from_address);
@@ -611,29 +665,35 @@ export const NewUpdate = () => {
                   <div>
                     {activeLangTab === 'az' && (
                       <input
-                        type="text"
+                        type={individualFormData.exit_from_address_az ? "datetime-local" : "text"}
                         value={individualFormData.exit_from_address_az}
                         onChange={(e) => handleIndividualInputChange("exit_from_address_az", e.target.value)}
+                        onFocus={(e) => { if (!e.target.value) { e.target.type = 'datetime-local'; } }}
+                        onBlur={(e) => { if (!e.target.value) { e.target.type = 'text'; } }}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Çıxış ünvanı "
+                        placeholder="Çıxış tarixi "
                       />
                     )}
                     {activeLangTab === 'ru' && (
                       <input
-                        type="text"
+                        type={individualFormData.exit_from_address_ru ? "datetime-local" : "text"}
                         value={individualFormData.exit_from_address_ru}
                         onChange={(e) => handleIndividualInputChange("exit_from_address_ru", e.target.value)}
+                        onFocus={(e) => { if (!e.target.value) { e.target.type = 'datetime-local'; } }}
+                        onBlur={(e) => { if (!e.target.value) { e.target.type = 'text'; } }}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Çıxış ünvanı "
+                        placeholder="Çıxış tarixi "
                       />
                     )}
                     {activeLangTab === 'en' && (
                       <input
-                        type="text"
+                        type={individualFormData.exit_from_address_en ? "datetime-local" : "text"}
                         value={individualFormData.exit_from_address_en}
                         onChange={(e) => handleIndividualInputChange("exit_from_address_en", e.target.value)}
+                        onFocus={(e) => { if (!e.target.value) { e.target.type = 'datetime-local'; } }}
+                        onBlur={(e) => { if (!e.target.value) { e.target.type = 'text'; } }}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Çıxış ünvanı "
+                        placeholder="Çıxış tarixi "
                       />
                     )}
                   </div>
@@ -693,11 +753,20 @@ export const NewUpdate = () => {
 
                   <div>
                     <input
-                      type="text"
+                      type="number"
+                      min={0}
+                      step="1"
                       value={individualFormData.empty_space}
-                      onChange={(e) =>
-                        handleIndividualInputChange("empty_space", e.target.value)
-                      }
+                      onKeyDown={(e)=>{ if (["-","+","e","E"].includes(e.key)) e.preventDefault(); }}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "") {
+                          handleIndividualInputChange("empty_space", "");
+                          return;
+                        }
+                        const n = Math.max(0, Number(v));
+                        handleIndividualInputChange("empty_space", Number.isNaN(n) ? "" : String(n));
+                      }}
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
                       placeholder="Boş yer"
                     />
@@ -950,29 +1019,35 @@ export const NewUpdate = () => {
                   <div>
                     {activeLangTab === 'az' && (
                       <input
-                        type="text"
+                        type={legalFormData.exit_from_address_az ? "datetime-local" : "text"}
                         value={legalFormData.exit_from_address_az}
                         onChange={(e) => handleLegalInputChange("exit_from_address_az", e.target.value)}
+                        onFocus={(e) => { if (!e.target.value) { e.target.type = 'datetime-local'; } }}
+                        onBlur={(e) => { if (!e.target.value) { e.target.type = 'text'; } }}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Çıxış ünvanı "
+                        placeholder="Çıxış tarixi "
                       />
                     )}
                     {activeLangTab === 'ru' && (
                       <input
-                        type="text"
+                        type={legalFormData.exit_from_address_ru ? "datetime-local" : "text"}
                         value={legalFormData.exit_from_address_ru}
                         onChange={(e) => handleLegalInputChange("exit_from_address_ru", e.target.value)}
+                        onFocus={(e) => { if (!e.target.value) { e.target.type = 'datetime-local'; } }}
+                        onBlur={(e) => { if (!e.target.value) { e.target.type = 'text'; } }}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Çıxış ünvanı "
+                        placeholder="Çıxış tarixi "
                       />
                     )}
                     {activeLangTab === 'en' && (
                       <input
-                        type="text"
+                        type={legalFormData.exit_from_address_en ? "datetime-local" : "text"}
                         value={legalFormData.exit_from_address_en}
                         onChange={(e) => handleLegalInputChange("exit_from_address_en", e.target.value)}
+                        onFocus={(e) => { if (!e.target.value) { e.target.type = 'datetime-local'; } }}
+                        onBlur={(e) => { if (!e.target.value) { e.target.type = 'text'; } }}
                         className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                        placeholder="Çıxış ünvanı "
+                        placeholder="Çıxış tarixi "
                       />
                     )}
                   </div>
@@ -1033,11 +1108,20 @@ export const NewUpdate = () => {
 
                   <div>
                     <input
-                      type="text"
+                      type="number"
+                      min={0}
+                      step="1"
                       value={legalFormData.empty_space}
-                      onChange={(e) =>
-                        handleLegalInputChange("empty_space", e.target.value)
-                      }
+                      onKeyDown={(e)=>{ if (["-","+","e","E"].includes(e.key)) e.preventDefault(); }}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "") {
+                          handleLegalInputChange("empty_space", "");
+                          return;
+                        }
+                        const n = Math.max(0, Number(v));
+                        handleLegalInputChange("empty_space", Number.isNaN(n) ? "" : String(n));
+                      }}
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
                       placeholder="Boş yer"
                     />
@@ -1367,6 +1451,7 @@ export const NewUpdate = () => {
                 <div className="space-y-4">
                   {/* NAME FIELDS - Entrepreneur Form */}
                   <div>
+                    {activeLangTab === 'az' && (
                             <input
                               type="text"
                       value={entrepreneurFormData.name_az}
@@ -1376,28 +1461,34 @@ export const NewUpdate = () => {
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
                       placeholder="Elanın adı "
                             />
+                    )}
+                    {activeLangTab === 'ru' && (
                             <input
                       type="text"
                       value={entrepreneurFormData.name_ru}
                       onChange={(e) =>
                         handleEntrepreneurInputChange("name_ru", e.target.value)
                       }
-                      className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
                       placeholder="Elanın adı "
                     />
-                    <input
-                      type="text"
-                      value={entrepreneurFormData.name_en}
-                      onChange={(e) =>
-                        handleEntrepreneurInputChange("name_en", e.target.value)
-                      }
-                      className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Elanın adı "
-                    />
+                    )}
+                    {activeLangTab === 'en' && (
+                      <input
+                        type="text"
+                        value={entrepreneurFormData.name_en}
+                        onChange={(e) =>
+                          handleEntrepreneurInputChange("name_en", e.target.value)
+                        }
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                        placeholder="Elanın adı "
+                      />
+                    )}
                   </div>
 
                   {/* LOAD TYPE FIELDS - Entrepreneur Form */}
                   <div>
+                    {activeLangTab === 'az' && (
                               <input
                       type="text"
                       value={entrepreneurFormData.load_type_az}
@@ -1407,55 +1498,72 @@ export const NewUpdate = () => {
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
                       placeholder="Yük növü "
                     />
+                    )}
+                    {activeLangTab === 'ru' && (
                     <input
                       type="text"
                       value={entrepreneurFormData.load_type_ru}
                       onChange={(e) =>
                         handleEntrepreneurInputChange("load_type_ru", e.target.value)
                       }
-                      className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
                       placeholder="Yük növü "
                     />
+                    )}
+                    {activeLangTab === 'en' && (
                     <input
                       type="text"
                       value={entrepreneurFormData.load_type_en}
                       onChange={(e) =>
                         handleEntrepreneurInputChange("load_type_en", e.target.value)
                       }
-                      className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
                       placeholder="Yük növü "
                     />
+                    )}
                   </div>
 
                   {/* EXIT FROM ADDRESS FIELDS - Entrepreneur Form */}
                   <div>
+                    {activeLangTab === 'az' && (
                     <input
-                      type="text"
+                      type={entrepreneurFormData.exit_from_address_az ? "datetime-local" : "text"}
                       value={entrepreneurFormData.exit_from_address_az}
                       onChange={(e) =>
                         handleEntrepreneurInputChange("exit_from_address_az", e.target.value)
                       }
+                      onFocus={(e) => { if (!e.target.value) { e.target.type = 'datetime-local'; } }}
+                      onBlur={(e) => { if (!e.target.value) { e.target.type = 'text'; } }}
                       className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Çıxış ünvanı "
+                      placeholder="Çıxış tarixi "
                     />
+                    )}
+                    {activeLangTab === 'ru' && (
                     <input
-                      type="text"
+                      type={entrepreneurFormData.exit_from_address_ru ? "datetime-local" : "text"}
                       value={entrepreneurFormData.exit_from_address_ru}
                       onChange={(e) =>
                         handleEntrepreneurInputChange("exit_from_address_ru", e.target.value)
                       }
-                      className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Çıxış ünvanı "
+                      onFocus={(e) => { if (!e.target.value) { e.target.type = 'datetime-local'; } }}
+                      onBlur={(e) => { if (!e.target.value) { e.target.type = 'text'; } }}
+                      className="w-full  px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Çıxış tarixi "
                     />
+                    )}
+                    {activeLangTab === 'en' && (
                     <input
-                      type="text"
+                      type={entrepreneurFormData.exit_from_address_en ? "datetime-local" : "text"}
                       value={entrepreneurFormData.exit_from_address_en}
                       onChange={(e) =>
                         handleEntrepreneurInputChange("exit_from_address_en", e.target.value)
                       }
-                      className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
-                      placeholder="Çıxış ünvanı "
+                      onFocus={(e) => { if (!e.target.value) { e.target.type = 'datetime-local'; } }}
+                      onBlur={(e) => { if (!e.target.value) { e.target.type = 'text'; } }}
+                      className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] placeholder:font-medium"
+                      placeholder="Çıxış tarixi "
                     />
+                    )}
                   </div>
 
                   <div>
@@ -1609,7 +1717,7 @@ export const NewUpdate = () => {
                           handleEntrepreneurInputChange("description_ru", e.target.value)
                         }
                         rows={4}
-                        className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
                         placeholder="Təsvir ..."
                       />
                     )}
@@ -1620,7 +1728,7 @@ export const NewUpdate = () => {
                           handleEntrepreneurInputChange("description_en", e.target.value)
                         }
                         rows={4}
-                        className="w-full mt-1 px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
+                        className="w-full px-4 py-3 border border-[#D3D3D3] bg-white rounded-lg focus:outline-none focus:border-[#2E92A0] resize-none placeholder:font-medium h-[116px]"
                         placeholder="Təsvir ..."
                       />
                     )}

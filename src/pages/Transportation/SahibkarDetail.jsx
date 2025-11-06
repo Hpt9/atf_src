@@ -4,7 +4,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { IoArrowBack } from 'react-icons/io5'
 import useLanguageStore from '../../store/languageStore'
 import { useAuth } from '../../context/AuthContext'
-
+import { MdNavigateNext } from "react-icons/md";
 const SahibkarDetailIndex = () => {
   const { slug } = useParams();
   const location = useLocation();
@@ -19,7 +19,7 @@ const SahibkarDetailIndex = () => {
   const [isPanning, setIsPanning] = useState(false);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [lastPos, setLastPos] = useState({ x: 0, y: 0 });
-
+  
   useEffect(() => {
     const load = async () => {
       try {
@@ -155,9 +155,9 @@ const SahibkarDetailIndex = () => {
               <div className="text-[#6B7280]">{subtitle}</div>
               <div className="text-[#3F3F3F]">Gəlmə vaxtı: {item.reach_from_address || '-'}</div>
               <div className="text-[#3F3F3F]">Açıqlama: {item.description?.[language] || item.description?.az || '-'}</div>
-              <div className="text-[#3F3F3F]">Na daşıyır: {item.load_type?.[language] || item.load_type?.az || item.load_type || '-'}</div>
-              <div className="text-[#3F3F3F]">Haradan gəlir: {formatArea(item.from, language)}</div>
-              <div className="text-[#3F3F3F]">Hara gedir: {formatArea(item.to, language)}</div>
+              <div className="text-[#3F3F3F]">Daşınacaq yük növü: {item.load_type?.[language] || item.load_type?.az || item.load_type || '-'}</div>
+              <div className="text-[#3F3F3F]">Yükün yerləşdiyi ünvan: {formatArea(item.from, language)}</div>
+              <div className="text-[#3F3F3F]">Yükün çatdırılacağı ünvanı: {formatArea(item.to, language)}</div>
               <div className="text-[#3F3F3F]">
                 Sahib: {item.user ? (
                   <button
@@ -182,6 +182,25 @@ const SahibkarDetailIndex = () => {
               <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Sıfırla</button>
               <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => setIsFullscreen(false)}>Bağla</button>
             </div>
+            {/* Left/Right arrows */}
+            {Array.isArray(images) && images.length > 1 && (
+              <>
+                <button
+                  aria-label="Previous image"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-[1002] px-3 py-2 rounded-full bg-[#2E92A0] text-[#2E92A0] border border-[#E7E7E7]"
+                  onClick={(e) => { e.stopPropagation(); setFullscreenIndex((i) => (i - 1 + images.length) % images.length); }}
+                >
+                <MdNavigateNext className="rotate-180 text-white" />
+                </button>
+                <button
+                  aria-label="Next image"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-[1002] px-3 py-2 rounded-full bg-[#2E92A0] text-[#2E92A0] border border-[#E7E7E7]"
+                  onClick={(e) => { e.stopPropagation(); setFullscreenIndex((i) => (i + 1) % images.length); }}
+                >
+                <MdNavigateNext className="text-white" />
+                </button>
+              </>
+            )}
             <div
               className="w-full h-full flex items-center justify-center overflow-hidden cursor-move"
               onWheel={(e) => { e.preventDefault(); const delta = e.deltaY < 0 ? 0.1 : -0.1; setZoom((z) => Math.min(5, Math.max(1, z + delta))); }}
@@ -192,7 +211,7 @@ const SahibkarDetailIndex = () => {
                 src={images[fullscreenIndex] || images[0]}
                 alt="Fullscreen"
                 style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transition: isPanning ? 'none' : 'transform 0.1s ease-out' }}
-                className="max-w-none max-h-none object-contain select-none"
+                className="object-contain select-none max-w-[90vw] max-h-[80vh]"
                 draggable={false}
               />
             </div>

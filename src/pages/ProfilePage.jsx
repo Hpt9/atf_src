@@ -37,6 +37,7 @@ const ProfilePage = () => {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [activeAdvertLangTab, setActiveAdvertLangTab] = useState('az');
   const [isEditingAdvert, setIsEditingAdvert] = useState(null); // null or advert ID
+  const [advertStatusFilter, setAdvertStatusFilter] = useState('all'); // all | approved | pending | rejected
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -1416,9 +1417,43 @@ const ProfilePage = () => {
             {texts.adverts[language] || texts.adverts.az}
           </h3>
 
-          {userData?.adverts && userData.adverts.length > 0 ? (
+          {/* Status Filters */}
+          {userData?.adverts && userData.adverts.length > 0 && (
+            (() => {
+              const counts = (userData.adverts || []).reduce((acc, a) => {
+                const s = (a.status || '').toLowerCase();
+                if (s === 'approved') acc.approved += 1;
+                else if (s === 'pending') acc.pending += 1;
+                else if (s === 'rejected') acc.rejected += 1;
+                return acc;
+              }, { approved: 0, pending: 0, rejected: 0 });
+              return (
+                <div className="flex items-center gap-2 mb-4">
+                  {[
+                    { key: 'all', label: 'Hamısı' },
+                    { key: 'approved', label: 'Təsdiqlənmiş', count: counts.approved },
+                    { key: 'pending', label: 'Gözləmədə', count: counts.pending },
+                    { key: 'rejected', label: 'Rədd edilib', count: counts.rejected },
+                  ].map((f) => (
+                    <button
+                      key={f.key}
+                      type="button"
+                      onClick={() => setAdvertStatusFilter(f.key)}
+                      className={`px-3 py-1 rounded-full text-sm border transition-colors ${advertStatusFilter === f.key ? 'bg-[#2E92A0] text-white border-[#2E92A0]' : 'bg-white text-[#3F3F3F] border-[#E7E7E7] hover:border-[#2E92A0]'}`}
+                    >
+                      {f.label}{typeof f.count === 'number' ? ` (${f.count})` : ''}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()
+          )}
+
+          {(() => {
+            const list = (userData?.adverts || []).filter((a) => advertStatusFilter === 'all' ? true : (a.status || '').toLowerCase() === advertStatusFilter);
+            return list && list.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {userData.adverts.map((advert, index) => {
+              {list.map((advert, index) => {
                 // Determine the correct route based on user role
                 const getAdvertRoute = (userRole, advertSlug) => {
                   switch (userRole) {
@@ -1442,6 +1477,18 @@ const ProfilePage = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 * index }}
                   >
+                    {/* Status badge */}
+                    {advert.status && (
+                      <span
+                        className={`absolute top-4 left-4 px-2 py-1 rounded-full text-xs font-medium ${
+                          (advert.status || '').toLowerCase() === 'approved' ? 'bg-green-100 text-green-700' :
+                          (advert.status || '').toLowerCase() === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {(advert.status || '').toLowerCase() === 'approved' ? 'Təsdiqlənmiş' : (advert.status || '').toLowerCase() === 'pending' ? 'Gözləmədə' : 'Rədd edilib'}
+                      </span>
+                    )}
                     {/* Clickable Link Wrapper */}
                     <Link
                       to={getAdvertRoute(userData?.role, advert.slug)}
@@ -1519,7 +1566,8 @@ const ProfilePage = () => {
               <IoCar className="mx-auto text-4xl text-gray-400 mb-4" />
               <p className="text-gray-600">{texts.noAdverts[language] || texts.noAdverts.az}</p>
             </div>
-          )}
+          );
+          })()}
 
           {/* Advert Edit Form */}
           {isEditingAdvert && editingAdvertData && (

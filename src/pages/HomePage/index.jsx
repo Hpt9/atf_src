@@ -23,6 +23,7 @@ const HomePage = () => {
   const [isSearching, setIsSearching] = useState(false);
   const searchTimeoutRef = useRef(null);
   const searchContainerRef = useRef(null);
+  const mobileSearchContainerRef = useRef(null);
 
   // Text translations
   const texts = {
@@ -61,7 +62,9 @@ const HomePage = () => {
   // Handle click outside search results
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+      const desktopOk = !searchContainerRef.current || !searchContainerRef.current.contains(event.target);
+      const mobileOk = !mobileSearchContainerRef.current || !mobileSearchContainerRef.current.contains(event.target);
+      if (desktopOk && mobileOk) {
         setSearchResults(null);
       }
     };
@@ -177,9 +180,81 @@ const HomePage = () => {
       <div className="md:hidden px-[16px] py-4">
         <h1 className="text-[18px] font-semibold text-[#2E92A0]">Ana səhifə</h1>
       </div>
+      {/* Mobile Search */}
+      <div className="md:hidden px-[16px] -mt-2 mb-4" ref={mobileSearchContainerRef}>
+        <div className="w-full flex items-center gap-x-[8px] rounded-[8px] bg-white px-[12px] py-[10px] shadow-sm">
+          <CiSearch className={`w-[16px] h-[16px] ${isSearching ? 'text-[#2E92A0]' : 'text-[rgba(160,160,160,1)]'}`} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={texts.searchPlaceholder[language] || texts.searchPlaceholder.az}
+            className="w-full outline-none text-[#2E92A0] placeholder:text-[rgba(160,160,160,1)] placeholder:text-[16px]"
+          />
+        </div>
+        <AnimatePresence>
+          {(searchResults || isSearching) && (
+            <Motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="mt-2 bg-white rounded-[8px] shadow-lg max-h-[60vh] overflow-y-auto"
+            >
+              {isSearching ? (
+                <div className="p-4 flex items-center gap-3 justify-center text-[#3F3F3F]">
+                  <div className="w-5 h-5 border-2 border-[#2E92A0] border-t-transparent rounded-full animate-spin"></div>
+                  <span>{texts.searching[language] || texts.searching.az}</span>
+                </div>
+              ) : (searchResults?.hs_codes?.length > 0 || searchResults?.approvals?.length > 0) ? (
+                <>
+                  {searchResults.hs_codes?.length > 0 && (
+                    <div className="p-2">
+                      <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">{texts.hsCodes[language] || texts.hsCodes.az}</div>
+                      {searchResults.hs_codes.map((item) => (
+                        <div
+                          key={item.id}
+                          onClick={() => handleResultClick('hs_codes', item)}
+                          className="flex items-center px-3 py-2 hover:bg-[#F5F5F5] cursor-pointer rounded-[4px]"
+                        >
+                          <span className="text-[#2E92A0] font-medium mr-2">{item.code}</span>
+                          <span className="text-[#3F3F3F] flex-1">{item.name[language]}</span>
+                          <IoIosArrowForward className="text-[#3F3F3F] ml-2" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {searchResults.approvals?.length > 0 && (
+                    <div className="p-2 border-t border-[#E7E7E7]">
+                      <div className="px-3 py-2 text-sm font-medium text-[#3F3F3F]">{texts.permits[language] || texts.permits.az}</div>
+                      {searchResults.approvals.map((item) => (
+                        <div
+                          key={item.id}
+                          onClick={() => handleResultClick('approvals', item)}
+                          className="flex items-center px-3 py-2 hover:bg-[#F5F5F5] cursor-pointer rounded-[4px]"
+                        >
+                          <span className="text-[#3F3F3F]">{item.title[language]}</span>
+                          <IoIosArrowForward className="text-[#3F3F3F] ml-2" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="p-4 text-center text-[#3F3F3F]">
+                  {texts.noResults[language] || texts.noResults.az}
+                </div>
+              )}
+            </Motion.div>
+          )}
+        </AnimatePresence>
+      </div>
       <div
         className="w-full h-[220px] md:h-[457px] bg-no-repeat bg-cover bg-center"
-        style={{ backgroundImage: `url(${IMG})` }}
+        style={{
+          backgroundImage: `url(${
+            (data?.find((item) => item.key === "home_bg_img")?.value) || IMG
+          })`
+        }}
       >
         <div className="title w-full h-full flex flex-col justify-center items-center relative">
           <div className="cover w-[100%] h-[100%] bg-[rgba(5,32,75,0.72)] absolute top-0 left-0"></div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { IoArrowBack, IoInformationCircle } from "react-icons/io5";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { MdNavigateNext } from "react-icons/md";
 // API base URL; replace if you have an env var
 const API_BASE = 'https://atfplatform.tw1.ru';
 
@@ -104,6 +104,25 @@ export const ElanDetail = () => {
                 <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Sıfırla</button>
                 <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => setIsFullscreen(false)}>Bağla</button>
               </div>
+              {/* Left/Right arrows */}
+              {Array.isArray(data?.photos) && data.photos.length > 1 && (
+                <>
+                  <button
+                    aria-label="Previous image"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-[1002] px-3 py-2 rounded-full bg-[#2E92A0] text-[#2E92A0] border border-[#E7E7E7]"
+                    onClick={(e) => { e.stopPropagation(); setSelectedImage((i) => (i - 1 + data.photos.length) % data.photos.length); }}
+                  >
+                  <MdNavigateNext className="rotate-180 text-white" />
+                  </button>
+                  <button
+                    aria-label="Next image"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-[1002] px-3 py-2 rounded-full bg-[#2E92A0] text-[#2E92A0] border border-[#E7E7E7]"
+                    onClick={(e) => { e.stopPropagation(); setSelectedImage((i) => (i + 1) % data.photos.length); }}
+                  >
+                  <MdNavigateNext className="text-white" />
+                  </button>
+                </>
+              )}
               <div
                 className="w-full h-full flex items-center justify-center overflow-hidden cursor-move"
                 onWheel={(e) => { e.preventDefault(); const delta = e.deltaY < 0 ? 0.1 : -0.1; setZoom((z) => Math.min(5, Math.max(1, z + delta))); }}
@@ -114,7 +133,7 @@ export const ElanDetail = () => {
                   src={(data?.photos && data.photos[selectedImage]) || data?.photos?.[0] || ''}
                   alt="Fullscreen"
                   style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transition: isPanning ? 'none' : 'transform 0.1s ease-out' }}
-                  className="max-w-none max-h-none object-contain select-none"
+                  className="object-contain select-none max-w-[90vw] max-h-[80vh]"
                   draggable={false}
                 />
               </div>

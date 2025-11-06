@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { IoArrowBack, IoInformationCircle } from "react-icons/io5";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { MdNavigateNext } from "react-icons/md";
 // API base URL
 const API_BASE = 'https://atfplatform.tw1.ru';
 
@@ -40,6 +40,12 @@ export const KataloqDetail = () => {
 
   const mainImage = (data?.photos && data.photos[selectedImage]) || data?.photos?.[0] || "https://via.placeholder.com/600x400?text=No+Image";
   const title = data?.name?.az || '—';
+  const driverCertificates = (() => {
+    const raw = data?.driver_certificates;
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    try { return JSON.parse(raw); } catch { return []; }
+  })();
 
   return (
     <div className="w-full flex items-center flex-col gap-y-[16px]">
@@ -90,6 +96,26 @@ export const KataloqDetail = () => {
                 <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Sıfırla</button>
                 <button className="px-3 py-2 rounded bg-white/90 text-[#2E92A0] border border-[#E7E7E7]" onClick={() => setIsFullscreen(false)}>Bağla</button>
               </div>
+              {/* Left/Right arrows */}
+              {Array.isArray(data?.photos) && data.photos.length > 1 && (
+                <>
+                  <button
+                    aria-label="Previous image"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-[1002] px-3 py-2 rounded-full bg-[#2E92A0]  border border-[#E7E7E7]"
+                    onClick={(e) => { e.stopPropagation(); setSelectedImage((i) => (i - 1 + data.photos.length) % data.photos.length); }}
+                  >
+                    <MdNavigateNext className="rotate-180 text-white" />
+
+                  </button>
+                  <button
+                    aria-label="Next image"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-[1002] px-3 py-2 rounded-full bg-[#2E92A0]  border border-[#E7E7E7]"
+                    onClick={(e) => { e.stopPropagation(); setSelectedImage((i) => (i + 1) % data.photos.length); }}
+                  >
+                   <MdNavigateNext className="text-white" />
+                  </button>
+                </>
+              )}
               <div
                 className="w-full h-full flex items-center justify-center overflow-hidden cursor-move"
                 onWheel={(e) => { e.preventDefault(); const delta = e.deltaY < 0 ? 0.1 : -0.1; setZoom((z) => Math.min(5, Math.max(1, z + delta))); }}
@@ -100,7 +126,7 @@ export const KataloqDetail = () => {
                   src={mainImage}
                   alt="Fullscreen"
                   style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transition: isPanning ? 'none' : 'transform 0.1s ease-out' }}
-                  className="max-w-none max-h-none object-contain select-none"
+                  className="object-contain select-none max-w-[90vw] max-h-[80vh]"
                   draggable={false}
                 />
               </div>
@@ -143,6 +169,56 @@ export const KataloqDetail = () => {
               Ətraflı
             </span>
           </div>
+
+          {/* Driver Information Card */}
+          {(data?.driver_full_name || data?.driver_photo || data?.driver_biography || driverCertificates.length > 0) && (
+            <div className="bg-[#F6F6F6] rounded-lg p-6 flex flex-col gap-3 mt-4">
+              <div className="text-[#3F3F3F] font-medium text-lg">Sürücü məlumatları</div>
+              {data?.driver_photo && (
+                <img
+                  src={data.driver_photo}
+                  alt="Sürücü şəkli"
+                  className="w-full h-[180px] object-cover rounded-[12px]"
+                />
+              )}
+              {data?.driver_full_name && (
+                <div className="flex items-center justify-between">
+                  <span className="text-[#3F3F3F]">Ad Soyad</span>
+                  <span className="text-[#3F3F3F] text-[14px] font-medium">{data.driver_full_name}</span>
+                </div>
+              )}
+              {data?.driver_experience && (
+                <div className="flex items-center justify-between">
+                  <span className="text-[#3F3F3F]">Təcrübə</span>
+                  <span className="text-[#3F3F3F] text-[14px] font-medium">{data.driver_experience}</span>
+                </div>
+              )}
+              {data?.driver_biography && (
+                <div>
+                  <div className="text-[#3F3F3F] mb-1">Bioqrafiya</div>
+                  <div className="text-[#3F3F3F] text-[14px] whitespace-pre-line">{data.driver_biography}</div>
+                </div>
+              )}
+              {driverCertificates.length > 0 && (
+                <div>
+                  <div className="text-[#3F3F3F] mb-2">Sertifikatlar</div>
+                  <div className="flex flex-col gap-2">
+                    {driverCertificates.map((href, idx) => (
+                      <a
+                        key={idx}
+                        href={href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full inline-flex items-center justify-center px-3 py-2 rounded-[8px] bg-white text-[#2E92A0] border border-[#E7E7E7] hover:bg-[#F0F9FA] transition text-sm"
+                      >
+                        Sertifikat {idx + 1}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
       {error && (

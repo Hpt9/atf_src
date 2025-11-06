@@ -856,51 +856,79 @@ const HsCodesPage = () => {
                       <thead className="bg-[#F9F9F9]">
                         <tr>
                           <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Restriction Type' : 
-                             language === 'ru' ? 'Тип ограничения' : 
-                             'Məhdudiyyət növü'}
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Description' : 
-                             language === 'ru' ? 'Описание' : 
-                             'Təsvir'}
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Status' : 
-                             language === 'ru' ? 'Статус' : 
-                             'Status'}
+                            {language === 'en' ? 'Restriction details' :
+                             language === 'ru' ? 'Подробности ограничения' :
+                             'Məhdudiyyət məlumatları'}
                           </th>
                         </tr>
                       </thead>
                       <tbody>
                         {Array.isArray(categoryDetails?.restrictions) && categoryDetails.restrictions.length > 0 ? (
                           categoryDetails.restrictions.map((r, idx) => (
-                            <tr key={idx} className="hover:bg-[#F5F5F5]">
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">
-                                <div>{r?.category_name?.az || r?.category_name?.en || r?.category_name?.ru || '-'}</div>
-                                <div className="text-xs text-[#6B7280] mt-1">
-                                  {(r?.goods_code || r?.suffix || r?.match_indicator) ? (
-                                    <span>
-                                      {r?.goods_code ? `Kod: ${r.goods_code}` : ''}
-                                      {r?.suffix ? `, Suffix: ${r.suffix}` : ''}
-                                      {r?.match_indicator ? `, Match: ${r.match_indicator}` : ''}
-                                    </span>
-                                  ) : null}
+                            <tr key={idx} className="align-top">
+                              <td className="px-4 py-4 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">
+                                <div className="grid gap-3">
+                                  {/* Malın kateqoriyası və adı */}
+                                  <div className="rounded-md border border-[#E7E7E7] bg-[#FAFAFA] p-3">
+                                    <div className="text-[12px] font-semibold tracking-wide text-[#2E92A0] uppercase">
+                                      {language === 'en' ? 'Category and name' : language === 'ru' ? 'Категория и наименование' : 'Malın kateqoriyası və adı'}
+                                    </div>
+                                    <div className="mt-1 font-medium">
+                                      {(r?.category_name?.az || r?.category_name?.en || r?.category_name?.ru || '-')}
+                                    </div>
+                                    <div className="mt-1 text-[#3F3F3F]">
+                                      {(r?.list_name?.az || r?.list_name?.en || r?.list_name?.ru || '')} {(r?.name?.az || r?.name?.en || r?.name?.ru || '')}
+                                    </div>
+                                  </div>
+
+                                  {/* Malın XİFMN kodu üzrə */}
+                                  <div className="rounded-md border border-[#E7E7E7] p-3">
+                                    <div className="text-[12px] font-semibold tracking-wide text-[#2E92A0] uppercase">
+                                      {language === 'en' ? 'By HS code' : language === 'ru' ? 'По коду ТН ВЭД' : 'Malın XİFMN kodu üzrə'}
+                                    </div>
+                                    <div className="mt-1">
+                                      {r?.goods_code || '-'}{r?.suffix || ''}
+                                    </div>
+                                  </div>
+
+                                  {/* Hüquqi əsas */}
+                                  <div className="rounded-md border border-[#E7E7E7] bg-[#FAFAFA] p-3">
+                                    <div className="text-[12px] font-semibold tracking-wide text-[#2E92A0] uppercase">
+                                      {language === 'en' ? 'Legal basis' : language === 'ru' ? 'Правовое основание' : 'Hüquqi əsas'}
+                                    </div>
+                                    <div className="mt-1">
+                                      {r?.doc_name?.az || r?.doc_name?.en || r?.doc_name?.ru || '-'}
+                                    </div>
+                                    {(r?.doc_no || r?.link) && (
+                                      <div className="mt-1 text-[#6B7280] flex flex-col gap-1">
+                                        {r?.doc_no ? <span className="inline-block rounded bg-[#EEF8FA] px-2 py-0.5 text-[12px] text-[#2E92A0]">{r.doc_no}</span> : null}
+                                        {r?.link ? (
+                                          <a href={r.link} target="_blank" rel="noopener noreferrer" className="text-[#2E92A0] underline break-all">
+                                            {r.link}
+                                          </a>
+                                        ) : null}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Qeyd */}
+                                  {(r?.foot_comment?.az || r?.foot_comment?.en || r?.foot_comment?.ru) && (
+                                    <div className="rounded-md border border-[#E7E7E7] p-3">
+                                      <div className="text-[12px] font-semibold tracking-wide text-[#2E92A0] uppercase">
+                                        {language === 'en' ? 'Note' : language === 'ru' ? 'Примечание' : 'Qeyd'}
+                                      </div>
+                                      <div className="mt-1 whitespace-pre-line">
+                                        {r?.foot_comment?.az || r?.foot_comment?.en || r?.foot_comment?.ru}
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
-                              </td>
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">
-                                <div>{r?.name?.az || r?.name?.en || r?.name?.ru || '-'}</div>
-                                <div className="text-xs text-[#6B7280] mt-1">{r?.list_name?.az || r?.list_name?.en || r?.list_name?.ru || ''}</div>
-                              </td>
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">
-                                <div>{r?.doc_name?.az || r?.doc_name?.en || r?.doc_name?.ru || '-'}</div>
-                                <div className="text-xs text-[#6B7280] mt-1">{r?.doc_no || ''}</div>
                               </td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan="4" className="px-4 py-8 text-center text-[#6B7280]">{language === 'en' ? 'No data' : language === 'ru' ? 'Нет данных' : 'Məlumat yoxdur'}</td>
+                            <td className="px-4 py-8 text-center text-[#6B7280]">{language === 'en' ? 'No data' : language === 'ru' ? 'Нет данных' : 'Məlumat yoxdur'}</td>
                           </tr>
                         )}
                       </tbody>
