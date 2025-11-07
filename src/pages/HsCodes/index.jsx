@@ -406,6 +406,18 @@ const HsCodesPage = () => {
     return params;
   };
 
+  // Format ISO date (YYYY-MM-DD) into DD.MM.YYYY; returns '-' if invalid
+  const formatDate = (iso) => {
+    if (!iso) return '-';
+    try {
+      const [y, m, d] = String(iso).split('-');
+      if (!y || !m || !d) return '-';
+      return `${d.padStart(2, '0')}.${m.padStart(2, '0')}.${y}`;
+    } catch {
+      return '-';
+    }
+  };
+
   // Auto load parameters when opening modal or switching to parameters tab
   useEffect(() => {
     if (!showTable) return;
@@ -815,37 +827,91 @@ const HsCodesPage = () => {
                       <thead className="bg-[#F9F9F9]">
                         <tr>
                           <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Country' : 
-                             language === 'ru' ? 'Страна' : 
-                             'Ölkə'}
+                            {language === 'en' ? 'Tax type' : 
+                             language === 'ru' ? 'Вид налога' : 
+                             'Vergi növü'}
                           </th>
                           <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
                             {language === 'en' ? 'Rate (%)' : 
                              language === 'ru' ? 'Ставка (%)' : 
-                             'Dərəcə (%)'}
+                             'Faiz dərəcəsi'}
                           </th>
                           <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Valid From' : 
+                            {language === 'en' ? 'Coefficient' : 
+                             language === 'ru' ? 'Коэффициент' : 
+                             'Əmsal'}
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
+                            {language === 'en' ? 'Unit' : 
+                             language === 'ru' ? 'Еd. изм.' : 
+                             'Ölçü vahidi'}
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
+                            {language === 'en' ? 'Amount' : 
+                             language === 'ru' ? 'Сумма' : 
+                             'Məbləğ'}
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
+                            {language === 'en' ? 'Determined amount' : 
+                             language === 'ru' ? 'Определенная сумма' : 
+                             'Müəyyən olunmuş məbləğ'}
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
+                            {language === 'en' ? 'Procedure' : 
+                             language === 'ru' ? 'Процедура' : 
+                             'Prosedur'}
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
+                            {language === 'en' ? 'Valid from' : 
                              language === 'ru' ? 'Действует с' : 
-                             'Etibarlıdır'}
+                             'Qüvvəyə minmə tarixi'}
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
+                            {language === 'en' ? 'Expires on' : 
+                             language === 'ru' ? 'Истекает' : 
+                             'Qüvvədən düşmə tarixi'}
+                          </th>
+                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
+                            {language === 'en' ? 'Currency' : 
+                             language === 'ru' ? 'Валюта' : 
+                             'Valyuta'}
                           </th>
                         </tr>
                       </thead>
                       <tbody>
-                        {Array.isArray(categoryDetails?.taxes) && categoryDetails.taxes.length > 0 ? (
-                          categoryDetails.taxes.map((t, idx) => (
-                            <tr key={idx} className="hover:bg-[#F5F5F5]">
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{t?.country || '-'}</td>
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{t?.rate ?? '-'}</td>
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{t?.valid_from || '-'}</td>
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">-</td>
+                        {(() => {
+                          const groups = Array.isArray(categoryDetails?.taxes) ? categoryDetails.taxes : [];
+                          const rows = groups.flatMap((g) => {
+                            const unitByLang = g?.unit || {};
+                            const groupUnit = unitByLang?.[language] || unitByLang?.az || '-';
+                            const list = Array.isArray(g?.details) ? g.details : [];
+                            return list
+                              .filter((d) => d?.status === 'active' || d?.is_active === 'TRUE' || d?.is_active === true || d?.is_active === '1')
+                              .map((d) => ({ ...d, __groupUnit: groupUnit }));
+                          });
+                          return rows.length > 0 ? (
+                            rows.map((d, idx) => (
+                              <tr key={d.id || idx} className="hover:bg-[#F5F5F5]">
+                                <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">
+                                  {(d?.tax_code ? `${d.tax_code} ` : '') + (d?.name?.[language] || d?.name?.az || d?.name?.en || d?.name?.ru || '-')}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{d?.rate_type === 1 ? `${d?.rate?.[language] || d?.rate?.az || d?.rate?.en || d?.rate?.ru || '-' }%` : '-'}</td>
+                                <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{d?.coeff ?? d?.coeff_rate ?? '-'}</td>
+                                <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{d?.unit?.[language] || d?.unit?.az || d.__groupUnit || '-'}</td>
+                                <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{d?.fix_amount ?? 0}</td>
+                                <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">-</td>
+                                <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{d?.procedure_name?.[language] || d?.procedure_name?.az || d?.procedure_name?.ru || '-'}</td>
+                                <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{formatDate(d?.effective_date)}</td>
+                                <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{formatDate(d?.expiration_date)}</td>
+                                <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{d?.currency?.[language] || d?.currency?.az || '-'}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="11" className="px-4 py-8 text-center text-[#6B7280]">{language === 'en' ? 'No data' : language === 'ru' ? 'Нет данных' : 'Məlumat yoxdur'}</td>
                             </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan="4" className="px-4 py-8 text-center text-[#6B7280]">{language === 'en' ? 'No data' : language === 'ru' ? 'Нет данных' : 'Məlumat yoxdur'}</td>
-                          </tr>
-                        )}
+                          );
+                        })()}
                       </tbody>
                     </table>
                   )}
@@ -1016,44 +1082,70 @@ const HsCodesPage = () => {
                     </table>
                   )}
 
-                  {/* Documents Table */}
+                  {/* Documents Section */}
                   {activeTab === 'documents' && (
-                    <table className="w-full">
-                      <thead className="bg-[#F9F9F9]">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Document Type' : 
-                             language === 'ru' ? 'Тип документа' : 
-                             'Sənəd növü'}
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'File Name' : 
-                             language === 'ru' ? 'Имя файла' : 
-                             'Fayl adı'}
-                          </th>
-                          <th className="px-4 py-3 text-left text-sm font-medium text-[#3F3F3F] border-b border-[#E7E7E7]">
-                            {language === 'en' ? 'Upload Date' : 
-                             language === 'ru' ? 'Дата загрузки' : 
-                             'Yükləmə tarixi'}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {Array.isArray(categoryDetails?.documents) && categoryDetails.documents.length > 0 ? (
-                          categoryDetails.documents.map((doc, idx) => (
-                            <tr key={idx} className="hover:bg-[#F5F5F5]">
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{doc?.type?.az || doc?.type?.en || doc?.type?.ru || '-'}</td>
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{doc?.file_name || '-'}</td>
-                              <td className="px-4 py-3 text-sm text-[#3F3F3F] border-b border-[#E7E7E7]">{doc?.uploaded_at || '-'}</td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan="4" className="px-4 py-8 text-center text-[#6B7280]">{language === 'en' ? 'No data' : language === 'ru' ? 'Нет данных' : 'Məlumat yoxdur'}</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
+                    <div className="space-y-4">
+                      <div className="rounded-md border border-[#BFE1E5] bg-[#F3FAFB] p-4 text-sm leading-6 text-[#256D72]">
+                        {language === 'en' ? 
+                          'Heads-up: the list below is compiled from documents submitted with customs declarations for this HS code during the recent reporting period.' :
+                          language === 'ru' ? 
+                          'Важно: перечень ниже сформирован на основе документов, поданных с декларациями по данному коду за последний отчетный период.' :
+                          'Diqqət: aşağıdakı siyahı bu HS kodu üzrə son hesabat dövründə təqdim edilən gömrük bəyannamələrindəki sənədlər əsasında tərtib edilib.'}
+                      </div>
+
+                      {Array.isArray(categoryDetails?.documents) && categoryDetails.documents.length > 0 ? (
+                        categoryDetails.documents.map((doc, docIdx) => {
+                          const docType = doc?.type?.[language] || doc?.type?.az || doc?.type?.en || doc?.type?.ru || '-';
+                          const processes = Array.isArray(doc?.processes) ? doc.processes : [];
+                          return (
+                            <div key={docIdx} className="rounded-lg border border-[#E7E7E7] bg-white shadow-sm">
+                              <div className="border-b border-[#E7E7E7] bg-[#FAFAFA] px-4 py-3 text-sm font-semibold text-[#2E92A0] uppercase">
+                                {docType}
+                              </div>
+
+                              <div className="space-y-4 px-4 py-4">
+                                {processes.length > 0 ? (
+                                  processes.map((proc, procIdx) => {
+                                    const processName = proc?.process?.[language] || proc?.process?.az || proc?.process?.en || proc?.process?.ru || '-';
+                                    const documents = Array.isArray(proc?.processDocuments) ? proc.processDocuments : [];
+                                    return (
+                                      <div key={procIdx} className="rounded-md border border-[#E7E7E7]">
+                                        <div className="border-b border-[#E7E7E7] bg-[#EEF8FA] px-4 py-2 text-[12px] font-semibold tracking-wide text-[#2E92A0] uppercase">
+                                          {processName}
+                                        </div>
+                                        <ul className="list-disc space-y-2 px-6 py-4 text-sm text-[#3F3F3F]">
+                                          {documents.length > 0 ? (
+                                            documents.map((item, itemIdx) => (
+                                              <li key={itemIdx}>
+                                                <span className="font-medium text-[#1F2937]">{item?.document_number ? `${item.document_number}` : ''}</span>
+                                                {item?.document_number ? ' – ' : ''}
+                                                {item?.name?.[language] || item?.name?.az || item?.name?.en || item?.name?.ru || '-'}
+                                              </li>
+                                            ))
+                                          ) : (
+                                            <li className="text-[#6B7280]">
+                                              {language === 'en' ? 'No documents recorded for this process.' : language === 'ru' ? 'По этой процедуре документы не зарегистрированы.' : 'Bu prosedur üçün sənəd qeyd olunmayıb.'}
+                                            </li>
+                                          )}
+                                        </ul>
+                                      </div>
+                                    );
+                                  })
+                                ) : (
+                                  <div className="rounded-md border border-dashed border-[#C9D1D3] bg-[#FCFCFC] px-4 py-6 text-center text-sm text-[#6B7280]">
+                                    {language === 'en' ? 'No processes found for this document category.' : language === 'ru' ? 'Для этой категории документов процедуры не найдены.' : 'Bu sənəd kateqoriyası üçün prosedur tapılmadı.'}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="rounded-md border border-dashed border-[#C9D1D3] bg-[#FCFCFC] px-4 py-8 text-center text-sm text-[#6B7280]">
+                          {language === 'en' ? 'No supporting document data available.' : language === 'ru' ? 'Данные о документах отсутствуют.' : 'Sənədlərlə bağlı məlumat tapılmadı.'}
+                        </div>
+                      )}
+                    </div>
                   )}
 
                   {/* Product Parameters Table */}
