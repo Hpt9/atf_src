@@ -1085,13 +1085,13 @@ const HsCodesPage = () => {
                   {/* Documents Section */}
                   {activeTab === 'documents' && (
                     <div className="space-y-4">
-                      <div className="rounded-md border border-[#BFE1E5] bg-[#F3FAFB] p-4 text-sm leading-6 text-[#256D72]">
+                      {/* <div className="rounded-md border border-[#BFE1E5] bg-[#F3FAFB] p-4 text-sm leading-6 text-[#256D72]">
                         {language === 'en' ? 
                           'Heads-up: the list below is compiled from documents submitted with customs declarations for this HS code during the recent reporting period.' :
                           language === 'ru' ? 
                           'Важно: перечень ниже сформирован на основе документов, поданных с декларациями по данному коду за последний отчетный период.' :
                           'Diqqət: aşağıdakı siyahı bu HS kodu üzrə son hesabat dövründə təqdim edilən gömrük bəyannamələrindəki sənədlər əsasında tərtib edilib.'}
-                      </div>
+                      </div> */}
 
                       {Array.isArray(categoryDetails?.documents) && categoryDetails.documents.length > 0 ? (
                         categoryDetails.documents.map((doc, docIdx) => {
