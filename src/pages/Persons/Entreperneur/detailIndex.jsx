@@ -103,7 +103,7 @@ const EntreperneurDetailIndex = () => {
                 }
                 return (
                   <Link
-                    to={`/dasinma/sahibkar-sexs-elanlari/${a.slug}`}
+                    to={`/dasinma/elanlar/entrepreneur/${a.slug}`}
                     state={{ ownerSlug: data.slug }}
                     key={a.id}
                     className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden"

@@ -295,7 +295,7 @@ const SahibkarIndex = () => {
             return (
               <Link
                 key={slug || idx}
-                to={`/dasinma/sahibkar-sexs-elanlari/${slug}`}
+                to={`/dasinma/elanlar/${item.type || 'entrepreneur'}/${slug}`}
                 className="h-fit bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col hover:shadow transition"
               >
                 {image ? (

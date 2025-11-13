@@ -440,8 +440,7 @@ export const Kataloq = () => {
             return (
               <Link
                 key={item.slug}
-                // to={`/dasinma/kataloq/${item.slug}`}
-                to={`/dasinma/huquqi-sexs-elanlari/${item.slug}`}
+                to={`/dasinma/elanlar/${item.type || 'legal_entity'}/${item.slug}`}
                 className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden flex flex-col hover:shadow transition h-fit"
               >
                 <img

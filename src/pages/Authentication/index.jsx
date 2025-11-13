@@ -290,7 +290,8 @@ const RegisterForm = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [userType, setUserType] = useState(''); // 'individual' | 'entrepreneur' | 'company'
+  const [accountCategory, setAccountCategory] = useState(''); // 'carrier' | 'orderer'
+  const [legalStatus, setLegalStatus] = useState(''); // 'individual' | 'legal'
   const [formData, setFormData] = useState({
     name: "",
     surname: "",
@@ -308,6 +309,7 @@ const RegisterForm = () => {
     password_confirmation: "",
     terms: "",
   });
+  const [selectionError, setSelectionError] = useState("");
 
   const formatPhoneNumber = (value) => {
     // Remove all non-digit characters
@@ -413,6 +415,12 @@ const RegisterForm = () => {
   const handleRegister = (e) => {
     e.preventDefault();
 
+    if (!accountCategory || !legalStatus) {
+      setSelectionError("Zəhmət olmasa, həm rolunuzu, həm də statusunuzu seçin.");
+      return;
+    }
+    setSelectionError("");
+
     // Validate terms acceptance
     if (!acceptedTerms) {
       setErrors((prev) => ({
@@ -445,12 +453,19 @@ const RegisterForm = () => {
       password: formData.password,
       password_confirmation: formData.confirmPassword,
       website: formData.website || null,
-      voen: formData.voen || null,
+      voen: legalStatus === 'legal' && formData.voen ? formData.voen.replace(/\D/g, "") : null,
     };
 
-    let endpoint = 'https://atfplatform.tw1.ru/api/register-individual';
-    if (userType === 'entrepreneur') endpoint = 'https://atfplatform.tw1.ru/api/register-entrepreneur';
-    if (userType === 'company') endpoint = 'https://atfplatform.tw1.ru/api/register-company';
+    let endpoint = '';
+    if (accountCategory === 'carrier') {
+      endpoint =
+        legalStatus === 'legal'
+          ? 'https://atfplatform.tw1.ru/api/register-company'
+          : 'https://atfplatform.tw1.ru/api/register-individual';
+    } else if (accountCategory === 'orderer') {
+      endpoint = 'https://atfplatform.tw1.ru/api/register-entrepreneur';
+      registerData.legal_status = legalStatus;
+    }
 
     setIsLoading(true);
 
@@ -592,51 +607,88 @@ const RegisterForm = () => {
         </div>
       </div>
       <form onSubmit={handleRegister} className="space-y-4">
-        {/* User Type Selection */}
-        {/* Desktop/Tablet: button group */}
-        <div className="hidden md:grid md:grid-cols-3 gap-3">
+        {/* Account Category Selection */}
+        <div className="hidden md:grid md:grid-cols-2 gap-3">
           <button
             type="button"
-            onClick={() => setUserType('individual')}
-            className={`px-4 py-3 rounded-lg border ${userType === 'individual' ? 'border-[#2E92A0] text-[#2E92A0] bg-[#F0FCFD]' : 'border-[#E7E7E7] text-[#3F3F3F] bg-white'}`}
+            onClick={() => {
+              setAccountCategory('carrier');
+              setSelectionError("");
+            }}
+            className={`px-4 py-3 rounded-lg border ${accountCategory === 'carrier' ? 'border-[#2E92A0] text-[#2E92A0] bg-[#F0FCFD]' : 'border-[#E7E7E7] text-[#3F3F3F] bg-white'}`}
+          >
+            Daşıyıcı
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAccountCategory('orderer');
+              setSelectionError("");
+            }}
+            className={`px-4 py-3 rounded-lg border ${accountCategory === 'orderer' ? 'border-[#2E92A0] text-[#2E92A0] bg-[#F0FCFD]' : 'border-[#E7E7E7] text-[#3F3F3F] bg-white'}`}
+          >
+            Sifarişçi
+          </button>
+        </div>
+        <div className="md:hidden">
+          <select
+            value={accountCategory}
+            onChange={(e) => {
+              setAccountCategory(e.target.value);
+              setSelectionError("");
+            }}
+            className="w-full px-4 py-3 border border-[#E7E7E7] rounded-lg text-[#3F3F3F] focus:outline-none focus:border-[#2E92A0] bg-white"
+          >
+            <option value="" disabled>Rolunuzu seçin</option>
+            <option value="carrier">Daşıyıcı</option>
+            <option value="orderer">Sifarişçi</option>
+          </select>
+        </div>
+
+        {/* Legal status selection */}
+        <div className="hidden md:grid md:grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              setLegalStatus('individual');
+              setSelectionError("");
+            }}
+            className={`px-4 py-3 rounded-lg border ${legalStatus === 'individual' ? 'border-[#2E92A0] text-[#2E92A0] bg-[#F0FCFD]' : 'border-[#E7E7E7] text-[#3F3F3F] bg-white'}`}
           >
             Fiziki şəxs
           </button>
           <button
             type="button"
-            onClick={() => setUserType('entrepreneur')}
-            className={`px-4 py-3 rounded-lg border ${userType === 'entrepreneur' ? 'border-[#2E92A0] text-[#2E92A0] bg-[#F0FCFD]' : 'border-[#E7E7E7] text-[#3F3F3F] bg-white'}`}
+            onClick={() => {
+              setLegalStatus('legal');
+              setSelectionError("");
+            }}
+            className={`px-4 py-3 rounded-lg border ${legalStatus === 'legal' ? 'border-[#2E92A0] text-[#2E92A0] bg-[#F0FCFD]' : 'border-[#E7E7E7] text-[#3F3F3F] bg-white'}`}
           >
-            Sahibkar
-          </button>
-          <button
-            type="button"
-            onClick={() => setUserType('company')}
-            className={`px-4 py-3 rounded-lg border ${userType === 'company' ? 'border-[#2E92A0] text-[#2E92A0] bg-[#F0FCFD]' : 'border-[#E7E7E7] text-[#3F3F3F] bg-white'}`}
-          >
-            Hüquqi şəxs (Şirkət)
+            Hüquqi şəxs
           </button>
         </div>
-        {/* Mobile: Select dropdown */}
         <div className="md:hidden">
           <select
-            value={userType}
-            onChange={(e) => setUserType(e.target.value)}
+            value={legalStatus}
+            onChange={(e) => {
+              setLegalStatus(e.target.value);
+              setSelectionError("");
+            }}
             className="w-full px-4 py-3 border border-[#E7E7E7] rounded-lg text-[#3F3F3F] focus:outline-none focus:border-[#2E92A0] bg-white"
           >
-            <option value="" disabled>Qeydiyyat tipini seçin</option>
+            <option value="" disabled>Statusu seçin</option>
             <option value="individual">Fiziki şəxs</option>
-            <option value="entrepreneur">Sahibkar</option>
-            <option value="company">Hüquqi şəxs (Şirkət)</option>
+            <option value="legal">Hüquqi şəxs</option>
           </select>
         </div>
 
         {/* Block form until user type is selected */}
-        {!userType && (
-          <div className="text-[#6B7280] text-sm">Zəhmət olmasa, qeydiyyat tipini seçin.</div>
+        {selectionError && (
+          <div className="text-[#E94134] text-sm">{selectionError}</div>
         )}
 
-        {userType && (
+        {accountCategory && legalStatus && (
         <div className="grid grid-cols-2 md:grid-cols-2 gap-4 2xl:grid-cols-2">
           <input
             type="text"
@@ -657,7 +709,7 @@ const RegisterForm = () => {
           />
         </div>
         )}
-        {userType && (
+        {accountCategory && legalStatus && (
         <div className="grid grid-cols-2 md:grid-cols-2  gap-4 2xl:grid-cols-2">
           <div className="space-y-1">
             <input
@@ -695,7 +747,7 @@ const RegisterForm = () => {
           </div>
         </div>
         )}
-        {userType && (
+        {accountCategory && legalStatus && (
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4 2xl:grid-cols-2">
             <input
               type="text"
@@ -711,7 +763,7 @@ const RegisterForm = () => {
               pattern="^[0-9]{9}$"
               maxLength={9}
               title="VÖEN 9 rəqəmdən ibarət olmalıdır"
-              required
+              required={legalStatus === 'legal'}
               name="voen"
               value={formData.voen}
               onChange={(e) => {
@@ -739,7 +791,7 @@ const RegisterForm = () => {
             />
           </div>
         )}
-        {userType && (
+        {accountCategory && legalStatus && (
         <div className="grid grid-cols-2 md:grid-cols-2  gap-4 2xl:grid-cols-2">
         <div className="space-y-1">
           <div className="relative">
@@ -839,7 +891,7 @@ const RegisterForm = () => {
               <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : (
-            (userType ? "Qeydiyyatı tamamla" : "Tip seçin")
+            (accountCategory && legalStatus ? "Qeydiyyatı tamamla" : "Rol və status seçin")
           )}
         </button>
 

@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import { IoArrowBack, IoInformationCircle } from "react-icons/io5";
 import { useNavigate, useParams } from "react-router-dom";
 import { MdNavigateNext } from "react-icons/md";
+import useLanguageStore from '../../store/languageStore';
 // API base URL; replace if you have an env var
 const API_BASE = 'https://atfplatform.tw1.ru';
 
 
 export const ElanDetail = () => {
+  const { language } = useLanguageStore();
   const { slug } = useParams();
   const [selectedImage, setSelectedImage] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -50,7 +52,12 @@ export const ElanDetail = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, []);
-
+  const formatArea = (area, lang) => {
+    if (!area) return '-';
+    const pick = (obj) => obj?.[lang] || obj?.az || '';
+    const parts = [pick(area.country), pick(area.city), pick(area.region)].filter(Boolean);
+    return parts.join(' - ') || '-';
+  };
   return (
     <div className="w-full flex items-center flex-col gap-y-[16px]">
       <div className="w-full max-w-[2136px] px-[16px] md:px-[32px] lg:px-[50px] xl:px-[108px] py-4 md:py-8 flex flex-col md:flex-row gap-8">
@@ -147,8 +154,8 @@ export const ElanDetail = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2 pb-6 mt-4 border-b border-[#E7E7E7]">
             {/* Map API fields into the details grid */}
             {[
-              { label: "Haradan gəlir", value: data?.from?.az || data?.exit_from_address?.az || '—' },
-              { label: "Hara gedir", value: data?.to?.az || '—' },
+              { label: "Haradan gəlir", value: formatArea(data?.from, language) || formatArea(data?.exit_from_address, language) || '—' },
+              { label: "Hara gedir", value: formatArea(data?.to, language) || '—' },
               { label: "Na daşıyır", value: data?.load_type?.az || '—' },
               { label: "Tutum", value: data?.capacity != null ? String(data.capacity) : '—' },
               { label: "Boş yer", value: data?.empty_space != null ? String(data.empty_space) : '—' },

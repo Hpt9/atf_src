@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import Layout from "./components/Layout";
 import HomePage from "./pages/HomePage";
@@ -16,13 +16,9 @@ import { Toaster } from 'react-hot-toast';
 import { RouteGuard } from './components/RouteGuard';
 import AdminRouteGuard from './components/AdminRouteGuard';
 import { VerifyEmail } from "./pages/VerifEmail";
-import { Elanlar } from "./pages/Transportation/Individual";
-import { ElanDetail } from "./pages/Transportation/IndividualDetails";
-import { Kataloq } from "./pages/Transportation/Legal";
-import { KataloqDetail } from "./pages/Transportation/LegalDetails";
+import AllAdverts from "./pages/Transportation/AllAdverts";
+import AdvertDetail from "./pages/Transportation/AdvertDetail";
 import { NewUpdate } from "./pages/NewUpdate";
-import SahibkarIndex from "./pages/Transportation/Sahibkar";
-import SahibkarDetailIndex from "./pages/Transportation/SahibkarDetail";
 import EntreperneurIndex from "./pages/Persons/Entreperneur";
 import IndividualIndex from "./pages/Persons/İndividual";
 import LegalIndex from "./pages/Persons/Legal";
@@ -30,6 +26,8 @@ import IndividualDetailIndex from "./pages/Persons/İndividual/detailIndex";
 import LegalDetailIndex from "./pages/Persons/Legal/detailIndex";
 import EntreperneurDetailIndex from "./pages/Persons/Entreperneur/detailIndex";
 import NotFoundPage from "./pages/NotFound";
+import Orders from "./pages/Orders/order";
+import OrderDetail from "./pages/Orders/orderDetail";
 function App() {
   const location = useLocation();
 
@@ -76,34 +74,42 @@ function App() {
                 </PageTransition>
               </RouteGuard>
             } />
-            <Route path="/dasinma/fiziki-sexs-elanlari" element={
+            <Route path="/dasinma/elanlar" element={
               <PageTransition>
-                <Elanlar />
+                <AllAdverts />
               </PageTransition>
             } />
+            <Route path="/dasinma/elanlar/:type/:slug" element={
+              <PageTransition>
+                <AdvertDetail />
+              </PageTransition>
+            } />
+            <Route path="/dasinma/fiziki-sexs-elanlari" element={<Navigate to="/dasinma/elanlar" replace />} />
+            <Route path="/dasinma/huquqi-sexs-elanlari" element={<Navigate to="/dasinma/elanlar" replace />} />
+            <Route path="/dasinma/sahibkar-sexs-elanlari" element={<Navigate to="/dasinma/elanlar" replace />} />
             <Route path="/dasinma/fiziki-sexs-elanlari/:slug" element={
               <PageTransition>
-                <ElanDetail />
+                <AdvertDetail />
               </PageTransition>
             } />
-            <Route path="/dasinma/huquqi-sexs-elanlari" element={
+            <Route path="/sifarisler" element={
               <PageTransition>
-                <Kataloq />
+                <Orders/>
+              </PageTransition>
+            } />
+            <Route path="/sifarisler/:slug" element={
+              <PageTransition>
+                <OrderDetail />
               </PageTransition>
             } />
             <Route path="/dasinma/huquqi-sexs-elanlari/:slug" element={
               <PageTransition>
-                <KataloqDetail />
-              </PageTransition>
-            } />
-            <Route path="/dasinma/sahibkar-sexs-elanlari" element={
-              <PageTransition>
-                <SahibkarIndex />
+                <AdvertDetail />
               </PageTransition>
             } />
             <Route path="/dasinma/sahibkar-sexs-elanlari/:slug" element={
               <PageTransition>
-                <SahibkarDetailIndex />
+                <AdvertDetail />
               </PageTransition>
             } />
 

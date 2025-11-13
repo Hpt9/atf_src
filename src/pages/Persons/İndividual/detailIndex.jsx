@@ -91,7 +91,7 @@ const IndividualDetailIndex = () => {
                 }
                 return (
                   <a
-                    href={`/dasinma/fiziki-sexs-elanlari/${a.slug}`}
+                    href={`/dasinma/elanlar/individual/${a.slug}`}
                     key={a.id}
                     className="bg-white border border-[#E7E7E7] rounded-lg overflow-hidden"
                   >

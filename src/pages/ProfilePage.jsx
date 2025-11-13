@@ -1458,13 +1458,15 @@ const ProfilePage = () => {
                 const getAdvertRoute = (userRole, advertSlug) => {
                   switch (userRole) {
                     case 'individual':
-                      return `/dasinma/fiziki-sexs-elanlari/${advertSlug}`;
+                      return `/dasinma/elanlar/individual/${advertSlug}`;
                     case 'legal_entity':
-                      return `/dasinma/huquqi-sexs-elanlari/${advertSlug}`;
+                    case 'legal':
+                      return `/dasinma/elanlar/legal_entity/${advertSlug}`;
                     case 'entrepreneur':
-                      return `/dasinma/sahibkar-sexs-elanlari/${advertSlug}`;
+                    case 'transporter':
+                      return `/dasinma/elanlar/${userRole}/${advertSlug}`;
                     default:
-                      return `/dasinma/fiziki-sexs-elanlari/${advertSlug}`;
+                      return `/dasinma/elanlar/individual/${advertSlug}`;
                   }
                 };
 
