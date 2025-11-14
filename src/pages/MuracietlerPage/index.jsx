@@ -34,9 +34,9 @@ const MuracietlerPage = () => {
     },
     
     apply: {
-      en: "Apply",
-      ru: "Подать заявление",
-      az: "Müraciət et"
+      en: "Search Document Form",
+      ru: "Поиск документа",
+      az: "Sənəd Forması Axtar"
     },
     code: {
       en: "Code",
@@ -331,27 +331,13 @@ const MuracietlerPage = () => {
           </button>
         </div>
         <motion.button
-          className="ml-2 md:ml-4 px-4 py-2 bg-[#2E92A0] text-white rounded-lg flex items-center justify-between w-[50%]"
+          className="ml-2 md:ml-4 px-4 py-2 bg-[#2E92A0] text-white rounded-lg flex items-center justify-between"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => toogleMuracietModal()}
         >
           <span className="mr-2 whitespace-nowrap">{texts.apply[language] || texts.apply.az}</span>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M12 4V20M20 12H4"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          
         </motion.button>
       </div>
     );
