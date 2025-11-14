@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from "../../context/AuthContext";
 
 export const NewUpdate = () => {
-  const { token } = useAuth();
+  const { token, user, isEmailVerified } = useAuth();
   const [activeTab, setActiveTab] = useState(""); // 'individual', 'legal', or 'entrepreneur'
   const [allowedTab, setAllowedTab] = useState("");
   const [isRoleLoading, setIsRoleLoading] = useState(true);
@@ -22,6 +22,22 @@ export const NewUpdate = () => {
   const [units, setUnits] = useState([]);
   const [areas, setAreas] = useState([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
+
+  // Debug: Log user data and email verification status
+  useEffect(() => {
+    console.log("NewUpdate - User data:", user);
+    console.log("NewUpdate - email_verified_at:", user?.email_verified_at);
+    console.log("NewUpdate - isEmailVerified:", isEmailVerified);
+  }, [user, isEmailVerified]);
+
+  const ensureEmailVerified = () => {
+    if (!isEmailVerified) {
+      toast.error("Elan əlavə etmək üçün e-poçtunuzu təsdiqləyin.");
+      return false;
+    }
+    return true;
+  };
+
   // Derive allowed tab from user role
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -222,6 +238,7 @@ export const NewUpdate = () => {
 
   const handleIndividualSubmit = async (e) => {
     e.preventDefault();
+    if (!ensureEmailVerified()) return;
     setIsSubmitting(true);
     try {
       await submitAdvert(individualFormData, "individual");
@@ -273,6 +290,7 @@ export const NewUpdate = () => {
 
   const handleLegalSubmit = async (e) => {
     e.preventDefault();
+    if (!ensureEmailVerified()) return;
     setIsSubmitting(true);
     try {
       await submitAdvert(legalFormData, "legal");
@@ -299,6 +317,7 @@ export const NewUpdate = () => {
 
   const handleEntrepreneurSubmit = async (e) => {
     e.preventDefault();
+    if (!ensureEmailVerified()) return;
     setIsSubmitting(true);
     try {
       await submitAdvert(entrepreneurFormData, "entrepreneur");

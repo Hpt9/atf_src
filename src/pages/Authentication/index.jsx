@@ -120,8 +120,13 @@ const LoginForm = () => {
 
   // Helper function to handle successful auth (both from success and error paths)
   const handleAuthSuccess = (data) => {
-    // Log in the user with the received data
-    login(data.token).then((userData) => {
+    // Console log user data from Google auth API response
+    if (data.user) {
+      console.log("User logged in via Google (Login) - User Data from Google Auth API:", data.user);
+    }
+    
+    // Log in the user with the received data, passing user data from API response
+    login(data.token, data.user).then((userData) => {
       // Show the phone number missing message if no phone
       if (userData && !userData.phone) {
         toast.error("Telefon nömrəniz qeyd olunmayıb", {
@@ -147,8 +152,13 @@ const LoginForm = () => {
       })
       .then((res) => {
         if (res.status === 200) {
-          const { token } = res.data;
-          login(token).then(() => {
+          const { token, user } = res.data;
+          
+          // Console log user data from login API response
+          console.log("User logged in - User Data from Login API:", user);
+          
+          // Pass user data directly to login function
+          login(token, user).then(() => {
             navigate("/");
           });
         }
@@ -473,7 +483,10 @@ const RegisterForm = () => {
       .post(endpoint, registerData)
       .then((res) => {
         if (res.status === 200 || res.status === 201) {
-          const { token } = res.data;
+          const { token, user } = res.data;
+
+          // Console log user data from register API response
+          console.log("User registered - User Data from Register API:", user);
 
           // Show success toast
           toast.success("Qeydiyyat uğurla tamamlandı!", {
@@ -487,13 +500,13 @@ const RegisterForm = () => {
             id: "email-verification-reminder",
           });
 
-          // Log in the user immediately
-          login(token);
-
-          // Navigate to home page after toast
-          setTimeout(() => {
-            navigate("/");
-          }, 2000);
+          // Log in the user immediately with user data from register API
+          login(token, user).then(() => {
+            // Navigate to home page after toast
+            setTimeout(() => {
+              navigate("/");
+            }, 2000);
+          });
         }
       })
       .catch((err) => {
@@ -557,8 +570,13 @@ const RegisterForm = () => {
 
   // Helper function to handle successful auth (both from success and error paths)
   const handleAuthSuccess = (data) => {
-    // Log in the user with the received data
-    login(data.token).then((userData) => {
+    // Console log user data from Google auth API response
+    if (data.user) {
+      console.log("User logged in via Google (Register) - User Data from Google Auth API:", data.user);
+    }
+    
+    // Log in the user with the received data, passing user data from API response
+    login(data.token, data.user).then((userData) => {
       // Show the phone number missing message if no phone
       if (userData && !userData.phone) {
         toast.error("Telefon nömrəniz qeyd olunmayıb", {

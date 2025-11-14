@@ -72,12 +72,23 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const login = async (userToken) => {
+  const login = async (userToken, userDataFromApi = null) => {
     setToken(userToken);
     setTokenCookie(userToken);
     
-    // Fetch user data after login
-    const userData = await fetchUserData(userToken);
+    // Use user data from login/register API if provided, otherwise fetch it
+    let userData = userDataFromApi;
+    if (!userData) {
+      userData = await fetchUserData(userToken);
+    } else {
+      // Set user data directly from login/register response
+      console.log("AuthContext - Saving user data from login/register API:", userData);
+      setUser(userData);
+    }
+    
+    // Log email verification status
+    console.log("AuthContext - email_verified_at:", userData?.email_verified_at);
+    console.log("AuthContext - isEmailVerified:", Boolean(userData?.email_verified_at));
     
     // Show email verification notification if needed
     if (userData && userData.email_verified_at === null) {
@@ -121,8 +132,18 @@ export const AuthProvider = ({ children }) => {
     );
   }
 
+  // Computed value for email verification status
+  const isEmailVerified = Boolean(user?.email_verified_at);
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, fetchUserData }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      login, 
+      logout, 
+      fetchUserData,
+      isEmailVerified 
+    }}>
       {children}
     </AuthContext.Provider>
   );
