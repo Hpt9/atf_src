@@ -144,7 +144,7 @@ function App() {
                 < EntreperneurDetailIndex />
               </PageTransition>
             } />
-            <Route path="/muracietler" element={
+            <Route path="/sened-formalari" element={
               <PageTransition>
                 <RouteGuard>
                   <MuracietlerPage />
