@@ -277,7 +277,7 @@ const LoginForm = () => {
         </GradientText> */}
       </form>
 
-      <div className="w-full flex justify-center">
+      {/* <div className="w-full flex justify-center">
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
           onError={handleGoogleError}
@@ -288,7 +288,7 @@ const LoginForm = () => {
           text="continue_with"
           locale="az"
         />
-      </div>
+      </div> */}
     </motion.div>
   );
 };
@@ -924,7 +924,7 @@ const RegisterForm = () => {
         </GradientText> */}
       </form>
 
-      <div className="w-full flex justify-center">
+      {/* <div className="w-full flex justify-center">
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
           onError={handleGoogleError}
@@ -935,7 +935,7 @@ const RegisterForm = () => {
           text="continue_with"
           locale="az"
         />
-      </div>
+      </div> */}
 
       {/* Loading Overlay */}
       {isLoading && (

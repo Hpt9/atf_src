@@ -14,8 +14,6 @@ const Layout = () => {
           <Outlet />
         </main>
         <Footer />
-        {/* <ChatBot /> */}
-        {/* <JivoChat /> */}
       </div>
     </SearchBarProvider>
   )
